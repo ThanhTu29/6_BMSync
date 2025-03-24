@@ -4,7 +4,7 @@
 BMSync là một ứng dụng web giúp quản lý trang thiết bị trong tòa nhà một cách hiệu quả. Ứng dụng hỗ trợ theo dõi trạng thái thiết bị, quản lý lịch bảo trì, gửi thông báo và cung cấp báo cáo chi tiết về tình trạng hoạt động của thiết bị.
 
 ## Đối tượng người dùng:
-- **Quản lý tòa nhà**: Quản lý toàn bộ hệ thống, thêm/sửa/xóa thiết bị, thiết lập thông tin tòa nhà, quản lý tài khoản.
+- **Quản lý tòa nhà**: Quản lý toàn bộ hệ thống, thêm/sửa/xóa thiết bị, thiết lập thông tin tòa nhà, quản lý tài khoản, phân quyền và vai trò.
 - **Nhân viên bảo trì**: Nhận thông báo về thiết bị cần bảo trì, cập nhật trạng thái bảo trì, báo cáo sự cố.
 - **Người dùng thông thường**: Xem lịch bảo trì, gửi yêu cầu sửa chữa, đánh giá chất lượng sau bảo trì.
 
