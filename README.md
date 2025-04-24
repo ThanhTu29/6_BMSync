@@ -1,75 +1,50 @@
-# Ứng dụng Quản lý Trang thiết bị trong một Tòa Nhà (BMSync)
+# Ứng dụng Quản lý Trang Thiết bị trong một Tòa Nhà (BMSync)
 
 ## Tên ứng dụng: BMSync
+BMSync là một ứng dụng web chuyên quản lý trang thiết bị cho tòa nhà cho thuê văn phòng và phòng học. Ứng dụng hỗ trợ theo dõi, vận hành và bảo trì thiết bị một cách minh bạch, hiệu quả, đáp ứng nhu cầu của từng nhóm người dùng.
 
-BMSync là một ứng dụng web giúp quản lý trang thiết bị trong tòa nhà một cách hiệu quả. Ứng dụng hỗ trợ theo dõi trạng thái thiết bị, quản lý lịch bảo trì, gửi thông báo và cung cấp báo cáo chi tiết về tình trạng hoạt động của thiết bị.
+## Đối tượng người dùng
+- **Admin**: Toàn quyền trên hệ thống—quản lý tài khoản, phân quyền, cấu hình, báo cáo tổng thể.
+- **Manager**: Quản lý thực địa—giám sát hoạt động, phân công công việc, theo dõi tiến độ.
+- **Nhân viên bảo trì**: Thực hiện công tác bảo trì/sửa chữa, cập nhật trạng thái và báo cáo kết quả.
+- **Người thuê (Tenant)**: Xem trạng thái thiết bị, gửi yêu cầu sửa chữa, theo dõi tiến trình và đánh giá sau bảo trì.
 
-## Đối tượng người dùng:
+## Các chức năng chính
 
-+ Quản trị viên (Người quản lý tòa nhà): Quản lý toàn bộ hệ thống, thêm/sửa/xóa thiết bị, thiết lập thông tin tòa nhà, quản lý tài khoản, phân quyền và vai trò.
+### 1. Quản lý đăng nhập & phân quyền
+- Đăng ký, đăng nhập, đăng xuất.
+- Phân quyền theo vai trò (Admin, Manager, Maint, Tenant).
 
-+ Nhân viên bảo trì: Nhận thông báo về thiết bị cần bảo trì, cập nhật trạng thái bảo trì, báo cáo sự cố.
+### 2. Quản lý trang thiết bị
+- CRUD thiết bị: mã, tên, loại, vị trí (tòa nhà, tầng, phòng).
+- Phân loại theo nhóm (office, classroom, thiết bị chung).
+- Tìm kiếm, lọc theo tình trạng (hoạt động, hỏng, đang bảo trì).
 
-+ Người dùng (Cư dân trong tòa nhà): Xem lịch bảo trì, gửi yêu cầu sửa chữa, đánh giá chất lượng sau bảo trì.
+### 3. Quản lý vị trí & không gian
+- Quản lý tòa nhà, khu vực, tầng, phòng.
+- Liên kết thiết bị với phòng/zone cụ thể.
 
-## Các chức năng chính:
+### 4. Quy trình bảo trì & sửa chữa
+- Khởi tạo yêu cầu bảo trì từ Tenant hoặc Manager.
+- Manager phân công nhiệm vụ cho nhân viên bảo trì.
+- Nhân viên nhận thông báo, thực hiện và cập nhật kết quả.
+- Tenant theo dõi tiến độ và đánh giá sau khi hoàn thành.
 
-### 1. Quản lý thiết bị
+### 5. Thông báo & cảnh báo
+- Gửi email/SMS khi có yêu cầu mới, đến hạn bảo trì hoặc sự cố.
+- Dashboard hiển thị cảnh báo quan trọng.
 
-- Thêm, sửa, xóa thiết bị với thông tin chi tiết (mã số, tên, loại thiết bị, vị trí, ngày lắp đặt, bảo hành, nhà cung cấp, hình ảnh minh họa).
+### 6. Báo cáo & Thống kê
+- Báo cáo số lượng thiết bị theo loại, tình trạng, vị trí.
+- Thống kê yêu cầu bảo trì theo thời gian (ngày, tuần, tháng).
+- Dashboard trực quan: số thiết bị cần bảo trì, tỷ lệ hoàn thành, hiệu suất nhân viên.
 
-- Phân loại thiết bị theo khu vực (tầng 1, tầng 2, khu vực chung, v.v.).
+### 7. Quản lý người dùng
+- Admin: tạo, sửa, xóa tài khoản, phân quyền.
+- Manager: xem danh sách nhân viên & Tenant, khóa/mở tài khoản khi cần.
 
-- Tìm kiếm và lọc thiết bị theo trạng thái (bình thường, hỏng, đang sửa), loại, vị trí.
+### 8. Chatbot hỗ trợ
+- Chatbot AI tích hợp trên giao diện web: trả lời tự động các câu hỏi thường gặp về sử dụng và vận hành thiết bị.
+- Hướng dẫn quy trình bảo trì, báo cáo sự cố, tạo yêu cầu tự động qua chat.
+- Hỗ trợ 24/7, cải thiện trải nghiệm người dùng và giảm tải công việc cho bộ phận hỗ trợ.
 
-- Xem lịch sử sử dụng và bảo trì của từng thiết bị.
-
-### 2. Quản lý yêu cầu sửa chữa
-
-- Nhận và xử lý yêu cầu sửa chữa từ cư dân.
-
-- Giao nhiệm vụ cho nhân viên bảo trì dựa trên chuyên môn.
-
-- Theo dõi tiến trình sửa chữa theo từng giai đoạn.
-
-- Duyệt và xác nhận hoàn thành yêu cầu sau khi nhân viên báo cáo.
-
-### 3. Quản lý nhân viên bảo trì
-
-- Thêm, sửa, xóa tài khoản nhân viên bảo trì.
-
-- Xem lịch làm việc và tình trạng nhân viên (đang bận, rảnh).
-
-- Đánh giá hiệu suất dựa trên số lượng nhiệm vụ hoàn thành và thời gian xử lý.
-
-### 4. Quản lý người dùng
-
-- Xem danh sách cư dân đã đăng ký.
-
-- Khóa/mở tài khoản người dùng nếu vi phạm quy định.
-
-- Gửi thông báo cá nhân hoặc hàng loạt về bảo trì, sự cố.
-
-### 5. Báo cáo & Thống kê
-
-- Báo cáo trạng thái thiết bị (số lượng thiết bị hỏng, đang hoạt động).
-
-- Thống kê yêu cầu sửa chữa theo thời gian.
-
-- Báo cáo chi phí bảo trì.
-
-- Xuất báo cáo dưới dạng PDF/Excel.
-
-### 6. Bảo trì và sửa chữa
-
-- Ghi nhận lịch sử bảo trì, theo dõi tình trạng thiết bị.
-
-- Gửi thông báo bảo trì tự động qua email hoặc hệ thống.
-
-### 7. Thông báo và cảnh báo
-
-- Gửi email hoặc tin nhắn cảnh báo khi thiết bị gặp sự cố hoặc đến hạn bảo trì.
-
-- Nhận thông báo bảo trì định kỳ, mất điện tạm thời.
-  
-## Week 1 - Draw Diagrams (Database, Usecase and Class Diagram) - Complete
