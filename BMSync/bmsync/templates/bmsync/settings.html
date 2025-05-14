@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Cài đặt - BMSync{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Cài đặt Giao Diện</h2>
+
+    <div class="theme-switcher-container">
+        <h3>Chọn Chủ Đề</h3>
+        <div class="theme-options">
+            <button id="light-theme-btn" onclick="themeSwitcher.setTheme('light')">Sáng</button>
+            <button id="dark-theme-btn" onclick="themeSwitcher.setTheme('dark')">Tối</button>
+            <!-- Optionally, add a system theme button if supported by theme.js -->
+            <!-- <button onclick="themeSwitcher.setTheme('system')">Hệ thống</button> -->
+        </div>
+        <p>Chủ đề hiện tại: <span id="current-theme-display">Đang tải...</span></p>
+    </div>
+
+    <!-- Add other settings options here as needed -->
+
+</div>
+
+<script>
+    // Script to update the theme buttons and display based on the current theme
+    function updateThemeUI() {
+        const currentTheme = themeSwitcher.getCurrentTheme();
+        document.getElementById('current-theme-display').textContent = currentTheme === 'dark' ? 'Tối' : 'Sáng';
+
+        const lightBtn = document.getElementById('light-theme-btn');
+        const darkBtn = document.getElementById('dark-theme-btn');
+
+        if (currentTheme === 'dark') {
+            darkBtn.classList.add('active');
+            lightBtn.classList.remove('active');
+        } else {
+            lightBtn.classList.add('active');
+            darkBtn.classList.remove('active');
+        }
+    }
+
+    // Initial UI update when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ensure themeSwitcher is loaded (it should be if theme.js is included in base.html before this script)
+        if (window.themeSwitcher) {
+            updateThemeUI();
+        } else {
+            console.error('Theme switcher not found. Make sure theme.js is loaded.');
+            document.getElementById('current-theme-display').textContent = 'Lỗi tải chủ đề';
+        }
+    });
+
+    // Listen for theme changes to update UI (e.g., button active state)
+    document.addEventListener('themeChanged', function(event) {
+        updateThemeUI();
+    });
+</script>
+
+{% endblock %}

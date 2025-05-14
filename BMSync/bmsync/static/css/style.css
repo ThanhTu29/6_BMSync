@@ -1,0 +1,197 @@
+/* static/css/style.css */
+
+/* Light Theme (Default) */
+body {
+    background-color: #ffffff;
+    color: #333333;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.container {
+    /* existing styles */
+}
+
+.site-header {
+    background-color: #ffffff;
+    /* existing styles */
+    transition: background-color 0.3s;
+}
+
+.site-header .logo {
+    color: #0a67eb;
+    /* existing styles */
+    transition: color 0.3s;
+}
+
+.site-header .main-nav a {
+    color: #555;
+    /* existing styles */
+    transition: color 0.3s;
+}
+
+.site-header .main-nav a:hover,
+.site-header .main-nav a.active {
+    color: #0a67eb;
+}
+
+/* Add other light theme specific styles here */
+
+/* Dark Theme */
+html.dark-mode body {
+    background-color: #1a1a1a; /* Darker background */
+    color: #e0e0e0; /* Lighter text */
+}
+
+html.dark-mode .site-header {
+    background-color: #2c2c2c; /* Dark header background */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5); /* Adjust shadow for dark theme */
+}
+
+html.dark-mode .site-header .logo {
+    color: #3498db; /* Brighter blue for dark theme */
+}
+
+html.dark-mode .site-header .main-nav a {
+    color: #bbbbbb; /* Lighter nav link color */
+}
+
+html.dark-mode .site-header .main-nav a:hover,
+html.dark-mode .site-header .main-nav a.active {
+    color: #3498db; /* Brighter blue for hover/active */
+}
+
+html.dark-mode .card {
+    background-color: #2c2c2c;
+    border: 1px solid #444444;
+}
+
+html.dark-mode .btn-primary {
+    background-color: #3498db;
+    border-color: #3498db;
+    color: #ffffff;
+}
+
+html.dark-mode .btn-primary:hover {
+    background-color: #2980b9;
+    border-color: #2980b9;
+}
+
+html.dark-mode .form-control {
+    background-color: #333333;
+    color: #e0e0e0;
+    border-color: #555555;
+}
+
+html.dark-mode .form-control:focus {
+    background-color: #444444;
+    color: #e0e0e0;
+    border-color: #3498db;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+/* Add other dark theme specific styles for other elements */
+
+/* Example for a generic card component */
+.card {
+    background-color: #ffffff;
+    border: 1px solid #dddddd;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+/* Example for buttons */
+.btn {
+    padding: 10px 15px;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+}
+
+.btn-primary {
+    background-color: #0a67eb;
+    color: white;
+    border: 1px solid #0a67eb;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+/* Example for form inputs */
+.form-control {
+    display: block;
+    width: 100%;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+.form-control:focus {
+    color: #495057;
+    background-color: #fff;
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+
+/* Styles for settings page theme switcher */
+.theme-switcher-container {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f9f9f9; /* Light background for the container itself */
+    border: 1px solid #eee;
+    border-radius: 5px;
+}
+
+html.dark-mode .theme-switcher-container {
+    background-color: #333;
+    border-color: #444;
+}
+
+.theme-switcher-container h3 {
+    margin-top: 0;
+    color: #333;
+}
+
+html.dark-mode .theme-switcher-container h3 {
+    color: #f0f0f0;
+}
+
+.theme-switcher-container .theme-options button {
+    margin-right: 10px;
+    padding: 8px 15px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    color: #333;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+html.dark-mode .theme-switcher-container .theme-options button {
+    background-color: #555;
+    border-color: #666;
+    color: #f0f0f0;
+}
+
+.theme-switcher-container .theme-options button.active {
+    background-color: #0a67eb;
+    color: white;
+    border-color: #0a67eb;
+}
+
+html.dark-mode .theme-switcher-container .theme-options button.active {
+    background-color: #3498db;
+    color: white;
+    border-color: #3498db;
+}

@@ -1,0 +1,177 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}Thông báo - BMSync Admin{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <h1 class="admin-page-title">Thông báo</h1>
+    <div class="admin-content-header">
+        <form method="GET" action="{% url 'admin_thong_bao' %}" class="search-filter-container" id="filterForm">
+            <select name="status" id="notificationStatusFilter" class="filter-select" onchange="this.form.submit()">
+                <option value="all" {% if current_status == 'all' %}selected{% endif %}>Tất cả</option>
+                <option value="unread" {% if current_status == 'unread' %}selected{% endif %}>Chưa đọc</option>
+                <option value="read" {% if current_status == 'read' %}selected{% endif %}>Đã đọc</option>
+            </select>
+            <button type="submit" class="btn btn-primary">Lọc</button>
+        </form>
+        <button class="btn btn-secondary" id="markAllAsReadBtn">Đánh dấu tất cả là đã đọc</button>
+    </div>
+
+    {% if notifications %}
+        <div class="admin-table-container notifications-list">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Thời gian</th>
+                        <th>Nội dung</th>
+                        <th>Trạng thái</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for notification in notifications %}
+                    <tr class="notification-item {% if not notification.is_read %}notification-unread{% endif %}">
+                        <td>{{ notification.timestamp|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <a href="#" class="notification-link" data-notification-id="{{ notification.id }}">
+                                {{ notification.message }}
+                            </a>
+                        </td>
+                        <td>{% if notification.is_read %}Đã đọc{% else %}Chưa đọc{% endif %}</td>
+                        <td>
+                            {% if not notification.is_read %}
+                                <button class="btn btn-sm btn-outline-primary mark-as-read-btn" data-notification-id="{{ notification.id }}">Đánh dấu đã đọc</button>
+                            {% endif %}
+                            <!-- Thêm hành động khác nếu cần, ví dụ: xem chi tiết -->
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if notifications.has_other_pages %}
+        <div class="pagination">
+            <span class="step-links">
+                {% if notifications.has_previous %}
+                    <a href="?page=1{% if current_status %}&status={{ current_status }}{% endif %}">&laquo; Đầu</a>
+                    <a href="?page={{ notifications.previous_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}">Trước</a>
+                {% endif %}
+
+                <span class="current">
+                    Trang {{ notifications.number }} của {{ notifications.paginator.num_pages }}.
+                </span>
+
+                {% if notifications.has_next %}
+                    <a href="?page={{ notifications.next_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}">Sau</a>
+                    <a href="?page={{ notifications.paginator.num_pages }}{% if current_status %}&status={{ current_status }}{% endif %}">Cuối &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+        {% endif %}
+    {% else %}
+        <p>Không có thông báo nào.</p>
+    {% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const markAllAsReadBtn = document.getElementById('markAllAsReadBtn');
+    if(markAllAsReadBtn) {
+        markAllAsReadBtn.addEventListener('click', function() {
+            fetch("{% url 'mark_all_notifications_as_read' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    location.reload(); // Tải lại trang để cập nhật danh sách
+                } else {
+                    alert('Lỗi: ' + (data.error || 'Không thể đánh dấu tất cả là đã đọc.'));
+                }
+            })
+            .catch(error => {
+                console.error('Error marking all as read:', error);
+                alert('Đã xảy ra lỗi khi kết nối đến máy chủ.');
+            });
+        });
+    }
+
+    document.querySelectorAll('.mark-as-read-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const notificationId = this.dataset.notificationId;
+            const row = this.closest('tr');
+            fetch(`/admin/notifications/mark-as-read/${notificationId}/`, { // Sử dụng template string đúng cách
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    row.classList.remove('notification-unread');
+                    row.classList.add('notification-read'); // Thêm class để biểu thị đã đọc nếu cần
+                    // Cập nhật cột trạng thái
+                    const statusCell = row.querySelector('td:nth-child(3)');
+                    if (statusCell) statusCell.textContent = 'Đã đọc';
+                    this.remove(); // Xóa nút "Đánh dấu đã đọc"
+                } else {
+                    alert('Lỗi: ' + (data.error || 'Không thể đánh dấu thông báo là đã đọc.'));
+                }
+            })
+            .catch(error => {
+                console.error('Error marking as read:', error);
+                alert('Đã xảy ra lỗi khi kết nối đến máy chủ.');
+            });
+        });
+    });
+
+    document.querySelectorAll('.notification-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const notificationId = this.dataset.notificationId;
+            const row = this.closest('tr');
+            // Đánh dấu là đã đọc
+            fetch(`/admin/notifications/mark-as-read/${notificationId}/`, { // Sử dụng template string đúng cách
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    if (row) {
+                         row.classList.remove('notification-unread');
+                         row.classList.add('notification-read');
+                         const statusCell = row.querySelector('td:nth-child(3)');
+                         if (statusCell) statusCell.textContent = 'Đã đọc';
+                         const markAsReadButton = row.querySelector('.mark-as-read-btn');
+                         if (markAsReadButton) markAsReadButton.remove();
+                    }
+                    // TODO: Chuyển hướng đến trang chi tiết hoặc hiển thị modal
+                    // Hiện tại chỉ alert và không làm gì thêm sau khi đánh dấu đã đọc
+                    alert('Thông báo ' + notificationId + ' đã được đánh dấu là đã đọc. Chức năng xem chi tiết sẽ được triển khai sau.');
+                    // Ví dụ: window.location.href = `/some/detail/url/for/notification/${notificationId}/`;
+                } else {
+                    alert('Lỗi khi đánh dấu thông báo là đã đọc: ' + (data.error || 'Lỗi không xác định.'));
+                }
+            })
+            .catch(error => {
+                console.error('Error on notification link click:', error);
+                alert('Đã xảy ra lỗi khi xử lý thông báo.');
+            });
+        });
+    });
+});
+</script>
+
+</div>
+{% endblock %}

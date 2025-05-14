@@ -1,0 +1,97 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}Bảo mật - BMSync Admin{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <h1 class="admin-page-title">Bảo mật</h1>
+
+    <div class="admin-content-container">
+        {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close-alert-btn" data-dismiss="alert" aria-label="Close">&times;</button>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <section class="settings-section">
+            <h2>Thay đổi Mật khẩu</h2>
+            <form method="post" action="{% url 'admin_change_password' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="current_password">Mật khẩu hiện tại</label>
+                    <input type="password" id="current_password" name="current_password" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="new_password1">Mật khẩu mới</label>
+                    <input type="password" id="new_password1" name="new_password1" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="new_password2">Xác nhận mật khẩu mới</label>
+                    <input type="password" id="new_password2" name="new_password2" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Đổi Mật khẩu</button>
+            </form>
+        </section>
+
+        <section class="settings-section">
+            <h2>Quản lý Phiên đăng nhập</h2>
+            <p>Đăng xuất khỏi tất cả các thiết bị khác ngoại trừ thiết bị hiện tại.</p>
+            <form method="post" action="{% url 'admin_logout_other_devices' %}" onsubmit="return confirm('Bạn có chắc chắn muốn đăng xuất khỏi tất cả các thiết bị khác không?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-warning">Đăng xuất khỏi tất cả các thiết bị khác</button>
+            </form>
+        </section>
+
+        <section class="settings-section">
+            <h2>Xác thực Hai yếu tố (2FA)</h2>
+            <p>Tăng cường bảo mật cho tài khoản của bạn bằng cách bật xác thực hai yếu tố.</p>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" id="twoFactorAuthToggle" disabled>
+                    <span class="slider round"></span>
+                </label>
+                <span style="margin-left: 10px;">Kích hoạt 2FA</span>
+            </div>
+            <p class="text-muted">Lưu ý: Tính năng này đang được phát triển và sẽ sớm được cập nhật.</p>
+        </section>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-hide messages after 5 seconds
+    const alerts = document.querySelectorAll('.alert-dismissible');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            const closeButton = alert.querySelector('.close-alert-btn');
+            if (closeButton) {
+                const bootstrapCloseButton = alert.querySelector('button[data-dismiss="alert"]');
+                if (bootstrapCloseButton) {
+                    bootstrapCloseButton.click();
+                } else {
+                    closeButton.click();
+                }
+            } else {
+                alert.style.display = 'none';
+            }
+        }, 5000); 
+
+        const customCloseButton = alert.querySelector('.close-alert-btn');
+        if (customCloseButton) {
+            customCloseButton.addEventListener('click', function() {
+                alert.style.display = 'none';
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

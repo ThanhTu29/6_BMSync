@@ -1,0 +1,220 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - BMSync{% endblock %}
+
+{% block extra_head %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .quick-stat-link {
+            text-decoration: none;
+            color: inherit;
+            display: block; /* Makes the entire area of the quick-stat clickable */
+        }
+        .quick-stat-link:hover .quick-stat {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+        .chart-placeholder {
+            height: 300px; /* Ensure charts have a defined height */
+            position: relative; /* Needed for Chart.js responsiveness */
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <!-- Hàng 1: Chào mừng & Thông tin nhanh -->
+    <section class="dashboard-section welcome-section">
+        <h2>Thông tin nhanh</h2>
+        <div class="welcome-admin">
+            <p>Xin chào, <strong>{{ user.username|default:'Admin' }}</strong>!</p>
+            <p>Đăng nhập gần nhất: <span id="last-login-time">{{ last_login_time|default:"N/A" }}</span></p>
+        </div>
+        <div class="quick-stats-container">
+            <a href="{% url 'admin_quan_ly_thiet_bi' %}" class="quick-stat-link">
+                <div class="quick-stat">
+                    <i class="fas fa-hdd"></i>
+                    <p>Tổng số thiết bị</p>
+                    <span>{{ total_devices|default:0 }}</span>
+                </div>
+            </a>
+            <a href="{% url 'admin_quan_ly_thiet_bi' %}?status=inactive" class="quick-stat-link">
+                <div class="quick-stat warning">
+                    <i class="fas fa-tools"></i>
+                    <p>Thiết bị hỏng</p>
+                    <span>{{ broken_devices|default:0 }}</span>
+                </div>
+            </a>
+            <a href="{% url 'admin_quan_ly_thiet_bi' %}?status=maintenance" class="quick-stat-link">
+                <div class="quick-stat info">
+                    <i class="fas fa-wrench"></i>
+                    <p>Đang bảo trì</p>
+                    <span>{{ maintenance_devices|default:0 }}</span>
+                </div>
+            </a>
+            <a href="{% url 'admin_phieu_muon_bao_tri' %}" class="quick-stat-link">
+                <div class="quick-stat upcoming">
+                    <i class="fas fa-calendar-alt"></i>
+                    <p>Sắp tới hạn bảo trì</p>
+                    <span>{{ upcoming_maintenances_count|default:0 }}</span>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <!-- Hàng 1: Biểu đồ -->
+    <section class="dashboard-section charts-section">
+        <h2>Biểu đồ</h2>
+        <div class="charts-container">
+            <div class="chart-item">
+                <h3>Yêu cầu bảo trì (Theo thời gian)</h3>
+                <div class="chart-placeholder">
+                    <canvas id="maintenance-requests-chart"></canvas>
+                </div>
+            </div>
+            <div class="chart-item">
+                <h3>Phân bố thiết bị (Theo tình trạng)</h3>
+                <div class="chart-placeholder">
+                    <canvas id="device-status-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Hàng 2: Cảnh báo -->
+    <section class="dashboard-section alerts-section">
+        <h2>Cảnh báo</h2>
+        <div class="alerts-list">
+            <h3><i class="fas fa-bell"></i> Cảnh báo nổi bật</h3>
+            <ul id="admin-alerts">
+                {% if pending_maintenance_requests or critical_devices_alert %}
+                    {% for req in pending_maintenance_requests %}
+                        <li>
+                            <i class="fas fa-exclamation-triangle alert-icon warning"></i>
+                            Yêu cầu bảo trì <a href="{% url 'admin_chi_tiet_phieu_bao_tri' req.id %}">#{{ req.id }}</a> ({{req.device.name|default:'N/A'}}) đang {{ req.get_status_display }}.
+                            <span class="alert-meta">Tạo lúc: {% if req.created_at %}{{ req.created_at|date:"H:i d/m/Y" }}{% else %}N/A{% endif %}</span>
+                        </li>
+                    {% endfor %}
+                    {% for device in critical_devices_alert %}
+                        <li>
+                            <i class="fas fa-tools alert-icon critical"></i>
+                            Thiết bị <a href="{% url 'admin_chi_tiet_thiet_bi' device.id %}">#{{ device.device_id }} ({{ device.name }})</a> đang bị Hỏng.
+                            <span class="alert-meta">Cập nhật: {% if device.last_updated %}{{ device.last_updated|date:"H:i d/m/Y" }}{% else %}N/A{% endif %}</span>
+                        </li>
+                    {% endfor %}
+                {% else %}
+                    <li>Không có cảnh báo nào.</li>
+                {% endif %}
+            </ul>
+        </div>
+    </section>
+
+    <!-- Hàng 2: Lối tắt nhanh -->
+    <section class="dashboard-section quick-shortcuts-section">
+        <h2>Lối tắt nhanh</h2>
+        <div class="shortcuts-container">
+            <a href="{% url 'admin_quan_ly_thiet_bi' %}?action=add" class="shortcut-button primary-action"><i class="fas fa-plus-circle"></i> Tạo thiết bị mới</a>
+            <a href="{% url 'admin_phieu_muon_bao_tri' %}?action=add" class="shortcut-button secondary-action"><i class="fas fa-tools"></i> Tạo yêu cầu bảo trì</a>
+            <a href="{% url 'admin_quan_ly_nguoi_dung' %}?action=add" class="shortcut-button tertiary-action"><i class="fas fa-user-plus"></i> Thêm người dùng</a>
+            <a href="{% url 'admin_tong_hop_bao_cao' %}" class="shortcut-link"><i class="fas fa-file-alt"></i> Xem báo cáo chi tiết</a>
+        </div>
+    </section>
+
+</div>
+{{ maintenance_requests_by_month_labels|json_script:"mrc-labels" }}
+{{ maintenance_requests_by_month_data|json_script:"mrc-data" }}
+{{ device_status_labels|json_script:"dsc-labels" }}
+{{ device_status_data|json_script:"dsc-data" }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Biểu đồ Yêu cầu bảo trì
+    const mrcLabels = JSON.parse(document.getElementById('mrc-labels').textContent || '[]');
+    const mrcData = JSON.parse(document.getElementById('mrc-data').textContent || '[]');
+    const maintenanceRequestsCtx = document.getElementById('maintenance-requests-chart').getContext('2d');
+    if (mrcLabels.length > 0 && mrcData.length > 0) {
+        new Chart(maintenanceRequestsCtx, {
+            type: 'line',
+            data: {
+                labels: mrcLabels,
+                datasets: [{
+                    label: 'Yêu cầu bảo trì',
+                    data: mrcData,
+                    borderColor: 'rgb(54, 162, 235)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    tension: 0.1,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { 
+                            stepSize: 1 // Hoặc một giá trị phù hợp nếu số lượng lớn
+                        }
+                    }
+                }
+            }
+        });
+    } else {
+        maintenanceRequestsCtx.font = "16px Arial";
+        maintenanceRequestsCtx.textAlign = "center";
+        maintenanceRequestsCtx.fillText("Không có dữ liệu yêu cầu bảo trì", maintenanceRequestsCtx.canvas.width/2, maintenanceRequestsCtx.canvas.height/2);
+    }
+
+    // Biểu đồ Phân bổ thiết bị
+    const dscLabels = JSON.parse(document.getElementById('dsc-labels').textContent || '[]');
+    const dscData = JSON.parse(document.getElementById('dsc-data').textContent || '[]');
+    const deviceStatusCtx = document.getElementById('device-status-chart').getContext('2d');
+    if (dscLabels.length > 0 && dscData.length > 0) {
+        new Chart(deviceStatusCtx, {
+            type: 'bar',
+            data: {
+                labels: dscLabels,
+                datasets: [{
+                    label: 'Số lượng thiết bị',
+                    data: dscData,
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(255, 205, 86, 0.6)',
+                        'rgba(255, 99, 132, 0.6)',
+                        'rgba(54, 162, 235, 0.6)',
+                        'rgba(153, 102, 255, 0.6)',
+                        'rgba(201, 203, 207, 0.6)'
+                    ],
+                    borderColor: [
+                        'rgb(75, 192, 192)',
+                        'rgb(255, 205, 86)',
+                        'rgb(255, 99, 132)',
+                        'rgb(54, 162, 235)',
+                        'rgb(153, 102, 255)',
+                        'rgb(201, 203, 207)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { 
+                            stepSize: 5 // Điều chỉnh cho phù hợp với dữ liệu
+                        }
+                    }
+                }
+            }
+        });
+    } else {
+        deviceStatusCtx.font = "16px Arial";
+        deviceStatusCtx.textAlign = "center";
+        deviceStatusCtx.fillText("Không có dữ liệu tình trạng thiết bị", deviceStatusCtx.canvas.width/2, deviceStatusCtx.canvas.height/2);
+    }
+});
+</script>
+{% endblock %}

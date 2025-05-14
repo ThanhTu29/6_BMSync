@@ -1,0 +1,341 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}Quản lý Thiết bị - BMSync Admin{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <h1 class="admin-page-title">Quản lý Thiết bị</h1>
+
+    {% if messages %}
+    <div class="messages-container" style="position: fixed; top: 70px; right: 20px; z-index: 1050; width: auto; max-width: 400px;">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" style="margin-bottom: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close" style="padding: 0.5rem 1rem; background: transparent; border: 0; float: right; font-size: 1.25rem; line-height: 1; color: #000; text-shadow: 0 1px 0 #fff; opacity: .5; position: absolute; top: 5px; right: 5px;">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="admin-content-header">
+        <form method="GET" action="{% url 'admin_quan_ly_thiet_bi' %}" class="search-filter-container" id="filterForm">
+            <input type="text" name="q" id="searchInput" class="search-input" placeholder="Tìm kiếm thiết bị..." value="{{ current_query }}">
+            <select name="status" id="statusFilter" class="filter-select" onchange="this.form.submit()">
+                <option value="all" {% if current_status == 'all' %}selected{% endif %}>Tất cả trạng thái</option>
+                {% for value, display_name in status_choices %}
+                    <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>{{ display_name }}</option>
+                {% endfor %}
+            </select>
+            <select name="type" id="typeFilter" class="filter-select" onchange="this.form.submit()">
+                <option value="all" {% if current_type == 'all' %}selected{% endif %}>Tất cả loại</option>
+                {% for value, display_name in type_choices %}
+                    <option value="{{ value }}" {% if current_type == value %}selected{% endif %}>{{ display_name }}</option>
+                {% endfor %}
+            </select>
+            <select name="items_per_page" id="itemsPerPageFilter" class="filter-select" onchange="this.form.submit()">
+                <option value="10" {% if items_per_page == 10 %}selected{% endif %}>10 mục/trang</option>
+                <option value="25" {% if items_per_page == 25 %}selected{% endif %}>25 mục/trang</option>
+                <option value="50" {% if items_per_page == 50 %}selected{% endif %}>50 mục/trang</option>
+                <option value="100" {% if items_per_page == 100 %}selected{% endif %}>100 mục/trang</option>
+            </select>
+            <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+        </form>
+        <button class="btn btn-primary" id="addDeviceBtn" style="margin-left: 10px;">Thêm mới</button>
+    </div>
+
+    <!-- Modal Thêm Thiết Bị Mới -->
+    <div id="addDeviceModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeDeviceModal">&times;</span>
+            <h2>Thêm Thiết Bị Mới</h2>
+            <form id="addDeviceForm" method="POST" action="{% url 'admin_quan_ly_thiet_bi' %}?action=add">
+                {% csrf_token %}
+                <input type="hidden" name="form_action" value="add_device">
+                <div class="form-group">
+                    <label for="deviceId">ID Thiết bị:</label>
+                    <input type="text" id="deviceId" name="device_id" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="deviceName">Tên Thiết bị:</label>
+                    <input type="text" id="deviceName" name="name" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="deviceType">Loại:</label>
+                    <select id="deviceType" name="device_type">
+                        {% for value, display_name in type_choices %}
+                            <option value="{{ value }}">{{ display_name }}</option>
+                        {% endfor %}
+                         <option value="other">Khác</option> {# Giữ lại option 'Khác' nếu cần #}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="deviceStatus">Trạng thái:</label>
+                    <select id="deviceStatus" name="status">
+                        {% for value, display_name in status_choices %}
+                            <option value="{{ value }}">{{ display_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="deviceLocation">Vị trí:</label>
+                    <input type="text" id="deviceLocation" name="location" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="purchaseDate">Ngày mua:</label>
+                    <input type="date" id="purchaseDate" name="purchase_date" autocomplete="off">
+                </div>
+                 <div class="form-group">
+                    <label for="warrantyExpiryDate">Ngày hết hạn bảo hành:</label>
+                    <input type="date" id="warrantyExpiryDate" name="warranty_expiry_date" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="description">Mô tả:</label>
+                    <textarea id="description" name="description" rows="3" autocomplete="off"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Lưu Thiết Bị</button>
+                    <button type="button" class="btn btn-secondary" id="cancelAddDevice">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Sửa Thiết Bị -->
+    <div id="editDeviceModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeEditDeviceModal">&times;</span>
+            <h2>Sửa Thiết Bị</h2>
+            <form id="editDeviceForm" method="POST" action="">
+                {% csrf_token %}
+                <input type="hidden" name="form_action" value="edit_device">
+                <div class="form-group">
+                    <label for="editDeviceId">ID Thiết bị:</label>
+                    <input type="text" id="editDeviceId" name="device_id_edit" readonly autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="editDeviceName">Tên Thiết bị:</label>
+                    <input type="text" id="editDeviceName" name="name_edit" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="editDeviceType">Loại:</label>
+                    <select id="editDeviceType" name="device_type_edit" autocomplete="off">
+                        {% for value, display_name in type_choices %}
+                            <option value="{{ value }}">{{ display_name }}</option>
+                        {% endfor %}
+                         <option value="other">Khác</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editDeviceStatus">Trạng thái:</label>
+                    <select id="editDeviceStatus" name="status_edit" autocomplete="off">
+                        {% for value, display_name in status_choices %}
+                            <option value="{{ value }}">{{ display_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editDeviceLocation">Vị trí:</label>
+                    <input type="text" id="editDeviceLocation" name="location_edit" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="editPurchaseDate">Ngày mua:</label>
+                    <input type="date" id="editPurchaseDate" name="purchase_date_edit" autocomplete="off">
+                </div>
+                 <div class="form-group">
+                    <label for="editWarrantyExpiryDate">Ngày hết hạn bảo hành:</label>
+                    <input type="date" id="editWarrantyExpiryDate" name="warranty_expiry_date_edit" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="editDescription">Mô tả:</label>
+                    <textarea id="editDescription" name="description_edit" rows="3" autocomplete="off"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button>
+                    <button type="button" class="btn btn-secondary" id="cancelEditDevice">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="admin-table-container">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID Thiết bị</th>
+                    <th>Tên Thiết bị</th>
+                    <th>Loại</th>
+                    <th>Trạng thái</th>
+                    <th>Vị trí</th>
+                    <th>Ngày mua</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for device in devices %}
+                <tr>
+                    <td>{{ device.device_id }}</td>
+                    <td>{{ device.name }}</td>
+                    <td>{{ device.get_device_type_display }}</td>
+                    <td><span class="status-badge status-{{ device.status }}">{{ device.get_status_display }}</span></td>
+                    <td>{{ device.location|default:"N/A" }}</td>
+                    <td>{{ device.purchase_date|date:"Y-m-d"|default:"N/A" }}</td>
+                    <td>
+                        <button class="btn-action btn-edit btn-success" 
+                                data-id="{{ device.id }}" 
+                                data-device-id-val="{{ device.device_id }}"
+                                data-name="{{ device.name }}" 
+                                data-type="{{ device.device_type }}" 
+                                data-status="{{ device.status }}" 
+                                data-location="{{ device.location|default_if_none:'' }}" 
+                                data-purchase-date="{{ device.purchase_date|date:'Y-m-d'|default_if_none:'' }}" 
+                                data-warranty-date="{{ device.warranty_expiry_date|date:'Y-m-d'|default_if_none:'' }}" 
+                                data-description="{{ device.description|default_if_none:'' }}">
+                            <i class="fas fa-edit"></i> Sửa
+                        </button>
+                        <form method="POST" action="{% url 'admin_xoa_thiet_bi' device.id %}" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa thiết bị này không?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-action btn-delete btn-danger"><i class="fas fa-trash"></i> Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center;">Không có thiết bị nào.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination-container">
+        {% if devices.has_previous %}
+            <a href="?page=1&q={{ current_query }}&status={{ current_status }}&type={{ current_type }}&items_per_page={{ items_per_page }}" class="page-link">&laquo; Đầu</a>
+            <a href="?page={{ devices.previous_page_number }}&q={{ current_query }}&status={{ current_status }}&type={{ current_type }}&items_per_page={{ items_per_page }}" class="page-link">Trước</a>
+        {% endif %}
+
+        {% for num in devices.paginator.page_range %}
+            {% if devices.number == num %}
+                <span class="page-link active">{{ num }}</span>
+            {% elif num > devices.number|add:'-3' and num < devices.number|add:'3' %}
+                <a href="?page={{ num }}&q={{ current_query }}&status={{ current_status }}&type={{ current_type }}&items_per_page={{ items_per_page }}" class="page-link">{{ num }}</a>
+            {% elif num == 1 %}
+                <a href="?page={{ num }}&q={{ current_query }}&status={{ current_status }}&type={{ current_type }}&items_per_page={{ items_per_page }}" class="page-link">{{ num }}</a>
+                {% if devices.number > 4 %}
+                    <span class="page-link">...</span>
+                {% endif %}
+            {% elif num == devices.paginator.num_pages %}
+                {% if devices.number < devices.paginator.num_pages|add:'-3' %}
+                    <span class="page-link">...</span>
+                {% endif %}
+                <a href="?page={{ num }}&q={{ current_query }}&status={{ current_status }}&type={{ current_type }}&items_per_page={{ items_per_page }}" class="page-link">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if devices.has_next %}
+            <a href="?page={{ devices.next_page_number }}&q={{ current_query }}&status={{ current_status }}&type={{ current_type }}&items_per_page={{ items_per_page }}" class="page-link">Sau</a>
+            <a href="?page={{ devices.paginator.num_pages }}&q={{ current_query }}&status={{ current_status }}&type={{ current_type }}&items_per_page={{ items_per_page }}" class="page-link">Cuối &raquo;</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Existing JavaScript code for this page (if any)
+
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            if (this.value === '') {
+                // Xóa tham số 'q' khỏi URL và submit form để tải lại
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.delete('q');
+                // Thay vì reload, chúng ta submit form để giữ lại các filter khác nếu có
+                // window.location.href = currentUrl.toString(); 
+                document.getElementById('filterForm').submit(); 
+            }
+        });
+    }
+
+    // Add other JavaScript functionalities for admin_quan_ly_thiet_bi.html here
+    // For example, handling the 'Thêm mới' button if it opens a modal
+    const addDeviceBtn = document.getElementById('addDeviceBtn'); // Assuming you have a button with this ID
+    const addDeviceModal = document.getElementById('addDeviceModal'); // Assuming you have a modal with this ID
+    const closeDeviceModal = document.getElementById('closeDeviceModal'); // Assuming a close button for the modal
+    const cancelAddDevice = document.getElementById('cancelAddDevice'); // Assuming a cancel button in the modal form
+
+    if (addDeviceBtn && addDeviceModal) {
+        addDeviceBtn.addEventListener('click', function() {
+            addDeviceModal.style.display = 'block';
+        });
+    }
+
+    if (closeDeviceModal && addDeviceModal) {
+        closeDeviceModal.addEventListener('click', function() {
+            addDeviceModal.style.display = 'none';
+        });
+    }
+
+    if (cancelAddDevice && addDeviceModal) {
+        cancelAddDevice.addEventListener('click', function() {
+            addDeviceModal.style.display = 'none';
+        });
+    }
+
+    // Close modal if clicked outside of it
+    window.addEventListener('click', function(event) {
+        if (event.target == addDeviceModal) {
+            addDeviceModal.style.display = 'none';
+        }
+    });
+
+    // Handle edit device functionality
+    const editDeviceButtons = document.querySelectorAll('.btn-edit'); // Corrected selector
+    const editDeviceModal = document.getElementById('editDeviceModal');
+    const closeEditDeviceModal = document.getElementById('closeEditDeviceModal');
+    const cancelEditDevice = document.getElementById('cancelEditDevice');
+    const editDeviceForm = document.getElementById('editDeviceForm');
+
+    if (editDeviceButtons && editDeviceModal && editDeviceForm) {
+        editDeviceButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Populate form with device data from data-* attributes
+                document.getElementById('editDeviceId').value = this.dataset.deviceIdVal; // Corrected data attribute
+                document.getElementById('editDeviceName').value = this.dataset.name; // Corrected data attribute
+                document.getElementById('editDeviceType').value = this.dataset.type; // Corrected data attribute
+                document.getElementById('editDeviceStatus').value = this.dataset.status; // Corrected data attribute
+                document.getElementById('editDeviceLocation').value = this.dataset.location;
+                document.getElementById('editPurchaseDate').value = this.dataset.purchaseDate; // Corrected data attribute
+                document.getElementById('editWarrantyExpiryDate').value = this.dataset.warrantyDate; // Corrected ID and data attribute
+                document.getElementById('editDescription').value = this.dataset.description;
+                // Update form action URL using device.id (PK)
+                editDeviceForm.action = `/admin/sua-thiet-bi/${this.dataset.id}/`; // Corrected to use PK from data-id
+                editDeviceModal.style.display = 'block';
+            });
+        });
+
+        if (closeEditDeviceModal) {
+            closeEditDeviceModal.addEventListener('click', function() {
+                editDeviceModal.style.display = 'none';
+            });
+        }
+
+        if (cancelEditDevice) {
+            cancelEditDevice.addEventListener('click', function() {
+                editDeviceModal.style.display = 'none';
+            });
+        }
+
+        window.addEventListener('click', function(event) {
+            if (event.target == editDeviceModal) {
+                editDeviceModal.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

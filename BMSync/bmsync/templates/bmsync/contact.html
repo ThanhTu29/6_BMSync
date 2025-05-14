@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Thông tin liên hệ - BMSync{% endblock %}
+
+{% block content %}
+<div class="container site-content">
+    <h1>Thông tin liên hệ</h1>
+    <p>Nếu bạn có bất kỳ câu hỏi hoặc cần hỗ trợ, vui lòng liên hệ với chúng tôi qua các kênh sau:</p>
+    <ul>
+        <li><strong>Email:</strong> support@bmsync.com</li>
+        <li><strong>Điện thoại:</strong> (028) 1234 5678</li>
+        <li><strong>Địa chỉ:</strong> 123 Đường ABC, Quận XYZ, Thành phố HCM</li>
+    </ul>
+    <p>Hoặc bạn có thể điền vào biểu mẫu liên hệ dưới đây:</p>
+    <!-- Thêm biểu mẫu liên hệ tại đây nếu cần -->
+    <p><a href="{% url 'home' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Quay lại trang chủ</a></p>
+</div>
+{% endblock %}

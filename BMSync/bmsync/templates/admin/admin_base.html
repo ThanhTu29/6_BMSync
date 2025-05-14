@@ -1,0 +1,272 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Dashboard - BMSync{% endblock %}</title>
+    <script src="{% static 'js/theme.js' %}"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/admin_style.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="admin-body">
+    <div class="admin-wrapper">
+        <header class="admin-header">
+            <div class="admin-container">
+                <a href="{% url 'admin_dashboard' %}" class="admin-logo">BMSync Admin</a>
+                <nav class="admin-main-nav">
+                    <!-- Các mục điều hướng sẽ được đặt ở đây theo thứ tự mới -->
+                    <a href="{% url 'admin_quan_ly_thiet_bi' %}" class="nav-link">Quản lý Thiết bị</a>
+                    <a href="{% url 'admin_quan_ly_nguoi_dung' %}" class="nav-link">Quản lý Người dùng</a>
+                    <a href="{% url 'admin_phieu_muon_bao_tri' %}" class="nav-link">Phiếu mượn/Yêu cầu bảo trì</a>
+                    <a href="{% url 'admin_ho_tro' %}" class="nav-link">Hỗ trợ</a>
+                    <!-- Tổng quan có thể là trang chủ, sẽ xem xét lại nếu cần -->
+                </nav>
+                <div class="admin-user-menu">
+                    <div class="user-avatar-container">
+                        <button id="user-menu-toggle" class="user-avatar-button">
+                            <span class="user-initial">{{ user.username|first|upper|default:'A' }}</span>
+                        </button>
+                        <div id="user-dropdown-menu" class="user-dropdown">
+                            <div class="dropdown-header">
+                                <p class="username">{{ user.username|default:'Admin User' }}</p>
+                                <p class="email">{{ user.email|default:'admin@example.com' }}</p>
+                            </div>
+                            <a href="{% url 'user_notifications' %}" class="dropdown-item">
+                                Thông báo {% if unread_notifications_count > 0 %}<span class="badge" style="background-color: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.75em; vertical-align: super;">{{ unread_notifications_count }}</span>{% endif %}
+                            </a>
+                            <a href="{% url 'account_info' %}" class="dropdown-item">Tài khoản</a> 
+                            <a href="{% url 'logout' %}" class="dropdown-item">Đăng xuất</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="admin-body-content-wrapper has-sidebar"> <!-- Wrapper for sidebar and main content, added class for styling -->
+            <aside class="admin-sidebar expanded-sidebar"> <!-- Added class for styling -->
+                <div class="sidebar-header">
+                    <a href="{% url 'admin_dashboard' %}" class="admin-logo-sidebar">BMSync</a>
+                </div>
+                <nav class="admin-sidebar-nav">
+                    <ul class="sidebar-nav">
+                        <li><a href="{% url 'admin_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}"><i class="fas fa-home"></i> <span>TRANG CHỦ</span></a></li>
+                        <li><a href="{% url 'admin_quan_ly_thiet_bi' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_quan_ly_thiet_bi' %}active{% endif %}"><i class="fas fa-cogs"></i> <span>QUẢN LÝ THIẾT BỊ</span></a></li>
+                        <li><a href="{% url 'admin_quan_ly_nguoi_dung' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_quan_ly_nguoi_dung' %}active{% endif %}"><i class="fas fa-users"></i> <span>QUẢN LÝ NGƯỜI DÙNG</span></a></li>
+                        <li><a href="{% url 'admin_phieu_muon_bao_tri' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_phieu_muon_bao_tri' %}active{% endif %}"><i class="fas fa-file-invoice"></i> <span>PHIẾU MƯỢN / YÊU CẦU BẢO TRÌ</span></a></li>
+                        <li><a href="{% url 'admin_tong_hop_bao_cao' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_tong_hop_bao_cao' %}active{% endif %}"><i class="fas fa-chart-pie"></i> <span>TỔNG HỢP BÁO CÁO</span></a></li>
+                        <li><a href="{% url 'admin_chatbot' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_chatbot' %}active{% endif %}"><i class="fas fa-robot"></i> <span>CHATBOT</span></a></li>
+                        <li><a href="{% url 'admin_thong_bao' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_thong_bao' %}active{% endif %}"><i class="fas fa-bell"></i> <span>THÔNG BÁO</span></a></li>
+                        <li><a href="{% url 'admin_bao_mat' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_bao_mat' %}active{% endif %}"><i class="fas fa-shield-alt"></i> <span>BẢO MẬT</span></a></li>
+                        <li><a href="{% url 'admin_cai_dat' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_cai_dat' %}active{% endif %}"><i class="fas fa-tools"></i> <span>CÀI ĐẶT</span></a></li>
+                    </ul>
+                </nav>
+                <div class="sidebar-footer">
+                    <p>Version 1.0.0</p>
+                </div>
+            </aside>
+        <main class="admin-main-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <footer class="admin-footer">
+        <div class="admin-container">
+            <div class="footer-grid">
+                <div class="footer-column">
+                    <h4>BMSync</h4>
+                    <ul>
+                        <li><a href="#">Về chúng tôi</a></li>
+                        <li><a href="#">Sự nghiệp</a></li>
+                        <li><a href="#">Liên hệ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Sản phẩm</h4>
+                    <ul>
+                        <li><a href="#">Dịch vụ</a></li>
+                        <li><a href="#">Tính năng</a></li>
+                        <li><a href="#">Gói cước</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Hỗ trợ</h4>
+                    <ul>
+                        <li><a href="#">Trung tâm trợ giúp</a></li>
+                        <li><a href="#">Điều khoản dịch vụ</a></li>
+                        <li><a href="#">Chính sách bảo mật</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Theo dõi chúng tôi</h4>
+                    <div class="social-icons">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-copyright">
+                <p>&copy; {% now "Y" %} BMSync. All rights reserved. Phát triển bởi Nhóm 6.</p>
+            </div>
+        </div>
+    </footer>
+</div> <!-- admin-wrapper -->
+
+<!-- Chatbot Container -->
+<div id="chatbot-container" class="chatbot-container">
+    <div id="chatbot-icon" class="chatbot-icon">
+        <i class="fas fa-comment-dots"></i>
+    </div>
+    <div id="chatbot-window" class="chatbot-window">
+        <div class="chatbot-header">
+            <span>BMSync Assistant</span>
+            <div class="chatbot-header-actions">
+                <button id="new-chat-btn" class="chatbot-action-btn" title="Cuộc trò chuyện mới">
+                    <i class="fas fa-plus-square"></i>
+                </button>
+                <button id="close-chatbot" class="close-chatbot-btn chatbot-action-btn" title="Đóng Chatbot">&times;</button>
+            </div>
+        </div>
+        <div class="chatbot-history-sidebar" id="chatbot-history-sidebar">
+            <div class="new-chat-button-container">
+                 <button id="create-new-chat-sidebar-btn" class="new-chat-sidebar-btn">
+                    <i class="fas fa-plus"></i> Tạo cuộc trò chuyện mới
+                </button>
+            </div>
+            <ul id="chat-history-list">
+                <!-- Chat history items will be appended here -->
+                <!-- Example: <li class="chat-history-item" data-chat-id="1">Chat 1 - 2023-10-27</li> -->
+            </ul>
+        </div>
+        <div class="chatbot-main-content">
+            <div class="chatbot-messages" id="chatbot-messages">
+                <!-- Messages will be appended here -->
+                <div class="message bot-message">
+                    <p>Xin chào! Tôi có thể giúp gì cho bạn?</p>
+                </div>
+            </div>
+            <div class="chatbot-input-area">
+                <textarea id="chatbot-input-field" placeholder="Nhập tin nhắn của bạn ở đây..."></textarea>
+                <button id="chatbot-send-btn" class="chatbot-send-btn" title="Gửi">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const userMenuToggle = document.getElementById('user-menu-toggle');
+    const userDropdownMenu = document.getElementById('user-dropdown-menu');
+
+    if (userMenuToggle && userDropdownMenu) {
+        userMenuToggle.addEventListener('click', function(event) {
+            event.stopPropagation(); // Ngăn sự kiện click lan ra ngoài
+            userDropdownMenu.classList.toggle('show');
+        });
+
+        // Đóng dropdown nếu click ra ngoài
+        document.addEventListener('click', function(event) {
+            if (userDropdownMenu.classList.contains('show') && !userMenuToggle.contains(event.target) && !userDropdownMenu.contains(event.target)) {
+                userDropdownMenu.classList.remove('show');
+            }
+        });
+    }
+
+    // Active link in sidebar based on current URL
+    const currentPath = window.location.pathname;
+    const sidebarLinks = document.querySelectorAll('.admin-sidebar .nav-link');
+    sidebarLinks.forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+            link.classList.add('active');
+        }
+    });
+
+    // Active link in header nav (excluding user menu items)
+    const headerLinks = document.querySelectorAll('.admin-main-nav > a.nav-link');
+     headerLinks.forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+            link.classList.add('active');
+        }
+    });
+});
+</script>
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatbotIcon = document.getElementById('chatbot-icon');
+    const chatbotWindow = document.getElementById('chatbot-window');
+    const closeChatbotBtn = document.getElementById('close-chatbot');
+    const chatbotInputField = document.getElementById('chatbot-input-field');
+    const chatbotSendBtn = document.getElementById('chatbot-send-btn');
+    const chatbotMessages = document.getElementById('chatbot-messages');
+
+    if (chatbotIcon) {
+        chatbotIcon.addEventListener('click', function() {
+            chatbotWindow.classList.toggle('open');
+            chatbotIcon.classList.toggle('open');
+        });
+    }
+
+    if (closeChatbotBtn) {
+        closeChatbotBtn.addEventListener('click', function() {
+            chatbotWindow.classList.remove('open');
+            chatbotIcon.classList.remove('open');
+        });
+    }
+
+    function addMessage(message, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', sender + '-message');
+        const p = document.createElement('p');
+        p.textContent = message;
+        messageDiv.appendChild(p);
+        chatbotMessages.appendChild(messageDiv);
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight; // Auto-scroll to bottom
+    }
+
+    function handleUserInput() {
+        const messageText = chatbotInputField.value.trim();
+        if (messageText === '') return;
+
+        addMessage(messageText, 'user');
+        chatbotInputField.value = '';
+
+        // Simulate bot response (replace with actual API call)
+        setTimeout(() => {
+            // Basic keyword detection for demo
+            let botResponse = "Xin lỗi, tôi chưa hiểu ý bạn. Bạn có thể hỏi về quản lý thiết bị, người dùng, hoặc phiếu mượn.";
+            if (messageText.toLowerCase().includes("thiết bị")) {
+                botResponse = "Bạn muốn biết thông tin gì về thiết bị? (ví dụ: 'có bao nhiêu thiết bị hỏng?', 'thêm thiết bị mới')";
+            } else if (messageText.toLowerCase().includes("người dùng")) {
+                botResponse = "Bạn muốn quản lý người dùng như thế nào? (ví dụ: 'thêm người dùng mới', 'xem danh sách người dùng')";
+            } else if (messageText.toLowerCase().includes("phiếu mượn") || messageText.toLowerCase().includes("bảo trì")) {
+                botResponse = "Bạn cần hỗ trợ gì về phiếu mượn hoặc yêu cầu bảo trì? (ví dụ: 'tạo phiếu mượn mới', 'xem các yêu cầu đang chờ xử lý')";
+            }
+            addMessage(botResponse, 'bot');
+        }, 1000);
+    }
+
+    if (chatbotSendBtn) {
+        chatbotSendBtn.addEventListener('click', handleUserInput);
+    }
+
+    if (chatbotInputField) {
+        chatbotInputField.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                handleUserInput();
+            }
+        });
+    }
+
+});
+</script>
+{% endblock %}
+</body>
+</html>

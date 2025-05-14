@@ -1,0 +1,432 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}Phiếu mượn/Yêu cầu bảo trì - BMSync Admin{% endblock title %}
+
+
+{% block content %}
+<div class="admin-container">
+    <h1 class="admin-page-title">Phiếu mượn / Yêu cầu bảo trì</h1>
+
+    <div class="admin-content-header">
+        <form method="GET" action="{% url 'admin_phieu_muon_bao_tri' %}" class="search-filter-container" id="filterForm">
+            <input type="text" name="q" id="searchRequestInput" class="search-input" placeholder="Tìm kiếm yêu cầu..." value="{{ current_query }}">
+            <select name="status" id="requestStatusFilter" class="filter-select" onchange="this.form.submit()">
+                <option value="all" {% if current_status == 'all' %}selected{% endif %}>Tất cả trạng thái</option>
+                {% for status_val, status_display in status_choices %}
+                    <option value="{{ status_val }}" {% if current_status == status_val %}selected{% endif %}>{{ status_display }}</option>
+                {% endfor %}
+            </select>
+            <select name="items_per_page" id="itemsPerPageFilter" class="filter-select" onchange="this.form.submit()">
+                <option value="10" {% if items_per_page == 10 %}selected{% endif %}>10 mục/trang</option>
+                <option value="25" {% if items_per_page == 25 %}selected{% endif %}>25 mục/trang</option>
+                <option value="50" {% if items_per_page == 50 %}selected{% endif %}>50 mục/trang</option>
+                <option value="100" {% if items_per_page == 100 %}selected{% endif %}>100 mục/trang</option>
+            </select>
+            <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+        </form>
+        <button class="btn btn-primary" id="addRequestBtn" type="button" style="margin-left: 10px;">Thêm mới Yêu cầu</button>
+    </div>
+    {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="admin-table-container">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID Yêu cầu</th>
+                    <th>Thiết bị</th>
+                    <th>Vị trí</th>
+                    <th>Công việc</th>
+                    <th>Mô tả</th>
+                    <th>Người báo cáo</th>
+                    <th>Ngày báo cáo</th>
+                    <th>NHÂN VIÊN BẢO TRÌ</th>
+                    <th>NGÀY BẢO TRÌ</th>
+                    <th>Trạng thái</th>
+                    <th>Thông báo</th> {# Added Notification Header #}
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in maintenance_requests %}
+                <tr>
+                    <td>{{ req.request_id }}</td>
+                    <td>{{ req.device.name|default:"N/A" }} ({{ req.device.device_id|default:"N/A" }})</td>
+                    <td>{{ req.location|default:"N/A" }}</td> {# Hiển thị Vị trí #}
+                    <td>{{ req.get_job_type_display|default:"N/A" }}</td> {# Hiển thị Công việc #}
+                    <td>{{ req.description|truncatewords:15 }}</td>
+                    <td>{{ req.reported_by.username|default:"N/A" }}</td>
+                    <td>{{ req.report_date|date:"d/m/Y H:i" }}</td>
+                    <td>{{ req.assigned_to.username|default:"Chưa giao" }}</td>
+                    <td>{{ req.maintenance_date|date:"d/m/Y"|default:"N/A" }}</td>
+                    <td><span class="status-badge status-{{ req.status }}">{{ req.get_status_display }}</span></td>
+                    <td>
+                        {% if req.notification_status == 'sent' %}
+                            <button type="button" class="btn-action btn-success" disabled><i class="fas fa-check-circle"></i> Đã gửi</button>
+                        {% else %}
+                            <form action="{% url 'send_maintenance_notification' req.request_id %}" method="POST" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-action btn-primary" title="Gửi thông báo"><i class="fas fa-paper-plane"></i> Gửi</button>
+                            </form>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button type="button" class="btn-action btn-edit edit-request-btn"
+                                data-request-id="{{ req.request_id }}"
+                                data-device-id="{{ req.device.id|default:'' }}"
+                                data-location="{{ req.location|default:'' }}" {# Thêm data-location #}
+                                data-job-type="{{ req.job_type }}" {# Đổi data-request-type thành data-job-type #}
+                                data-description="{{ req.description }}"
+                                data-priority="{{ req.priority }}"
+                                data-report-date="{{ req.report_date|date:'Y-m-d'}}"
+                                data-status="{{ req.status }}"
+                                data-notes="{{ req.notes|default:'' }}"
+                                data-assigned-to="{{ req.assigned_to.id|default:'' }}"
+                                data-completion-date="{{ req.completion_date|date:'Y-m-d'|default:'' }}"
+                                title="Sửa"
+                                {% if req.notification_status == 'sent' %}disabled{% endif %}>
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <form action="{% url 'admin_xoa_phieu_muon_bao_tri' req.request_id %}" method="POST" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa yêu cầu này không?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-action btn-delete btn-danger" title="Xóa" {% if req.notification_status == 'sent' %}disabled{% endif %}><i class="fas fa-trash"></i></button>
+                        </form>
+                        <!-- <button class="btn-action btn-view"><i class="fas fa-eye"></i></button> -->
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="12" class="text-center">Không có yêu cầu nào.</td> {# Adjusted colspan to 12 #}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination-container">
+        {% if maintenance_requests.has_previous %}
+            <a href="?page=1&q={{ current_query }}&status={{ current_status }}&items_per_page={{ items_per_page }}" class="page-link">&laquo; Đầu</a>
+            <a href="?page={{ maintenance_requests.previous_page_number }}&q={{ current_query }}&status={{ current_status }}&items_per_page={{ items_per_page }}" class="page-link">Trước</a>
+        {% endif %}
+
+        {% for num in maintenance_requests.paginator.page_range %}
+            {% if maintenance_requests.number == num %}
+                <span class="page-link active">{{ num }}</span>
+            {% elif num > maintenance_requests.number|add:'-3' and num < maintenance_requests.number|add:'3' %}
+                <a href="?page={{ num }}&q={{ current_query }}&status={{ current_status }}&items_per_page={{ items_per_page }}" class="page-link">{{ num }}</a>
+            {% elif num == 1 %}
+                <a href="?page={{ num }}&q={{ current_query }}&status={{ current_status }}&items_per_page={{ items_per_page }}" class="page-link">{{ num }}</a>
+                {% if maintenance_requests.number > 4 %}
+                    <span class="page-link">...</span>
+                {% endif %}
+            {% elif num == maintenance_requests.paginator.num_pages %}
+                {% if maintenance_requests.number < maintenance_requests.paginator.num_pages|add:'-3' %}
+                    <span class="page-link">...</span>
+                {% endif %}
+                <a href="?page={{ num }}&q={{ current_query }}&status={{ current_status }}&items_per_page={{ items_per_page }}" class="page-link">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if maintenance_requests.has_next %}
+            <a href="?page={{ maintenance_requests.next_page_number }}&q={{ current_query }}&status={{ current_status }}&items_per_page={{ items_per_page }}" class="page-link">Sau</a>
+            <a href="?page={{ maintenance_requests.paginator.num_pages }}&q={{ current_query }}&status={{ current_status }}&items_per_page={{ items_per_page }}" class="page-link">Cuối &raquo;</a>
+        {% endif %}
+    </div>
+
+    <!-- Modal Thêm Yêu Cầu Bảo Trì Mới -->
+    <div id="addRequestModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeRequestModal">&times;</span>
+            <h2>Thêm Yêu Cầu Bảo Trì Mới</h2>
+            <form id="addRequestForm" method="POST" action="{% url 'admin_them_phieu_muon_bao_tri' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="requestDeviceId">Thiết bị:</label>
+                    <select id="requestDeviceId" name="device_id" class="form-control">
+                        <option value="">Chọn thiết bị (nếu có)</option>
+                        {% for dev in devices %}
+                        <option value="{{ dev.id }}">{{ dev.name }} ({{ dev.device_id }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="requestLocation">Vị trí: <span class="text-danger">*</span></label>
+                    <input type="text" id="requestLocation" name="location" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="requestJobType">Công việc: <span class="text-danger">*</span></label>
+                    <select id="requestJobType" name="job_type" class="form-control" required>
+                        {% for value, display in job_type_choices %}
+                            <option value="{{ value }}" {% if value == 'maintenance' %}selected{% endif %}>{{ display }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="problemDescription">Mô tả: <span class="text-danger">*</span></label>
+                    <textarea id="problemDescription" name="problem_description" class="form-control" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="requestPriority">Mức độ ưu tiên:</label>
+                    <select id="requestPriority" name="priority" class="form-control">
+                        <option value="3" selected>Thấp</option>
+                        <option value="2">Trung bình</option>
+                        <option value="1">Cao</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="reportedBy">Người báo cáo:</label>
+                    <input type="text" id="reportedBy" name="reported_by_display" value="{{ request.user.username|default:'Admin' }}" readonly>
+                    <input type="hidden" name="reported_by" value="{{ request.user.id }}">
+                </div>
+                <div class="form-group">
+                    <label for="reportDate">Ngày báo cáo:</label>
+                    <input type="date" id="reportDate" name="report_date" required>
+                </div>
+                <div class="form-group">
+                    <label for="addAssignedTo">NHÂN VIÊN BẢO TRÌ:</label>
+                    <select id="addAssignedTo" name="assigned_to_user_id" class="form-control">
+                        <option value="">Chưa giao</option>
+                        {% for staff in maintenance_staff_list %}
+                        <option value="{{ staff.id }}">{{ staff.username }} ({{ staff.first_name|default:'' }} {{ staff.last_name|default:'' }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="addNotes">Ghi chú:</label>
+                    <textarea id="addNotes" name="notes" rows="3" class="form-control"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Lưu Yêu Cầu</button>
+                    <button type="button" class="btn btn-secondary" id="cancelAddRequest">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Sửa Yêu Cầu Bảo Trì -->
+    <div id="editRequestModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeEditModal">&times;</span>
+            <h2>Sửa Yêu Cầu Bảo Trì #<span id="editRequestIdDisplay"></span></h2>
+            <form id="editRequestForm" method="POST"> <!-- Action will be set by JS -->
+                {% csrf_token %}
+                <input type="hidden" name="request_id_edit" id="editRequestIdInput">
+
+                <div class="form-group">
+                    <label for="editDeviceId">Thiết bị:</label>
+                    <select id="editDeviceId" name="device_id_edit" class="form-control">
+                        <option value="">Chọn thiết bị (nếu có)</option>
+                        {% for dev in devices %}
+                        <option value="{{ dev.id }}">{{ dev.name }} ({{ dev.device_id }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editLocation">Vị trí: <span class="text-danger">*</span></label>
+                    <input type="text" id="editLocation" name="location_edit" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="editJobType">Công việc: <span class="text-danger">*</span></label>
+                    <select id="editJobType" name="job_type_edit" class="form-control" required>
+                        {% for value, display in job_type_choices %}
+                            <option value="{{ value }}">{{ display }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editProblemDescription">Mô tả: <span class="text-danger">*</span></label>
+                    <textarea id="editProblemDescription" name="problem_description_edit" class="form-control" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editPriority">Mức độ ưu tiên:</label>
+                    <select id="editPriority" name="priority_edit" class="form-control">
+                        <option value="3">Thấp</option>
+                        <option value="2">Trung bình</option>
+                        <option value="1">Cao</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editReportDate">Ngày báo cáo:</label>
+                    <input type="date" id="editReportDate" name="report_date_edit" required>
+                </div>
+                <div class="form-group">
+                    <label for="editStatus">Trạng thái:</label>
+                    <select id="editStatus" name="status_edit" class="form-control">
+                        {% for status_val, status_display in status_choices %}
+                            <option value="{{ status_val }}">{{ status_display }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editAssignedTo">NHÂN VIÊN BẢO TRÌ:</label>
+                    <select id="editAssignedTo" name="assigned_to_user_id_edit" class="form-control">
+                        <option value="">Chưa giao</option>
+                        {% for staff in maintenance_staff_list %}
+                        <option value="{{ staff.id }}">{{ staff.username }} ({{ staff.first_name|default:'' }} {{ staff.last_name|default:'' }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editCompletionDate">Ngày hoàn thành:</label>
+                    <input type="date" id="editCompletionDate" name="completion_date_edit">
+                </div>
+                <div class="form-group">
+                    <label for="editNotes">Ghi chú:</label>
+                    <textarea id="editNotes" name="notes_edit" rows="3" class="form-control"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button>
+                    <button type="button" class="btn btn-secondary" id="cancelEditRequest">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchRequestInput');
+    const filterForm = document.getElementById('filterForm');
+
+    if (searchInput && filterForm) {
+        searchInput.addEventListener('input', function() {
+            if (this.value === '') {
+                // Set a flag or modify the form action if needed to indicate a 'clear' search
+                // For now, just submitting will remove the 'q' parameter if it's empty
+                filterForm.submit();
+            }
+        });
+
+        // Optional: Handle Enter key press specifically if default form submission isn't sufficient
+        searchInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent default if it causes issues
+                filterForm.submit();
+            }
+        });
+    }
+
+    // Initialize date picker for reportDate in add modal
+    const reportDateInput = document.getElementById('reportDate');
+    if (reportDateInput) {
+        if (!reportDateInput.value) {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = ('0' + (today.getMonth() + 1)).slice(-2);
+            const day = ('0' + today.getDate()).slice(-2);
+            reportDateInput.value = `${year}-${month}-${day}`;
+        }
+    }
+
+    const addRequestBtn = document.getElementById('addRequestBtn');
+    const addRequestModal = document.getElementById('addRequestModal');
+    const closeRequestModal = document.getElementById('closeRequestModal');
+
+    if(addRequestBtn && addRequestModal && closeRequestModal) {
+        addRequestBtn.onclick = function() {
+            addRequestModal.style.display = "block";
+        }
+        closeRequestModal.onclick = function() {
+            addRequestModal.style.display = "none";
+        }
+    }
+
+    const editRequestModal = document.getElementById('editRequestModal');
+    const closeEditModal = document.getElementById('closeEditModal');
+    const editRequestForm = document.getElementById('editRequestForm'); 
+
+    document.querySelectorAll('.edit-request-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            if (!editRequestModal || !editRequestForm) {
+                console.error("Edit modal or form not found");
+                return;
+            }
+
+            const requestId = this.dataset.requestId;
+            editRequestForm.action = `/admin/phieu-muon-bao-tri/sua/${requestId}/`;
+            
+            if(document.getElementById('editRequestIdDisplay')) {
+                document.getElementById('editRequestIdDisplay').textContent = requestId;
+            }
+            if(document.getElementById('editRequestIdInput')) {
+                document.getElementById('editRequestIdInput').value = requestId;
+            }
+            if(document.getElementById('editDeviceId')) {
+                document.getElementById('editDeviceId').value = this.dataset.deviceId || '';
+            }
+            if(document.getElementById('editLocation')) {
+                document.getElementById('editLocation').value = this.dataset.location || '';
+            }
+            if(document.getElementById('editJobType')) {
+                document.getElementById('editJobType').value = this.dataset.jobType || 'maintenance';
+            }
+            if(document.getElementById('editProblemDescription')) {
+                document.getElementById('editProblemDescription').value = this.dataset.description || '';
+            }
+            if(document.getElementById('editPriority')) {
+                document.getElementById('editPriority').value = this.dataset.priority || '3';
+            }
+            
+            const reportDate = this.dataset.reportDate;
+            if (reportDate && document.getElementById('editReportDate')) {
+                document.getElementById('editReportDate').value = reportDate;
+            }
+            
+            if(document.getElementById('editStatus')) {
+                document.getElementById('editStatus').value = this.dataset.status || 'new';
+            }
+            if(document.getElementById('editNotes')) {
+                document.getElementById('editNotes').value = this.dataset.notes || '';
+            }
+            if(document.getElementById('editAssignedTo')) {
+                document.getElementById('editAssignedTo').value = this.dataset.assignedTo || '';
+            }
+            
+            const completionDate = this.dataset.completionDate;
+            if (completionDate && completionDate !== 'None' && completionDate !== 'N/A' && document.getElementById('editCompletionDate')) {
+                document.getElementById('editCompletionDate').value = completionDate;
+            } else if (document.getElementById('editCompletionDate')) {
+                document.getElementById('editCompletionDate').value = '';
+            }
+
+            editRequestModal.style.display = 'block';
+        });
+    });
+
+    if(closeEditModal && editRequestModal) {
+        closeEditModal.onclick = function() {
+            editRequestModal.style.display = "none";
+        }
+    }
+
+    const cancelEditRequestBtn = document.getElementById('cancelEditRequest');
+    if(cancelEditRequestBtn && editRequestModal) {
+        cancelEditRequestBtn.onclick = function() {
+            editRequestModal.style.display = "none";
+        }
+    }
+    
+    window.onclick = function(event) {
+        if (event.target == addRequestModal) {
+            addRequestModal.style.display = "none";
+        }
+        if (event.target == editRequestModal) {
+            editRequestModal.style.display = "none";
+        }
+    }
+});
+</script>
+{% endblock extra_js %}

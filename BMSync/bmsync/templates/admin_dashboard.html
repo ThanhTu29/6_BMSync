@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HỆ THỐNG QUẢN LÝ TRANG THIẾT BỊ</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #f7faff; }
+    .header { background: #b8caff; color: #3b4e9c; font-size: 2rem; text-align: center; padding: 24px 0; font-weight: bold; letter-spacing: 2px; }
+    .sidebar { width: 220px; background: #4a7cff; color: #fff; height: 100vh; position: fixed; top: 0; left: 0; display: flex; flex-direction: column; }
+    .sidebar .logo { background: #e6edff; color: #4a7cff; font-weight: bold; font-size: 1.2rem; text-align: center; padding: 18px 0; }
+    .sidebar nav { flex: 1; }
+    .sidebar nav a { display: block; color: #fff; padding: 16px 24px; text-decoration: none; transition: background 0.2s; }
+    .sidebar nav a.active, .sidebar nav a:hover { background: #2e5cb8; }
+    .sidebar .logout { background: #2563eb; color: #fff; text-align: center; padding: 14px 0; text-decoration: none; font-weight: bold; border-top: 1px solid #fff3; }
+    .main { margin-left: 220px; padding: 32px 40px; }
+    .main h2 { color: #3b4e9c; text-align: center; margin-bottom: 18px; }
+    .device-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px #0001; }
+    .device-table th, .device-table td { padding: 10px 8px; border-bottom: 1px solid #e3e3e3; text-align: center; }
+    .device-table th { background: #e6edff; color: #3b4e9c; font-weight: bold; }
+    .device-table tr:last-child td { border-bottom: none; }
+    .btn { padding: 6px 18px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .btn-green { background: #22c55e; color: #fff; }
+    .btn-red { background: #ef4444; color: #fff; }
+    .btn-blue { background: #2563eb; color: #fff; }
+    .btn-yellow { background: #facc15; color: #3b4e9c; }
+    .search-box { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; justify-content: flex-end; }
+    .search-box input { padding: 6px 12px; border: 1px solid #b8caff; border-radius: 4px; }
+    .search-box button { padding: 6px 14px; border-radius: 4px; border: none; background: #2563eb; color: #fff; font-weight: bold; }
+    .fab { position: fixed; right: 32px; bottom: 32px; background: #2563eb; color: #fff; border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 2rem; cursor: pointer; box-shadow: 0 2px 8px #0002; }
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100vw; height: 100vh; background: #0005; align-items: center; justify-content: center; }
+    .modal-content { background: #fff; padding: 32px 28px; border-radius: 10px; min-width: 340px; max-width: 95vw; box-shadow: 0 2px 16px #0003; position: relative; }
+    .modal-content h3 { margin-top: 0; color: #3b4e9c; text-align: center; }
+    .modal-content label { display: block; margin: 10px 0 4px; }
+    .modal-content input, .modal-content select, .modal-content textarea { width: 100%; padding: 7px 10px; border: 1px solid #b8caff; border-radius: 4px; margin-bottom: 12px; }
+    .modal-content .modal-actions { display: flex; gap: 12px; justify-content: flex-end; }
+    .modal-close { position: absolute; top: 10px; right: 16px; font-size: 1.3rem; color: #888; cursor: pointer; }
+    @media (max-width: 700px) { .sidebar { width: 100vw; height: auto; flex-direction: row; } .main { margin-left: 0; padding: 16px 4px; } }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo">ASSET<br>MANAGER</div>
+    <nav>
+      <a href="#" class="active">TRANG CHỦ</a>
+      <a href="#">QUẢN LÝ THIẾT BỊ</a>
+      <a href="#">QUẢN LÝ PHIẾU MƯỢN</a>
+      <a href="#">QUẢN LÝ NGƯỜI DÙNG</a>
+      <a href="#">TỔNG HỢP BÁO CÁO</a>
+    </nav>
+    <a href="#" onclick="confirmLogout()" class="logout">ĐĂNG XUẤT</a>
+  </div>
+  <div class="main">
+    <h2>Trang chủ</h2>
+    <div style="text-align:center; margin-bottom: 32px; font-size: 1.1rem;">Chào mừng bạn đến với hệ thống quản lý trang thiết bị!</div>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Tìm kiếm theo ID hoặc tên thiết bị">
+      <button onclick="searchDevice()">Tìm kiếm</button>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="device-table">
+        <thead>
+          <tr>
+            <th>STT</th>
+            <th>ID</th>
+            <th>Tên thiết bị</th>
+            <th>Loại</th>
+            <th>Vị trí</th>
+            <th>Tình trạng</th>
+            <th>Trạng thái</th>
+            <th>Mô tả</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody id="deviceTableBody">
+          <!-- Dữ liệu thiết bị sẽ được render ở đây bằng JS hoặc Django template -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="fab" onclick="openAddModal()">+</div>
+  <!-- Modal Thêm/Sửa -->
+  <div class="modal" id="deviceModal">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeModal()">&times;</span>
+      <h3 id="modalTitle">Thêm thiết bị mới</h3>
+      <form id="deviceForm">
+        <label>Tên thiết bị:</label>
+        <input type="text" name="name" required>
+        <label>Loại thiết bị:</label>
+        <input type="text" name="type" required>
+        <label>Vị trí:</label>
+        <input type="text" name="location" required>
+        <label>Tình trạng:</label>
+        <select name="condition">
+          <option>Ổn định</option>
+          <option>Không ổn định</option>
+          <option>Hỏng</option>
+        </select>
+        <label>Trạng thái:</label>
+        <select name="status">
+          <option>Khả dụng</option>
+          <option>Đang sửa chữa</option>
+          <option>Đã mượn</option>
+        </select>
+        <label>Mô tả:</label>
+        <textarea name="description"></textarea>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-blue">Lưu thay đổi</button>
+          <button type="button" class="btn btn-red" onclick="closeModal()">Hủy</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script>
+    function confirmLogout() {
+      if (confirm('Bạn có chắc chắn muốn đăng xuất không?')) {
+        window.location.href = "{% url 'logout' %}";
+      }
+    }
+
+    // Dummy data mẫu để hiển thị bảng (sẽ thay bằng render Django hoặc fetch API thực tế)
+    const devices = [
+      {id: 1, name: 'ASUS TUF15', type: 'Laptop', location: 'Kho 1', condition: 'Broken', status: 'IN_REPAIR', description: ''},
+      {id: 7, name: 'MSI 2', type: 'Laptop', location: 'Kho 1', condition: 'Broken', status: 'BORROWED', description: ''},
+      {id: 23, name: 'Laptop', type: 'fffff', location: 'dsgds', condition: 'Unstable', status: 'AVAILABLE', description: 'khong on dinh'},
+      {id: 29, name: 'USB 1111', type: 'USB', location: 'Kho 3', condition: 'Broken', status: 'IN_REPAIR', description: ''},
+      {id: 33, name: 'hh', type: 'mail', location: 'th', condition: 'Broken', status: 'IN_REPAIR', description: 'dfhdhdh'},
+      {id: 36, name: 'MSI 7', type: 'Laptop', location: 'Kho 6', condition: 'Broken', status: 'IN_REPAIR', description: 'huhu'},
+      {id: 38, name: 'Phone', type: 'IP16', location: 'Kho4', condition: 'Unstable', status: 'IN_REPAIR', description: 'Không ổn định'},
+      {id: 39, name: 'sgsg', type: 'gsgsdg', location: 'gsdgsg', condition: 'Stable', status: 'AVAILABLE', description: 'sdgg'}
+    ];
+    function renderTable(data) {
+      const tbody = document.getElementById('deviceTableBody');
+      tbody.innerHTML = '';
+      data.forEach((d, i) => {
+        tbody.innerHTML += `<tr>
+          <td>${i+1}</td>
+          <td>${d.id}</td>
+          <td>${d.name}</td>
+          <td>${d.type}</td>
+          <td>${d.location}</td>
+          <td>${d.condition}</td>
+          <td>${d.status}</td>
+          <td>${d.description||''}</td>
+          <td>
+            <button class='btn btn-green' onclick='openEditModal(${d.id})'>Sửa</button>
+            <button class='btn btn-red' onclick='deleteDevice(${d.id})'>Xóa</button>
+          </td>
+        </tr>`;
+      });
+    }
+    renderTable(devices);
+    function searchDevice() {
+      const val = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = devices.filter(d => d.id.toString().includes(val) || d.name.toLowerCase().includes(val));
+      renderTable(filtered);
+    }
+    function openAddModal() {
+      document.getElementById('modalTitle').innerText = 'Thêm thiết bị mới';
+      document.getElementById('deviceForm').reset();
+      document.getElementById('deviceModal').style.display = 'flex';
+    }
+    function openEditModal(id) {
+      const device = devices.find(d => d.id === id);
+      if (!device) return;
+      document.getElementById('modalTitle').innerText = 'Sửa thông tin thiết bị';
+      const form = document.getElementById('deviceForm');
+      form.name.value = device.name;
+      form.type.value = device.type;
+      form.location.value = device.location;
+      form.condition.value = device.condition;
+      form.status.value = device.status;
+      form.description.value = device.description;
+      document.getElementById('deviceModal').style.display = 'flex';
+    }
+    function closeModal() {
+      document.getElementById('deviceModal').style.display = 'none';
+    }
+    function deleteDevice(id) {
+      if (confirm('Bạn có chắc muốn xóa thiết bị này?')) {
+        // Xử lý xóa thiết bị ở đây
+        alert('Đã xóa thiết bị ID: ' + id);
+      }
+    }
+    document.getElementById('deviceForm').onsubmit = function(e) {
+      e.preventDefault();
+      // Xử lý thêm/sửa thiết bị ở đây
+      closeModal();
+      alert('Đã lưu thay đổi!');
+    };
+  </script>
+</body>
+</html>
