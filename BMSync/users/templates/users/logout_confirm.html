@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-center">Xác nhận đăng xuất</h2>
+                </div>
+                <div class="card-body">
+                    <p class="text-center">Bạn có chắc chắn muốn đăng xuất không?</p>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                            <button type="submit" class="btn btn-danger">Có</button>
+                            <a href="{% url 'home' %}" class="btn btn-secondary">Không</a> {# Hoặc một URL an toàn khác nếu 'home' không tồn tại #}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

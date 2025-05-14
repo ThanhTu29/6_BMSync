@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{% if object %}Cập nhật{% else %}Tạo mới{% endif %} yêu cầu bảo trì</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">{% if object %}Cập nhật{% else %}Tạo mới{% endif %}</button>
+    <a href="{% url 'maintenance_request_list' %}" class="btn btn-secondary">Quay lại</a>
+</form>
+{% endblock %}

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}QUẢN LÝ TRANG THIẾT BỊ CỦA TÒA NHÀ{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="header">QUẢN LÝ TRANG THIẾT BỊ CỦA TÒA NHÀ</div>
+    <nav class="main-nav">
+        <a href="/">Thông tin</a>
+        <a href="/services/">Dịch vụ</a>
+        <a href="/contact/">Liên hệ</a>
+        <a href="{% url 'login' %}">Tài khoản</a>
+    </nav>
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+    <div class="footer">&copy; 2025 Hệ thống quản lý trang thiết bị - N6</div>
+    {% block extra_script %}{% endblock %}
+</body>
+</html>

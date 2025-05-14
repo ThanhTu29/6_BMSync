@@ -1,0 +1,35 @@
+of{% extends 'base.html' %}
+{% block content %}
+<h2>Quản lý tài khoản người dùng</h2>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Tên đăng nhập</th>
+            <th>Email</th>
+            <th>Vai trò</th>
+            <th>Phòng ban</th>
+            <th>Trạng thái duyệt</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for profile in profiles %}
+        <tr>
+            <td>{{ profile.user.username }}</td>
+            <td>{{ profile.user.email }}</td>
+            <td>{{ profile.role }}</td>
+            <td>{{ profile.department }}</td>
+            <td>{% if profile.is_approved %}<span class="badge bg-success">Đã duyệt</span>{% else %}<span class="badge bg-warning">Chờ duyệt</span>{% endif %}</td>
+            <td>
+                {% if not profile.is_approved %}
+                <a href="{% url 'approve_user' profile.id %}" class="btn btn-success btn-sm">Duyệt</a>
+                {% endif %}
+                <a href="{% url 'edit_user' profile.id %}" class="btn btn-primary btn-sm">Sửa</a>
+                <a href="{% url 'delete_user' profile.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc muốn xóa tài khoản này?');">Xóa</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<a href="{% url 'add_user' %}" class="btn btn-success">Thêm tài khoản mới</a>
+{% endblock %}
