@@ -1,0 +1,90 @@
+Ap dụng SCRUM cho một dự án xây dựng ứng dụng Web Quản lý Trang thiết bị trong một tòa nhà với nhóm chỉ có 2 người:
+
+
+1. Phân chia vai trò trong nhóm nhỏ
+
+Với nhóm 2 người, bạn có thể chia sẻ hoặc kết hợp các vai trò SCRUM. Một số gợi ý:
+
+- **Người A:**  
+  - **Product Owner:** Xác định yêu cầu, viết user stories, quản lý Product Backlog.  
+  - **Scrum Master (một phần):** Đảm bảo quy trình SCRUM được tuân thủ, tổ chức các cuộc họp ngắn hàng ngày và loại bỏ trở ngại.
+
+- **Người B:**  
+  - **Developer:** Phát triển ứng dụng với Django, xây dựng giao diện, kiểm thử code.  
+  - **Scrum Master (một phần):** Hỗ trợ theo dõi tiến độ, báo cáo vấn đề và phối hợp với người A.
+
+Trong nhóm 2 người, vai trò Scrum Master và Product Owner có thể được chia sẻ hoặc đảm nhận bởi một thành viên tùy theo khả năng và kinh nghiệm.
+
+---
+
+2. Quy trình SCRUM chi tiết
+
+A. Product Backlog và User Stories
+
+- Product Backlog:  
+  - Tạo danh sách các yêu cầu của dự án:  
+    - Quản lý trang thiết bị (thêm, sửa, xóa, xem danh sách trang thiết bị)  
+    - Quản lý tài khoản người dùng (đăng ký, đăng nhập, chỉnh sửa thông tin cá nhân)  
+    - Báo cáo, thống kê tình trạng trang thiết bị trong tòa nhà  
+  - Viết các user stories rõ ràng theo định dạng: “Với tư cách là [loại người dùng], tôi muốn [tính năng] để [lợi ích].”  
+    - Ví dụ: “Với tư cách là người dùng, tôi muốn đăng ký tài khoản để quản lý trang thiết bị cá nhân của tôi.”
+
+B. Sprint Planning
+
+- Chọn các User Stories: từ Product Backlog mà có thể hoàn thành trong Sprint (với nhóm 2 người, Sprint có thể kéo dài 1-2 tuần).  
+- Ước lượng Story Points: Dựa trên độ phức tạp của từng user story.
+- Xác định Sprint Goal: Ví dụ: “Hoàn thiện tính năng đăng ký và đăng nhập, cùng với chức năng quản lý trang thiết bị cơ bản.”
+
+C. Daily Scrum (Họp hàng ngày)
+
+- Mỗi ngày, nhóm họp trong khoảng 10-15 phút (có thể qua chat video nếu làm từ xa) để trả lời 3 câu hỏi:
+  1. Tôi đã hoàn thành gì hôm qua?
+  2. Tôi sẽ làm gì hôm nay?
+  3. Có trở ngại gì cần hỗ trợ không?
+
+Dù nhóm chỉ có 2 người, daily scrum vẫn giúp cập nhật tiến độ và điều chỉnh kế hoạch nếu cần.
+
+D. Sprint Execution
+
+- Phát triển tính năng: Người B phát triển các tính năng được lên kế hoạch, người A đảm nhận việc kiểm tra và xác nhận yêu cầu (hoặc ngược lại nếu cần).
+- Code Review & Integration: Hai người nên trao đổi và review code lẫn nhau, đảm bảo tính nhất quán và chất lượng code.
+- Commit & Branching trên GitHub: Sử dụng GitHub để tạo branch cho mỗi Sprint hoặc mỗi tính năng, sau đó hợp nhất vào branch chính sau khi review.
+
+E. Sprint Review & Demo
+
+- Sprint Review: Cuối Sprint, nhóm demo các tính năng đã hoàn thành cho các bên liên quan (có thể là giảng viên hướng dẫn hoặc khách hàng nội bộ) để nhận phản hồi.
+- Sprint Retrospective: Thảo luận về những gì đã làm tốt, những gì chưa, và cách cải thiện quy trình cho Sprint tiếp theo.
+
+---
+
+3. Quy trình làm việc trên GitHub
+
+- Tạo Repository: Tạo repository cho dự án trên GitHub, commit code thường xuyên.
+- Issues và Projects: Dùng GitHub Issues để ghi lại các user story, bug, và tính năng cần thực hiện. Sử dụng GitHub Projects theo mô hình kanban để quản lý tiến độ công việc.
+- Pull Requests: Mỗi khi hoàn thành một tính năng, tạo pull request để review code trước khi merge vào branch chính.
+
+---
+
+4. Ví dụ về Timeline của một Sprint
+
+- Ngày 1:  
+  - Sprint Planning: Lựa chọn các user story (đăng ký tài khoản, đăng nhập, quản lý trang thiết bị cơ bản).  
+  - Thiết lập môi trường, tạo repository trên GitHub.
+
+- Ngày 2-10:  
+  - Daily Scrum: Cập nhật tiến độ, thảo luận vấn đề.
+  - Phát triển các tính năng: Người A và Người B cùng làm việc trên các tính năng đã chọn.
+  - Commit code hàng ngày, tạo Pull Requests và review code.
+
+- Ngày 11:
+  - Sprint Review: Demo tính năng cho giảng viên hoặc khách hàng nội bộ.
+  - Sprint Retrospective: Nhận phản hồi và ghi nhận cải tiến cho Sprint tiếp theo.
+  - Cập nhật Product Backlog theo phản hồi.
+
+---
+
+Với nhóm 2 người, việc áp dụng SCRUM vẫn giúp bạn:
+- Tổ chức công việc hiệu quả: Mặc dù quy mô nhỏ nhưng vẫn có sự lên kế hoạch và review định kỳ.
+- Tương tác và giao tiếp: Daily Scrum giúp cập nhật nhanh chóng tiến độ và giải quyết vấn đề.
+- Kiểm soát chất lượng: Qua code review và sprint demo, đảm bảo sản phẩm phát triển đúng yêu cầu.
+
