@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Chatbot hỗ trợ truy vấn dữ liệu</h2>
+    <div id="chatbox" style="border:1px solid #ccc; padding:16px; height:350px; overflow-y:auto; background:#f9f9f9; margin-bottom:16px;"></div>
+    <form id="chat-form" autocomplete="off">
+        <div class="input-group">
+            <input type="text" id="user-input" class="form-control" placeholder="Nhập câu hỏi..." required>
+            <button type="submit" class="btn btn-primary">Gửi</button>
+        </div>
+    </form>
+</div>
+<script>
+const chatbox = document.getElementById('chatbox');
+const form = document.getElementById('chat-form');
+const input = document.getElementById('user-input');
+function appendMessage(sender, text) {
+    const msg = document.createElement('div');
+    msg.innerHTML = `<strong>${sender}:</strong> ${text}`;
+    chatbox.appendChild(msg);
+    chatbox.scrollTop = chatbox.scrollHeight;
+}
+form.onsubmit = function(e) {
+    e.preventDefault();
+    const userMsg = input.value.trim();
+    if (!userMsg) return;
+    appendMessage('Bạn', userMsg);
+    input.value = '';
+    fetch('', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+        body: JSON.stringify({message: userMsg})
+    })
+    .then(res => res.json())
+    .then(data => {
+        appendMessage('Bot', data.response);
+    })
+    .catch(() => appendMessage('Bot', 'Có lỗi xảy ra, vui lòng thử lại.'));
+};
+</script>
+{% endblock %}

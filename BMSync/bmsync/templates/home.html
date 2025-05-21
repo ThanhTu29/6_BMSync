@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trang chủ - BMSync</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="header">Chào mừng đến với BMSync</div>
+  <div class="dashboard-container">
+    <div class="dashboard-nav">
+      <a href="#" onclick="confirmLogout()">Đăng xuất</a>
+      {% if user.is_superuser %}
+      <a href="/admin/">Quản trị</a>
+      {% endif %}
+    </div>
+    {% if user.is_superuser %}
+    <div class="admin-device-table">
+      <h2>Danh sách thiết bị</h2>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>STT</th>
+            <th>Tên tài khoản</th>
+            <th>Tên thiết bị</th>
+            <th>Vị trí</th>
+            <th>Ngày cung cấp</th>
+            <th>KTV phụ trách</th>
+            <th>Trạng thái hiện tại</th>
+            <th>Ngày bảo trì</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for device in devices %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ device.account_name }}</td>
+            <td>{{ device.name }}</td>
+            <td>{{ device.location }}</td>
+            <td>{{ device.supply_date }}</td>
+            <td>{{ device.technician }}</td>
+            <td>{{ device.status }}</td>
+            <td>{{ device.maintenance_date }}</td>
+            <td>
+              <a href="/devices/{{ device.id }}/view/" class="btn btn-brown">Xem</a>
+              <a href="/devices/{{ device.id }}/edit/" class="btn btn-warning">Sửa</a>
+              <a href="/devices/{{ device.id }}/delete/" class="btn btn-danger" onclick="return confirm('Bạn có chắc muốn xóa thiết bị này?');">Xóa</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="dashboard-grid">
+      <div class="dashboard-card">
+        <h2>{{ user.username }}</h2>
+        <p>Vai trò: {% if user.is_superuser %}Quản trị viên{% else %}Người dùng{% endif %}</p>
+      </div>
+      <div class="dashboard-card">
+        <h2>Chatbot</h2>
+        <p>Trợ lý AI hỗ trợ bạn 24/7</p>
+        <button class="btn-primary" onclick="document.getElementById('chatbot-box').style.display='block'">Mở Chatbot</button>
+      </div>
+      <div class="dashboard-card">
+        <h2>{{ total_devices }}</h2>
+        <p>Thiết bị</p>
+      </div>
+      <div class="dashboard-card">
+        <h2>{{ maintenance_requests }}</h2>
+        <p>Yêu cầu bảo trì</p>
+      </div>
+      {% if user.is_superuser %}
+      <div class="dashboard-card">
+        <h2>{{ critical_alerts }}</h2>
+        <p>Cảnh báo quan trọng</p>
+      </div>
+      <div class="dashboard-card">
+        <h2>{{ active_users }}</h2>
+        <p>Người dùng đang hoạt động</p>
+      </div>
+      {% endif %}
+    </div>
+    <div id="chatbot-box" style="display:none;position:fixed;bottom:30px;right:30px;z-index:1000;max-width:350px;width:90vw;">
+      <div style="background:#fff;border-radius:10px;box-shadow:0 4px 24px rgba(74,108,247,0.13);padding:18px 12px 12px 12px;">
+        <div style="font-weight:700;color:var(--primary);margin-bottom:8px;">Chatbot BMSync</div>
+        <form method="post" action="/chatbot/" style="display:flex;gap:6px;">
+          {% csrf_token %}
+          <input type="text" name="message" placeholder="Nhập câu hỏi..." style="flex:1;padding:8px 10px;border-radius:6px;border:1px solid #dbeafe;outline:none;">
+          <button type="submit" class="btn-primary" style="padding:8px 16px;">Gửi</button>
+        </form>
+        {% if chatbot_response %}
+        <div style="margin-top:10px;color:#222;font-size:1em;background:#f8fbff;border-radius:6px;padding:8px;">{{ chatbot_response }}</div>
+        {% endif %}
+        <button onclick="document.getElementById('chatbot-box').style.display='none'" style="margin-top:8px;background:none;border:none;color:#e74c3c;font-weight:600;cursor:pointer;">Đóng</button>
+      </div>
+    </div>
+  </div>
+  <div class="footer">&copy; 2024 BMSync. All rights reserved.</div>
+  <script>
+    function confirmLogout() {
+      if (confirm('Bạn có chắc chắn muốn đăng xuất không?')) {
+        window.location.href = "{% url 'logout' %}";
+      }
+    }
+  </script>
+</body>
+</html>

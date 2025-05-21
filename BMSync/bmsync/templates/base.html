@@ -1,0 +1,435 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BMSync{% endblock %}</title>
+    <script src="{% static 'js/theme.js' %}"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css"> <!-- Giữ lại CSS gốc nếu cần -->
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', Arial, sans-serif;
+            background-color: #f0f2f5; /* Màu nền nhẹ nhàng */
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Header Styling */
+        .site-header {
+            background-color: #ffffff;
+            padding: 15px 0; /* Padding for the header bar itself */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .site-header .container { /* This container is inside .site-header, for layout */
+            display: flex;
+            justify-content: flex-start; /* Align logo to the left, nav items will follow */
+            align-items: center;
+            width: 100%; /* Make this layout container full width */
+            max-width: 100%; /* Override any inherited max-width from a general .container class */
+            padding: 0 20px; /* Horizontal padding inside the header bar */
+            box-sizing: border-box;
+            margin: 0; /* Override any inherited margin */
+        }
+        .site-header .logo {
+            font-size: 2.5rem; /* Larger logo */
+            font-weight: 700;
+            color: #0a67eb;
+            text-decoration: none;
+            margin-right: auto; /* Pushes navigation to the right */
+        }
+        .site-header .main-nav { /* Container for navigation links */
+            display: flex;
+            align-items: center;
+        }
+        .site-header .main-nav a {
+            text-decoration: none;
+            color: #555;
+            margin-left: 15px; /* Spacing between nav items */
+            font-weight: 500;
+            transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+            padding: 8px 12px; /* Adjusted padding */
+            font-size: 1rem; /* Adjusted font size */
+            border: 1px solid transparent;
+            border-radius: 5px;
+            white-space: nowrap; /* Prevent button text from wrapping */
+        }
+        .site-header .main-nav a:first-child {
+             margin-left: 0; /* No left margin for the first item if it's directly after logo with margin-right: auto */
+        }
+        .site-header .main-nav a:hover, .site-header .main-nav a.active {
+            color: #0a67eb;
+            background-color: #e9f2ff;
+            border-color: #0a67eb;
+        }
+        .site-header .main-nav .theme-switcher { /* Style for theme switcher positioning */
+            margin-left: 15px; /* Space it from the last nav link */
+            display: flex; /* Ensure icon inside is centered if needed */
+            align-items: center;
+        }
+
+        /* Main Content Area */
+        .site-content {
+            padding-top: 40px;
+            padding-bottom: 60px;
+        }
+
+        /* Hero Section Styling (Quizlet-like) */
+        .hero-section {
+            text-align: center;
+            padding: 60px 0;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 40px;
+        }
+        .hero-section h1 {
+            font-size: 2.8rem;
+            color: #2c3e50; /* Màu tiêu đề đậm */
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        .hero-section .hero-subheading {
+            font-size: 1.5rem;
+            color: #0a67eb;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+        .hero-section .hero-description {
+            font-size: 1.1rem;
+            color: #555;
+            max-width: 750px;
+            margin: 0 auto 30px auto;
+            line-height: 1.8;
+        }
+        .hero-section .hero-details {
+            font-size: 1rem;
+            color: #444;
+            max-width: 700px;
+            margin: 0 auto 30px auto;
+            text-align: left;
+            padding-left: 20px; /* For icon alignment */
+        }
+        .hero-section .hero-details br {
+            display: block; 
+            margin-bottom: 10px; 
+        }
+        .btn-primary-quizlet {
+            background-color: #0a67eb;
+            color: #ffffff;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        .btn-primary-quizlet:hover {
+            background-color: #0056d3;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .site-header .container {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .site-header .main-nav {
+                margin-top: 10px;
+            }
+            .site-header .main-nav a {
+                margin: 0 10px;
+            }
+            .hero-section h1 {
+                font-size: 2.2rem;
+            }
+            .hero-section .hero-subheading {
+                font-size: 1.3rem;
+            }
+            .hero-section .hero-description {
+                font-size: 1rem;
+            }
+        }
+
+        /* Feature Message - giữ nguyên style cũ */
+        #feature-msg {
+            display:none;
+            position:fixed;
+            top:80px; /* Điều chỉnh nếu cần sau khi header thay đổi */
+            right:40px;
+            z-index:9999; /* Đảm bảo nó ở trên cùng */
+            background:#fff;
+            border:1px solid #0a67eb; /* Cập nhật màu cho phù hợp */
+            padding:18px 30px; /* Điều chỉnh padding */
+            border-radius:10px;
+            box-shadow:0 2px 14px rgba(0,0,0,0.12);
+            color:#0a67eb; /* Cập nhật màu cho phù hợp */
+            font-size:1.1rem;
+        }
+        #feature-msg span {
+            float:right;
+            cursor:pointer;
+            font-weight:bold;
+            margin-left: 15px;
+        }
+
+        /* Footer Styling */
+        .site-footer-container {
+            background-color: #f8f9fa; /* Light grey background */
+            color: #6c757d; /* Muted text color */
+            padding: 40px 0;
+            border-top: 1px solid #e9ecef; /* Subtle top border */
+        }
+        .site-footer-container .footer-content {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        .site-footer-container .footer-column {
+            flex: 1;
+            min-width: 200px;
+            margin: 15px;
+        }
+        .site-footer-container .footer-column h5 {
+            color: #343a40; /* Darker heading color */
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        .site-footer-container .footer-column ul {
+            list-style: none;
+            padding: 0;
+        }
+        .site-footer-container .footer-column ul li a {
+            color: #0a67eb; /* Link color */
+            text-decoration: none;
+            margin-bottom: 8px;
+            display: inline-block;
+            transition: color 0.3s ease;
+        }
+        .site-footer-container .footer-column ul li a:hover {
+            color: #0056d3; /* Darker link color on hover */
+        }
+        .site-footer-container .social-icons a {
+            margin-right: 10px;
+            font-size: 1.5rem; /* Kích thước icon lớn hơn */
+            color: #000000; /* Đổi màu thành đen */
+            text-decoration: none; /* Bỏ gạch chân nếu có */
+        }
+        .site-footer-container .social-icons a:hover {
+            color: #333333; /* Đổi màu khi hover thành xám đậm */
+        }
+        .footer-bottom {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            font-size: 0.9rem;
+        }
+
+        /* Enhanced Hero Section Styling */
+        .hero-section {
+            text-align: center;
+            padding: 100px 20px; /* Increased padding */
+            background-color: #eef4ff; /* Lighter blue background, or use background-image */
+            /* background-image: url('your-hero-image.jpg'); */ /* Uncomment and replace with your image */
+            /* background-size: cover; */
+            /* background-position: center; */
+            border-radius: 8px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            margin-bottom: 50px; /* Increased margin */
+            position: relative; /* For potential overlay */
+        }
+        /* Optional: Add a color overlay for better text readability if using a background image */
+        /* .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.3); /* Adjust opacity as needed */
+        /*    border-radius: 8px;
+        /*    z-index: 1;
+        /* }
+        */
+        .hero-section > * { /* Ensure content is above overlay */
+            position: relative;
+            z-index: 2;
+        }
+        .hero-section h1 {
+            font-size: 3.5rem; /* Larger font size */
+            color: #1a2b48; /* Darker, more impactful color */
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+        .hero-section .hero-subheading {
+            font-size: 1.8rem; /* Larger font size */
+            color: #0a67eb; /* Keep brand color or adjust */
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+        .hero-section .hero-description {
+            font-size: 1.2rem; /* Slightly larger font size */
+            color: #4a5568; /* Softer text color */
+            max-width: 800px;
+            margin: 0 auto 35px auto;
+            line-height: 1.9;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="/" class="logo">BMSync</a>
+            <nav class="main-nav">
+                <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">Trang chủ</a>
+                <a href="{% url 'about' %}" class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}">Giới thiệu về BMSync</a>
+                <a href="{% url 'services' %}" class="nav-link {% if request.resolver_match.url_name == 'services' %}active{% endif %}">Các dịch vụ của chúng tôi</a>
+                <a href="{% url 'contact' %}" class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Thông tin liên hệ</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'user_notifications' %}" class="nav-link {% if request.resolver_match.url_name == 'user_notifications' %}active{% endif %}">
+                        Thông báo {% if unread_notifications_count > 0 %}<span class="badge" style="background-color: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.75em; vertical-align: super;">{{ unread_notifications_count }}</span>{% endif %}
+                    </a>
+                    {% if user.is_staff %}
+                        <a href="{% url 'admin_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">Dashboard</a>
+                    {% endif %}
+                    <a href="{% url 'account_info' %}" class="nav-link {% if request.resolver_match.url_name == 'account_info' %}active{% endif %}">Tài khoản</a>
+                    <a href="{% url 'logout' %}" class="nav-link">Đăng xuất</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}">Tài khoản</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <div id="feature-msg">
+        Tính năng này đang được phát triển bởi nhóm 6
+        <span onclick="document.getElementById('feature-msg').style.display='none'">&times;</span>
+    </div>
+
+    <main class="site-content">
+        <div class="container">
+            {% block content %}
+            <section class="hero-section">
+                <h1 class="main-title-quizlet">HỆ THỐNG QUẢN LÝ THIẾT BỊ</h1>
+                <p class="hero-subheading">BMSync – Giải pháp Quản lý Thiết bị Tòa Nhà Thông Minh & Hiệu Quả</p>
+                <p class="hero-description">
+                    Bạn đang quản lý một tòa nhà văn phòng hoặc hệ thống phòng học? <br>
+                    Hãy để BMSync giúp bạn đơn giản hóa quy trình, tiết kiệm thời gian và vận hành.
+                </p>
+                <div class="hero-details">
+                    🔧 Quản lý toàn diện thiết bị theo mã, loại, vị trí <br>
+                    📍 Liên kết thiết bị với từng phòng/khu vực cụ thể <br>
+                    🛠️ Quy trình bảo trì riêu riêu, theo dõi dễ dàng <br>
+                    👥 Phân quyền người dùng linh hoạt – từ Admin đến Người thuê <br>
+                    📊 Dashboard trực quan – số liệu thiết bị, hiệu suất bảo trì <br>
+                    📣 Cảnh báo & Thông báo tự động qua email/SMS <br>
+                    🤖 Chatbot hỗ trợ 24/7 – trả lời tức thì, tạo yêu cầu nhanh chóng
+                </div>
+                <a href="{% url 'register' %}" class="btn-primary-quizlet">Đăng kí ngay</a>
+            </section>
+            {% endblock %}
+        </div>
+    </main>
+
+    <script>
+        // Giữ lại script cho feature message
+        function showFeatureMsg(e) {
+            e.preventDefault();
+            document.getElementById('feature-msg').style.display = 'block';
+        }
+    </script>
+    {% block extra_script %}
+    <script>
+        // Giữ lại script cho alert dismissal
+        document.addEventListener('DOMContentLoaded', function() {
+            const successAlerts = document.querySelectorAll('.alert-success');
+            successAlerts.forEach(function(alert) {
+                setTimeout(function() {
+                    alert.style.transition = 'opacity 0.5s ease-out';
+                    alert.style.opacity = '0';
+                    setTimeout(function() {
+                        alert.style.display = 'none';
+                    }, 500); 
+                }, 5000); 
+            });
+
+            // Cập nhật link active cho navbar mới
+            const navLinks = document.querySelectorAll('.main-nav a.nav-link');
+            const currentPath = window.location.pathname;
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+    {% endblock %}
+
+    <footer class="site-footer-container">
+        <div class="footer-content">
+            <div class="footer-column">
+                <h5>BMSync</h5>
+                <ul>
+                    <li><a href="/info/">Về chúng tôi</a></li>
+                    <li><a href="#">Sự nghiệp</a></li>
+                    <li><a href="/contact/">Liên hệ</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h5>Sản phẩm</h5>
+                <ul>
+                    <li><a href="/service/">Dịch vụ</a></li>
+                    <li><a href="#">Tính năng</a></li>
+                    <li><a href="#">Giá cả</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h5>Hỗ trợ</h5>
+                <ul>
+                    <li><a href="#">Trung tâm trợ giúp</a></li>
+                    <li><a href="#">Điều khoản dịch vụ</a></li>
+                    <li><a href="#">Chính sách bảo mật</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h5>Theo dõi chúng tôi</h5>
+                <div class="social-icons">
+                    <!-- Thay thế # bằng link thực tế và sử dụng icon phù hợp (ví dụ Font Awesome) -->
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a> 
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    <a href="#" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+    
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; {% now "Y" %} BMSync. All rights reserved. Phát triển bởi Nhóm 6.</p>
+        </div>
+    </footer>
+    <!-- Bạn cần thêm thư viện Font Awesome nếu muốn sử dụng các icon trên -->
+    <!-- Ví dụ: <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"> -->
+</body>
+</html>

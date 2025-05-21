@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Các dịch vụ của chúng tôi - BMSync{% endblock %}
+
+{% block content %}
+<div class="container site-content">
+    <h1>Các dịch vụ của chúng tôi</h1>
+    <p>BMSync cung cấp một loạt các dịch vụ nhằm tối ưu hóa việc quản lý và vận hành tòa nhà của bạn. Các dịch vụ chính bao gồm:</p>
+    <ul>
+        <li><strong>Quản lý trang thiết bị:</strong> Theo dõi, kiểm kê và quản lý vòng đời của tất cả các thiết bị trong tòa nhà.</li>
+        <li><strong>Bảo trì và sửa chữa:</strong> Lên lịch bảo trì định kỳ, quản lý yêu cầu sửa chữa và theo dõi tiến độ công việc.</li>
+        <li><strong>Giám sát năng lượng:</strong> Phân tích và tối ưu hóa việc sử dụng năng lượng, giúp giảm chi phí vận hành.</li>
+        <li><strong>An ninh và an toàn:</strong> Tích hợp hệ thống camera, kiểm soát ra vào và các giải pháp an toàn khác.</li>
+        <li><strong>Hỗ trợ kỹ thuật:</strong> Đội ngũ chuyên gia sẵn sàng hỗ trợ giải quyết các vấn đề kỹ thuật phát sinh.</li>
+    </ul>
+    <!-- Thêm nội dung chi tiết về các dịch vụ tại đây -->
+    <p><a href="{% url 'home' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Quay lại trang chủ</a></p>
+</div>
+{% endblock %}

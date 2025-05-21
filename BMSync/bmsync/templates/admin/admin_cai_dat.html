@@ -1,0 +1,78 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}Cài đặt - BMSync Admin{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <h1 class="admin-page-title">Cài đặt Hệ thống</h1>
+
+    <div class="admin-content-container">
+        <section class="settings-section">
+            <h2>Cấu hình Chung</h2>
+            <div class="form-group">
+                <label for="siteName">Tên Trang Web</label>
+                <input type="text" id="siteName" name="site_name" class="form-control" value="BMSync - Quản lý Thiết bị">
+            </div>
+            <div class="form-group">
+                <label for="adminEmail">Email Quản trị</label>
+                <input type="email" id="adminEmail" name="admin_email" class="form-control" value="admin@bmsync.com">
+            </div>
+            <div class="form-group">
+                <label for="itemsPerPage">Số mục hiển thị mỗi trang</label>
+                <select id="itemsPerPage" name="items_per_page" class="form-control">
+                    <option value="10">10</option>
+                    <option value="25" selected>25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+            <button class="btn btn-primary">Lưu thay đổi</button>
+        </section>
+
+        <section class="settings-section">
+            <h2>Cài đặt Thông báo</h2>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" id="emailNotificationsToggle" checked>
+                    <span class="slider round"></span>
+                </label>
+                <span style="margin-left: 10px;">Bật thông báo qua Email</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" id="systemNotificationsToggle" checked>
+                    <span class="slider round"></span>
+                </label>
+                <span style="margin-left: 10px;">Bật thông báo hệ thống</span>
+            </div>
+            <p class="text-muted">Quản lý cách bạn nhận thông báo về các hoạt động quan trọng.</p>
+        </section>
+
+        <section class="settings-section">
+            <h2>Giao diện Người dùng</h2>
+            <div class="form-group">
+                <label for="themeSelection">Chọn Giao diện (Theme)</label>
+                <select id="themeSelection" name="theme" class="form-control">
+                    <option value="light" selected>Sáng (Mặc định)</option>
+                    <option value="dark">Tối</option>
+                    <option value="contrast">Tương phản cao</option>
+                </select>
+                 <p class="text-muted">Lưu ý: Tính năng thay đổi giao diện đang được phát triển.</p>
+            </div>
+        </section>
+
+        <section class="settings-section">
+            <h2>Bảo trì Hệ thống</h2>
+            <div class="form-group">
+                <button class="btn btn-warning">Chạy Sao lưu Dữ liệu</button>
+                <p class="text-muted" style="margin-top: 5px;">Thực hiện sao lưu toàn bộ dữ liệu hệ thống.</p>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-info">Kiểm tra Cập nhật</button>
+                <p class="text-muted" style="margin-top: 5px;">Kiểm tra phiên bản mới nhất của BMSync.</p>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,184 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}Hỗ trợ - BMSync Admin{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <h1 class="admin-page-title">Trung Tâm Hỗ Trợ</h1>
+    <div class="support-page-content">
+        <section class="support-section">
+            <h2>Thông Tin Liên Hệ</h2>
+            <p>Nếu bạn cần hỗ trợ hoặc có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua các kênh sau:</p>
+            <div class="contact-details">
+                <p><i class="fas fa-envelope"></i> <strong>Email:</strong> <a href="mailto:hotro@bmsync.vn">hotro@bmsync.vn</a></p>
+                <p><i class="fas fa-phone"></i> <strong>Điện thoại:</strong> <a href="tel:0987654321">0987 654 321</a> (Mr. Example)</p>
+                <p><i class="fas fa-map-marker-alt"></i> <strong>Địa chỉ:</strong> Số 12, Đường Nguyễn Van Bảo, Phường 1, Quận Gò Vấp, TP. Hồ Chí Minh</p>
+                <p><i class="fas fa-clock"></i> <strong>Giờ làm việc:</strong> Thứ 2 - Thứ 6 (08:00 - 17:00), Thứ 7 (08:00 - 12:00)</p>
+            </div>
+        </section>
+
+        <section class="support-section">
+            <h2>Câu Hỏi Thường Gặp (FAQ)</h2>
+            <div class="accordion" id="faqAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="faqHeadingOne">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapseOne" aria-expanded="false" aria-controls="faqCollapseOne">
+                            Làm thế nào để đặt lại mật khẩu?
+                        </button>
+                    </h2>
+                    <div id="faqCollapseOne" class="accordion-collapse collapse" aria-labelledby="faqHeadingOne" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Bạn có thể đặt lại mật khẩu của mình bằng cách truy cập trang <strong>"Bảo mật"</strong> (trong menu người dùng ở góc trên bên phải), sau đó chọn tùy chọn "Đổi mật khẩu" và làm theo hướng dẫn. Đảm bảo mật khẩu mới của bạn đủ mạnh và dễ nhớ.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="faqHeadingTwo">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapseTwo" aria-expanded="false" aria-controls="faqCollapseTwo">
+                            Làm thế nào để yêu cầu bảo trì hoặc mượn thiết bị?
+                        </button>
+                    </h2>
+                    <div id="faqCollapseTwo" class="accordion-collapse collapse" aria-labelledby="faqHeadingTwo" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Để yêu cầu bảo trì hoặc mượn thiết bị, vui lòng truy cập mục <strong>"Phiếu mượn/Yêu cầu bảo trì"</strong> từ thanh điều hướng bên trái. Nhấn nút "Thêm mới Yêu cầu", chọn loại yêu cầu (bảo trì, sửa chữa, hoặc mượn), điền đầy đủ thông tin chi tiết về thiết bị (nếu có), mô tả sự cố hoặc lý do mượn, và các thông tin cần thiết khác. Yêu cầu của bạn sẽ được xử lý bởi quản trị viên.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="faqHeadingThree">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapseThree" aria-expanded="false" aria-controls="faqCollapseThree">
+                            Làm thế nào để xem và xuất báo cáo?
+                        </button>
+                    </h2>
+                    <div id="faqCollapseThree" class="accordion-collapse collapse" aria-labelledby="faqHeadingThree" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Bạn có thể xem và xuất các báo cáo liên quan đến thiết bị, người dùng, hoặc các yêu cầu tại mục <strong>"Tổng hợp báo cáo"</strong>. Hệ thống hỗ trợ xuất báo cáo dưới dạng PDF hoặc CSV tùy theo loại báo cáo.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="faqHeadingFour">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapseFour" aria-expanded="false" aria-controls="faqCollapseFour">
+                            Tôi có thể thay đổi giao diện của hệ thống không?
+                        </button>
+                    </h2>
+                    <div id="faqCollapseFour" class="accordion-collapse collapse" aria-labelledby="faqHeadingFour" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Có, bạn có thể tùy chỉnh giao diện (chủ đề sáng, tối, hoặc tương phản cao) trong mục <strong>"Cài đặt"</strong> (truy cập từ menu người dùng). Các thay đổi sẽ được áp dụng ngay lập tức.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="support-section">
+            <h2>Gửi Yêu Cầu Hỗ Trợ</h2>
+            <p>Nếu bạn không tìm thấy câu trả lời cho vấn đề của mình, vui lòng điền vào biểu mẫu dưới đây để gửi yêu cầu hỗ trợ trực tiếp đến đội ngũ của chúng tôi.</p>
+            <form action="#" method="post" class="support-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="support-name">Họ và Tên:</label>
+                    <input type="text" id="support-name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="support-email">Email:</label>
+                    <input type="email" id="support-email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="support-subject">Chủ đề:</label>
+                    <input type="text" id="support-subject" name="subject" required>
+                </div>
+                <div class="form-group">
+                    <label for="support-message">Nội dung:</label>
+                    <textarea id="support-message" name="message" rows="5" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Gửi Yêu Cầu</button>
+            </form>
+        </section>
+    </div>
+</div>
+
+<style>
+.support-page-content {
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.support-section {
+    margin-bottom: 30px;
+}
+
+.support-section h2 {
+    font-size: 1.5rem;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.support-section ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.support-section ul li {
+    margin-bottom: 8px;
+    font-size: 1rem;
+}
+
+.faq-item {
+    margin-bottom: 20px;
+}
+
+.faq-item h3 {
+    font-size: 1.1rem;
+    color: #34495e;
+    margin-bottom: 8px;
+}
+
+.support-form .form-group {
+    margin-bottom: 15px;
+}
+
+.support-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #333;
+}
+
+.support-form input[type="text"],
+.support-form input[type="email"],
+.support-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 0.95rem;
+}
+
+.support-form textarea {
+    resize: vertical;
+}
+
+.support-form .btn-primary {
+    background-color: #1abc9c;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.support-form .btn-primary:hover {
+    background-color: #16a085;
+}
+</style>
+
+{% endblock %}
