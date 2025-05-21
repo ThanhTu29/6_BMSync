@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Đăng nhập - HỆ THỐNG QUẢN LÝ TRANG THIẾT BỊ CỦA TÒA NHÀ{% endblock %}
+{% block content %}
+<div class="form-auth-container">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    <h2 class="form-title">Đăng nhập</h2>
+    <form method="post" class="auth-form">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.errors %}
+                    <div class="form-error">{{ field.errors|striptags }}</div>
+                {% endif %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary btn-block">Đăng nhập</button>
+        <a href="{% url 'register' %}" class="link">Chưa có tài khoản? Đăng ký</a>
+    </form>
+</div>
+{% endblock %}
