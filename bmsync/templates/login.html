@@ -1,0 +1,31 @@
+<!-- Trang đăng nhập hiện đại, căn giữa, hiệu ứng mượt mà, đồng bộ với style.css -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng nhập - BMSync</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="form-auth-container">
+    <div class="form-title">Đăng nhập hệ thống</div>
+    <form class="auth-form" method="post" action="">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="username">Tên đăng nhập</label>
+        <input type="text" id="username" name="username" required autofocus placeholder="Nhập tên đăng nhập">
+      </div>
+      <div class="form-group">
+        <label for="password">Mật khẩu</label>
+        <input type="password" id="password" name="password" required placeholder="Nhập mật khẩu">
+      </div>
+      {% if error_message %}
+      <div class="form-error">{{ error_message }}</div>
+      {% endif %}
+      <button type="submit" class="btn-primary btn-block">Đăng nhập</button>
+    </form>
+    <a href="/register" class="link">Chưa có tài khoản? Đăng ký</a>
+  </div>
+</body>
+</html>

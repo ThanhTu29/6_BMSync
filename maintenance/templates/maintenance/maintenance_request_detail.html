@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Chi tiết yêu cầu bảo trì</h2>
+<table class="table table-bordered">
+    <tr><th>Thiết bị</th><td>{{ object.device }}</td></tr>
+    <tr><th>Người yêu cầu</th><td>{{ object.requester }}</td></tr>
+    <tr><th>Trạng thái</th><td>{{ object.get_status_display }}</td></tr>
+    <tr><th>Ngày tạo</th><td>{{ object.created_at|date:'d/m/Y H:i' }}</td></tr>
+    <tr><th>Ghi chú xử lý</th><td>{{ object.note }}</td></tr>
+</table>
+<a href="{% url 'maintenance_request_list' %}" class="btn btn-secondary">Quay lại danh sách</a>
+{% if user.is_superuser or user == object.requester or user|has_group:'Kỹ thuật viên' %}
+<a href="{% url 'maintenance_request_update' object.pk %}" class="btn btn-warning">Sửa yêu cầu</a>
+{% endif %}
+{% endblock %}

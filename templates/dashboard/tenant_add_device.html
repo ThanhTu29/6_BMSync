@@ -1,0 +1,100 @@
+{% extends 'dashboard/tenant_base.html' %} {% block title %}Thêm thiết bị mới -
+Tenant{% endblock %} {% block extra_head %}
+<style>
+  .add-device-card {
+    max-width: 480px;
+    margin: 32px auto 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 6px 32px #4a6cf733;
+    padding: 40px 32px 32px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .add-device-card h2 {
+    color: #4a6cf7;
+    font-size: 1.5em;
+    font-weight: 800;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  .add-device-form label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 6px;
+    margin-top: 10px;
+    display: block;
+  }
+  .add-device-form input,
+  .add-device-form select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1.5px solid #e3eafe;
+    margin-bottom: 10px;
+    font-size: 1.08em;
+    background: #f7faff;
+    transition: border 0.2s, box-shadow 0.2s;
+  }
+  .add-device-form input:focus,
+  .add-device-form select:focus {
+    border: 1.5px solid #4a6cf7;
+    box-shadow: 0 0 0 2px #e3eafe;
+    outline: none;
+  }
+  .add-device-form .btn-primary {
+    width: 100%;
+    margin-top: 18px;
+    background: linear-gradient(90deg, #4a6cf7 60%, #6a82fb 100%);
+    color: #fff;
+    font-size: 1.15em;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    padding: 14px 0;
+    box-shadow: 0 2px 8px #e3eafe;
+    transition: background 0.2s, transform 0.2s;
+    cursor: pointer;
+  }
+  .add-device-form .btn-primary:hover {
+    background: linear-gradient(90deg, #274bb6 60%, #4a6cf7 100%);
+    transform: translateY(-2px) scale(1.02);
+  }
+  @media (max-width: 600px) {
+    .add-device-card {
+      padding: 18px 6vw;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="add-device-card">
+  <h2>Thêm thiết bị mới</h2>
+  <form method="post" class="add-device-form">
+    {% csrf_token %}
+    <label for="name">Tên thiết bị *</label>
+    <input type="text" id="name" name="name" required />
+    <label for="device_type">Loại thiết bị *</label>
+    <select id="device_type" name="device_type" required>
+      <option value="ac">Điều hòa</option>
+      <option value="light">Đèn</option>
+      <option value="security">Hệ thống an ninh</option>
+      <option value="other">Khác</option>
+    </select>
+    <label for="location">Vị trí lắp đặt *</label>
+    <input type="text" id="location" name="location" required />
+    <label for="status">Trạng thái</label>
+    <select id="status" name="status">
+      <option value="active">Đang hoạt động</option>
+      <option value="inactive">Không hoạt động</option>
+      <option value="maintenance">Đang bảo trì</option>
+    </select>
+    <div style="margin-top: 6px">
+      <span class="badge badge-status-active">Đang hoạt động</span>
+      <span class="badge badge-status-inactive">Không hoạt động</span>
+      <span class="badge badge-status-maintenance">Đang bảo trì</span>
+    </div>
+    <button type="submit" class="btn btn-primary">Thêm thiết bị</button>
+  </form>
+</div>
+{% endblock %}

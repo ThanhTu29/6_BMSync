@@ -1,0 +1,40 @@
+<table id="saved-charts-table" class="display" style="width: 100%">
+  <thead>
+    <tr>
+      <th>Tên biểu đồ</th>
+      <th>Loại</th>
+      <th>Thời gian</th>
+      <th>Thao tác</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for chart in charts %}
+    <tr>
+      <td>{{ chart.title }}</td>
+      <td>
+        <span
+          class="badge badge-status-{{ chart.type }}"
+          style="display: inline-block; min-width: 90px; text-align: center"
+          >{{ chart.get_type_display|default:chart.type }}</span
+        >
+      </td>
+      <td>{{ chart.created_at|date:'d/m/Y H:i' }}</td>
+      <td>
+        <a
+          href="{% url 'dashboard:manager_chart_detail' chart.id %}"
+          class="btn-gradient"
+          style="padding: 8px 20px; font-weight: 700"
+        >
+          <i class="fas fa-eye"></i> Xem chi tiết
+        </a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="4" style="text-align: center; color: #888">
+        Chưa có biểu đồ nào được lưu.
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

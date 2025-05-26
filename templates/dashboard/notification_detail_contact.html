@@ -1,0 +1,164 @@
+{% extends "dashboard/manager_base.html" %} {% block title %}Liên hệ quản trị -
+BMSync{% endblock %} {% block extra_head %}
+<style>
+  .contact-detail-card {
+    max-width: 540px;
+    margin: 40px auto 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 6px 32px #4a6cf733;
+    padding: 40px 32px 32px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .contact-detail-card h2 {
+    color: #1e3c72;
+    font-size: 1.4em;
+    font-weight: 800;
+    margin-bottom: 18px;
+  }
+  .contact-detail-list p {
+    margin: 8px 0;
+    font-size: 1.08em;
+  }
+  .form-group {
+    margin-bottom: 16px;
+    width: 100%;
+  }
+  .form-group label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+    display: block;
+  }
+  .form-group textarea,
+  .form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1.5px solid #e3eafe;
+    font-size: 1.08em;
+    background: #f7faff;
+    margin-bottom: 6px;
+  }
+  .btn-action {
+    margin-top: 8px;
+  }
+  .btn-gradient {
+    background: linear-gradient(90deg, #1e3c72 60%, #2a5298 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 12px 28px;
+    font-size: 1.08em;
+    box-shadow: 0 2px 8px #e3eafe;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .btn-gradient:hover {
+    background: linear-gradient(90deg, #274bb6 60%, #1e3c72 100%);
+    transform: translateY(-2px) scale(1.03);
+    color: #fff;
+  }
+  .btn-outline {
+    background: #fff;
+    color: #1e3c72;
+    border: 2px solid #1e3c72;
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 12px 28px;
+    font-size: 1.08em;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0;
+  }
+  .btn-outline:hover {
+    background: #e3eafe;
+    color: #274bb6;
+    border-color: #274bb6;
+    transform: translateY(-2px) scale(1.03);
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="contact-detail-card">
+  <h2>Liên hệ quản trị</h2>
+  <div class="contact-detail-list">
+    <p><b>Nội dung liên hệ:</b> {{ notification.message }}</p>
+    <p><b>Thời gian:</b> {{ notification.timestamp|date:'d/m/Y H:i' }}</p>
+  </div>
+  {% if user_profile.is_manager %}
+  <form
+    id="replyContactForm"
+    method="post"
+    style="width: 100%; margin-top: 18px"
+  >
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="reply_message">Nội dung phản hồi</label>
+      <textarea
+        name="reply_message"
+        id="reply_message"
+        required
+        rows="3"
+      ></textarea>
+    </div>
+    <div class="form-group">
+      <label for="reply_request_type">Loại yêu cầu</label>
+      <select name="reply_request_type" id="reply_request_type">
+        <option value="">-- Chọn loại --</option>
+        <option value="add_device">Yêu cầu thêm thiết bị mới</option>
+        <option value="maintenance">Yêu cầu bảo trì</option>
+        <option value="other">Khác</option>
+      </select>
+    </div>
+    <input
+      type="hidden"
+      name="tenant_id"
+      value="{{ notification.related_object_id }}"
+    />
+    <input type="hidden" name="action" value="reply_contact" />
+    <div class="action-buttons" style="margin-top: 24px">
+      <button type="submit" class="btn-gradient">
+        <i class="fas fa-paper-plane" style="margin-right: 8px"></i>Gửi phản hồi
+      </button>
+      <a href="{% url 'dashboard:notifications' %}" class="btn-outline"
+        ><i class="fas fa-arrow-left" style="margin-right: 8px"></i>Quay lại</a
+      >
+    </div>
+    <div id="replyResult" style="margin-top: 12px"></div>
+  </form>
+  <script>
+    document
+      .getElementById("replyContactForm")
+      .addEventListener("submit", function (e) {
+        e.preventDefault();
+        var form = this;
+        var data = new FormData(form);
+        fetch(window.location.href, {
+          method: "POST",
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+          body: data,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById("replyResult").innerHTML = data.msg
+              ? '<div class="alert alert-success">' + data.msg + "</div>"
+              : '<div class="alert alert-danger">' +
+                (data.error || "Có lỗi xảy ra!") +
+                "</div>";
+            if (data.success) setTimeout(() => window.location.reload(), 1200);
+          });
+      });
+  </script>
+  {% endif %}
+</div>
+{% endblock %}

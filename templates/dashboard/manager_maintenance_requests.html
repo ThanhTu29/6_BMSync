@@ -1,0 +1,24 @@
+<table class="table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Thiết bị</th>
+      <th>Trạng thái</th>
+      <th>Thao tác</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for request in maintenance_requests %}
+    <tr style="border-bottom: 1px solid #e0e0e0; padding: 10px">
+      <td>{{ request.id }}</td>
+      <td>{{ request.device.name }}</td>
+      <td style="background-color: #4caf50; color: white">
+        {{ request.get_status_display }}
+      </td>
+      <td>
+        <a href="#" class="btn-gradient"><i class="fas fa-eye"></i> Chi tiết</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

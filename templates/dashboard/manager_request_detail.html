@@ -1,0 +1,184 @@
+{% extends 'dashboard/manager_base.html' %} {% block title %}Chi tiết yêu cầu
+bảo trì - BMSync{% endblock %} {% block extra_head %}
+<style>
+  .request-detail-card {
+    max-width: 540px;
+    margin: 32px auto 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 6px 32px #4a6cf733;
+    padding: 40px 32px 32px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .request-detail-card h2 {
+    color: #1e3c72;
+    font-size: 2em;
+    font-weight: 900;
+    margin-bottom: 24px;
+    letter-spacing: 1px;
+  }
+  .request-detail-list p,
+  .request-detail-list b {
+    font-size: 1.13em;
+    color: #222;
+  }
+  .device-info-form label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+    display: block;
+  }
+  .device-info-form input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1.5px solid #e3eafe;
+    margin-bottom: 10px;
+    font-size: 1.08em;
+    background: #f7faff;
+  }
+  .device-info-form input[readonly] {
+    background: #f4f7fb;
+    color: #888;
+  }
+  .btn-gradient {
+    background: linear-gradient(90deg, #1e3c72 60%, #2a5298 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    padding: 10px 24px;
+    font-size: 1.08em;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px #e3eafe;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .btn-gradient:hover {
+    background: linear-gradient(90deg, #274bb6 60%, #1e3c72 100%);
+    transform: translateY(-2px) scale(1.03);
+    color: #fff;
+  }
+  .btn-outline {
+    background: #fff;
+    color: #1e3c72;
+    border: 2px solid #1e3c72;
+    border-radius: 8px;
+    font-weight: 700;
+    padding: 10px 24px;
+    font-size: 1.08em;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .btn-outline:hover {
+    background: #e3eafe;
+    color: #274bb6;
+    border-color: #274bb6;
+    transform: translateY(-2px) scale(1.03);
+  }
+  .badge {
+    font-size: 1.08em;
+    padding: 6px 16px;
+    border-radius: 16px;
+  }
+  .badge-status-pending {
+    background: #e67e22;
+    color: #fff;
+  }
+  .badge-status-assigned {
+    background: #3498db;
+    color: #fff;
+  }
+  .badge-status-in_progress {
+    background: #8e44ad;
+    color: #fff;
+  }
+  .badge-status-completed {
+    background: #27ae60;
+    color: #fff;
+  }
+  .badge-status-cancelled {
+    background: #7f8c8d;
+    color: #fff;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="request-detail-card">
+  <h2>Chi tiết yêu cầu bảo trì</h2>
+  <div class="request-detail-list">
+    <p><b>Tiêu đề:</b> {{ req.title }}</p>
+    <p><b>Mô tả:</b> {{ req.description }}</p>
+    <p>
+      <b>Trạng thái:</b>
+      <span class="badge badge-status-{{ req.status }}"
+        >{{ req.get_status_display }}</span
+      >
+    </p>
+    <p>
+      <b>Ưu tiên:</b>
+      <span class="badge badge-priority-{{ req.priority }}"
+        >{{ req.get_priority_display }}</span
+      >
+    </p>
+    <p><b>Ngày tạo:</b> {{ req.created_at|date:'d/m/Y H:i' }}</p>
+  </div>
+  {% if req.device %}
+  <h3 style="margin-top: 24px; color: #1e3c72">Thông tin thiết bị liên quan</h3>
+  <form class="device-info-form">
+    <label>Tên thiết bị</label>
+    <input type="text" value="{{ req.device.name }}" readonly />
+    <label>Loại thiết bị</label>
+    <input
+      type="text"
+      value="{{ req.device.get_device_type_display }}"
+      readonly
+    />
+    <label>Vị trí lắp đặt</label>
+    <input type="text" value="{{ req.device.location }}" readonly />
+    <label>Trạng thái</label>
+    <input type="text" value="{{ req.device.get_status_display }}" readonly />
+  </form>
+  {% endif %} {% if req.status == 'pending' %}
+  <form method="post" style="margin-top: 24px; width: 100%">
+    {% csrf_token %}
+    <label for="assign_to">Giao cho nhân viên bảo trì:</label>
+    <select
+      id="assign_to"
+      name="assign_to"
+      required
+      style="
+        width: 100%;
+        padding: 8px 10px;
+        border-radius: 6px;
+        border: 1px solid #e3eafe;
+        margin-bottom: 12px;
+      "
+    >
+      <option value="">-- Chọn nhân viên --</option>
+      {% for m in maintenances %}
+      <option value="{{ m.id }}">
+        {{ m.user.get_full_name|default:m.user.username }}
+      </option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-gradient">Giao việc</button>
+  </form>
+  {% else %}
+  <div style="margin-top: 24px; font-weight: 600; color: #3498db">
+    Đã giao cho: {% if req.assigned_to %} {% if
+    req.assigned_to.user.get_full_name %} {{ req.assigned_to.user.get_full_name
+    }} {% else %} {{ req.assigned_to.user.username }} {% endif %} {% else %}
+    <span style="color: #e74c3c">(Chưa có nhân viên được giao)</span>
+    {% endif %}
+  </div>
+  {% endif %}
+  <div style="margin-top: 18px; display: flex; gap: 12px">
+    <a href="{% url 'dashboard:manager_requests' %}" class="btn btn-outline"
+      >Quay lại</a
+    >
+  </div>
+</div>
+{% endblock %}

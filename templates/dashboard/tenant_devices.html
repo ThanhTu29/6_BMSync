@@ -1,0 +1,203 @@
+{% extends "dashboard/tenant_base.html" %}
+{% block title %}Thiết bị của tôi - BMSync{% endblock %} 
+{% block extra_head %}
+<link
+  rel="stylesheet"
+  href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"
+/>
+<style>
+  .add-device-btn {
+    background: linear-gradient(90deg, #4a6cf7 60%, #6a82fb 100%);
+    color: #fff;
+    font-size: 1.08em;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 28px;
+    box-shadow: 0 2px 8px #e3eafe;
+    transition: background 0.2s, transform 0.2s;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .add-device-btn:hover {
+    background: linear-gradient(90deg, #274bb6 60%, #4a6cf7 100%);
+    transform: translateY(-2px) scale(1.02);
+    color: #fff;
+  }
+  .btn {
+    border: none;
+    border-radius: 6px;
+    padding: 7px 18px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 0 2px;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 4px #e3eafe;
+    display: inline-block;
+  }
+  .btn-info {
+    background: #e3eafe;
+    color: #4a6cf7;
+  }
+  .btn-info:hover {
+    background: #4a6cf7;
+    color: #fff;
+  }
+  .btn-warning {
+    background: #fffbe3;
+    color: #f7b731;
+  }
+  .btn-warning:hover {
+    background: #f7b731;
+    color: #fff;
+  }
+  .btn-danger {
+    background: #ffe3e3;
+    color: #f74a4a;
+  }
+  .btn-danger:hover {
+    background: #f74a4a;
+    color: #fff;
+  }
+  .device-table-container {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px #e3eafe;
+    padding: 18px;
+  }
+  .actions-cell {
+    /* text-align: left; đã có trong tenant_dashboard.html, nếu cần thì thêm ở tenant_base.html */
+  }
+  .table-actions {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Khoảng cách giữa các nút */
+  }
+  .table-actions .btn {
+    padding: 5px 10px;
+    font-size: 0.85em;
+    border-radius: 4px;
+    text-decoration: none;
+    color: white; /* Màu chữ mặc định cho nút */
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    display: inline-flex; /* Để icon và text căn giữa */
+    align-items: center;
+    gap: 4px; /* Khoảng cách giữa icon và text */
+  }
+  .table-actions .btn:hover {
+    opacity: 0.85;
+  }
+  .table-actions .btn-details {
+    background-color: #3498db; /* Màu xanh dương cho nút Chi tiết */
+  }
+  .table-actions .btn-edit {
+    background-color: #f1c40f; /* Màu vàng cho nút Sửa */
+    color: #333; /* Màu chữ cho nút Sửa để dễ đọc hơn */
+  }
+  .table-actions .btn-delete {
+    background-color: #e74c3c; /* Màu đỏ cho nút Xóa */
+  }
+  .btn-create-device {
+    background: linear-gradient(90deg, #4a6cf7 60%, #6a82fb 100%);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.95em;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 8px #4a6cf733;
+  }
+  .btn-create-device:hover {
+    background: linear-gradient(90deg, #274bb6 60%, #4a6cf7 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px #4a6cf744;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="dashboard-header" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 24px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+  <div style="display: flex; align-items: center; gap: 16px;">
+    <div style="background: #4263eb; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+      <i class="fas fa-server" style="color: white; font-size: 20px;"></i>
+    </div>
+    <div>
+      <h1 style="color: #152781; font-weight: 700; margin: 0; font-size: 1.8rem;">Thiết bị của tôi</h1>
+      <p style="color: #4263eb; margin: 4px 0 0 0; font-size: 0.95rem;">Quản lý và theo dõi các thiết bị được giao</p>
+    </div>
+  </div>
+  <a href="{% url 'dashboard:tenant_add_device' %}" class="btn-create-device" style="background: #4263eb; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(66, 99, 235, 0.2); text-decoration: none;">
+    <i class="fas fa-plus"></i> Thêm thiết bị mới
+  </a>
+</div>
+
+<div class="dashboard-table-container">
+  <table id="tenantDevicesTable" class="display" style="width: 100%">
+    <thead>
+      <tr>
+        <th>Tên thiết bị</th>
+        <th>Loại</th>
+        <th>Vị trí</th>
+        <th>Trạng thái</th>
+        <th>Cập nhật lần cuối</th>
+        <th>Thao tác</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for device in my_devices %}
+      <tr>
+        <td>{{ device.name }}</td>
+        <td>{{ device.get_device_type_display }}</td>
+        <td>{{ device.location }}</td>
+        <td><span class="badge badge-status-{{ device.status|lower }}">{{ device.get_status_display }}</span></td>
+        <td>{{ device.last_updated|date:"d/m/Y H:i" }}</td>
+        <td class="actions-cell">
+          <div class="table-actions">
+            <a href="{% url 'dashboard:tenant_device_detail' device.id %}" class="btn btn-details"><i class="fas fa-eye"></i> Chi tiết</a>
+            <a href="{% url 'dashboard:tenant_device_edit' device.id %}" class="btn btn-edit"><i class="fas fa-edit"></i> Sửa</a>
+            <button class="btn btn-delete" onclick="confirmDeleteDevice({{ device.id }}, '{% url "dashboard:tenant_delete_device" %}')"><i class="fas fa-trash"></i> Xóa</button>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script>
+  $(document).ready(function () {
+    $('#tenantDevicesTable').DataTable({
+      language: { url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/vi.json" },
+      pageLength: 10,
+      lengthMenu: [ [5, 10, 25, 50, -1], [5, 10, 25, 50, "Tất cả"] ]
+    });
+  });
+
+function confirmDeleteDevice(deviceId, deleteUrl) {
+  if (confirm("Bạn có chắc chắn muốn xóa thiết bị này không?")) {
+    $.post(deleteUrl, { device_id: deviceId, csrfmiddlewaretoken: '{{ csrf_token }}' }, function(response) {
+      if (response.success) {
+        alert("Đã xóa thiết bị thành công!");
+        location.reload(); // Reload để cập nhật danh sách
+      } else {
+        alert("Có lỗi xảy ra khi xóa thiết bị.");
+      }
+    }).fail(function() {
+      alert("Yêu cầu xóa thất bại. Vui lòng kiểm tra kết nối và thử lại.");
+    });
+  }
+}
+</script>
+{% endblock %}

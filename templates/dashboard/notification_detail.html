@@ -1,0 +1,83 @@
+{% load static %}
+<div class="notification-detail">
+  <h3>Chi tiết thông báo</h3>
+  <div class="notification-content">
+    <p>{{ notification.message }}</p>
+    <p class="notification-time">
+      <i>Thời gian: {{ notification.timestamp|date:'d/m/Y H:i' }}</i>
+    </p>
+  </div>
+
+  {% if notification.notification_type == 'task_assigned' and user_profile.is_maintenance %} {% if task_status != 'in_progress' and task_status != 'completed' %}
+  <div class="notification-actions">
+    <button id="acceptTaskBtn" class="btn btn-success">
+      Xác nhận nhận việc
+    </button>
+    <div id="acceptTaskResult"></div>
+  </div>
+  <script>
+    $(document).ready(function () {
+      $("#acceptTaskBtn").on("click", function () {
+        $("#acceptTaskBtn").prop("disabled", true);
+        $.post(
+          `/dashboard/notifications/{{ notification.id }}/`,
+          {
+            action: "accept_task",
+            csrfmiddlewaretoken: "{{ csrf_token }}",
+          },
+          function (resp) {
+            if (resp.success) {
+              $("#acceptTaskResult").html(
+                '<span style="color:green">' + resp.msg + "</span>"
+              );
+              setTimeout(function () {
+                $("#acceptTaskResult").fadeOut(400, function () {
+                  $(this).html("").show();
+                });
+                $("#acceptTaskBtn").hide();
+                location.reload();
+              }, 1500);
+            } else {
+              $("#acceptTaskResult").html(
+                '<span style="color:red">' + resp.msg + "</span>"
+              );
+              if (
+                resp.msg.includes("đã nhận") ||
+                resp.msg.includes("hoàn thành")
+              ) {
+                $("#acceptTaskBtn").hide();
+                setTimeout(function () {
+                  $("#acceptTaskResult").fadeOut(400, function () {
+                    $(this).html("").show();
+                  });
+                }, 1500);
+              } else {
+                $("#acceptTaskBtn").prop("disabled", false);
+              }
+            }
+          }
+        );
+      });
+    });
+  </script>
+  {% endif %} {% endif %}
+</div>
+
+<style>
+  .notification-detail {
+    padding: 20px;
+  }
+  .notification-content {
+    margin: 15px 0;
+  }
+  .notification-time {
+    color: #666;
+    font-size: 0.9em;
+  }
+  .notification-actions {
+    margin-top: 20px;
+  }
+  #acceptTaskResult {
+    margin-top: 10px;
+  }
+</style>

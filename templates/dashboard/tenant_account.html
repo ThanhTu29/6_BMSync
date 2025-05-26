@@ -1,0 +1,332 @@
+{% extends "dashboard/tenant_base.html" %} {% block title %}Tài khoản của tôi -
+BMSync{% endblock %} {% block extra_head %}
+<style>
+  .account-card {
+    max-width: 520px;
+    margin: 32px auto 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 6px 32px #4a6cf733;
+    padding: 40px 32px 32px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .account-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #e3eafe;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3em;
+    color: #4a6cf7;
+    margin-bottom: 24px;
+  }
+  .account-info-list {
+    width: 100%;
+    margin-bottom: 24px;
+    text-align: left;
+  }
+  .account-info-list p {
+    margin: 10px 0;
+    font-size: 1.1em;
+    color: #333;
+  }
+  .account-info-list p b {
+    color: #4a6cf7;
+    min-width: 120px;
+    display: inline-block;
+  }
+  .account-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 20px;
+  }
+  .account-actions .btn {
+    flex: 1 1 0;
+    padding: 12px 15px;
+    font-size: 1em;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-sizing: border-box;
+    text-decoration: none;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .account-actions .btn-primary {
+    background: linear-gradient(90deg, #4a6cf7 60%, #6a82fb 100%);
+    color: white;
+    box-shadow: 0 2px 8px #4a6cf733;
+    text-decoration: none;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 12px 15px;
+    font-size: 1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+  }
+  .account-actions .btn-primary:hover {
+    background: linear-gradient(90deg, #274bb6 60%, #4a6cf7 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px #4a6cf744;
+  }
+  .account-actions .btn-info {
+    background: linear-gradient(90deg, #2ecc71 60%, #27ae60 100%);
+    color: white;
+    box-shadow: 0 2px 8px #2ecc7133;
+  }
+  .account-actions .btn-info:hover {
+    background: linear-gradient(90deg, #27ae60 60%, #2ecc71 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px #2ecc7144;
+  }
+
+  /* === CSS CHO MODAL - Đảm bảo modal hoạt động đúng === */
+  .modal-overlay {
+    display: none; /* Ẩn mặc định */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(44, 62, 80, 0.6); /* Tăng độ mờ cho background */
+    z-index: 1050; /* Đảm bảo modal ở trên cùng */
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.active {
+    display: flex !important; /* Hiển thị khi active, dùng !important để ưu tiên */
+  }
+  .modal-box {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+    padding: 25px 30px; /* Điều chỉnh padding */
+    min-width: 400px; /* Tăng chiều rộng tối thiểu */
+    max-width: 550px; /* Giới hạn chiều rộng tối đa */
+    width: 90%; /* Chiều rộng linh hoạt */
+    position: relative;
+    animation: modalIn 0.3s ease-out; /* Giữ animation */
+  }
+  /* Keyframes modalIn đã có trong tenant_dashboard, nếu không có ở base, cần thêm ở đây hoặc base */
+  /* @keyframes modalIn { ... } */
+  .modal-box .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+  }
+  .modal-box .modal-header h3 {
+    margin: 0;
+    font-size: 1.4em; /* Tăng kích thước tiêu đề modal */
+    color: #4a6cf7;
+    font-weight: 700;
+  }
+  .modal-box .modal-close {
+    font-size: 1.6em; /* Tăng kích thước nút đóng */
+    color: #888;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    line-height: 1;
+  }
+  .modal-box .modal-close:hover {
+    color: #333;
+  }
+  /* Form styles trong modal kế thừa từ .modal-form đã có trong tenant_base/tenant_dashboard */
+  /* Nếu cần tùy chỉnh riêng cho form trong modal này, thêm ở đây */
+  #updateInfoModalForm .form-group {
+    margin-bottom: 15px;
+  }
+  #updateInfoModalForm label {
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 5px;
+    display: block;
+  }
+  #updateInfoModalForm input.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    font-size: 1em;
+  }
+  #updateInfoModalForm input.form-control:focus {
+    border-color: #4a6cf7;
+    box-shadow: 0 0 0 0.2rem rgba(74, 108, 247, 0.25);
+  }
+  #updateInfoModalForm button[type="submit"] {
+    width: 100%;
+    padding: 12px;
+    font-size: 1.1em;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="account-card">
+  <div class="account-avatar"><i class="fas fa-user-circle"></i></div>
+  <div class="account-info-list">
+    <p><b>Tên đăng nhập:</b> {{ user.username }}</p>
+    <p><b>Email:</b> {{ user.email }}</p>
+    <p><b>Họ tên:</b> {{ user.get_full_name|default:"Chưa cập nhật" }}</p>
+    <p><b>Vai trò:</b> Tenant</p>
+    <p>
+      <b>Trạng thái:</b> {% if user.is_active %}Đang hoạt động{% else %}Đã
+      khóa{% endif %}
+    </p>
+  </div>
+  <div class="account-actions">
+    <a
+      href="{% url 'dashboard:tenant_change_password' %}"
+      class="btn btn-primary"
+    >
+      <i class="fas fa-key"></i> Đổi mật khẩu
+    </a>
+    <button class="btn btn-primary" onclick="openModal('updateInfoModal')">
+      <i class="fas fa-edit"></i> Cập nhật thông tin
+    </button>
+  </div>
+</div>
+
+<!-- Modal cập nhật thông tin -->
+<div id="updateInfoModal" class="modal-overlay">
+  <div class="modal-box">
+    <div
+      class="modal-header"
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 18px;
+      "
+    >
+      <h3 style="margin-bottom: 0">Cập nhật thông tin</h3>
+      <button class="modal-close" onclick="closeModal('updateInfoModal')">
+        &times;
+      </button>
+    </div>
+    <form id="updateInfoModalForm" class="modal-form">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="update_fullname">Họ tên</label>
+        <input
+          type="text"
+          id="update_fullname"
+          name="fullname"
+          value="{{ user.get_full_name }}"
+          class="form-control"
+          placeholder="Nhập họ và tên"
+        />
+      </div>
+      <div class="form-group">
+        <label for="update_email">Email</label>
+        <input
+          type="email"
+          id="update_email"
+          name="email"
+          value="{{ user.email }}"
+          class="form-control"
+          placeholder="Nhập địa chỉ email"
+        />
+      </div>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        style="width: 100%; margin-top: 10px"
+      >
+        Lưu thay đổi
+      </button>
+    </form>
+    <div
+      id="updateInfoModalSuccess"
+      class="modal-success"
+      style="display: none; margin-top: 15px"
+    >
+      Đã cập nhật thông tin thành công!
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_script %}
+<script>
+  function openModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) {
+      modal.classList.add("active");
+    }
+  }
+
+  function closeModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) {
+      modal.classList.remove("active");
+      const form = document.getElementById(id + "Form");
+      if (form) {
+        form.reset();
+      }
+      const successMessage = document.getElementById(id + "Success");
+      if (successMessage) {
+        successMessage.style.display = "none";
+      }
+    }
+  }
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+      const activeModal = document.querySelector(".modal-overlay.active");
+      if (activeModal) {
+        closeModal(activeModal.id);
+      }
+    }
+  });
+
+  $("#updateInfoModalForm").on("submit", function (e) {
+    e.preventDefault();
+    var $form = $(this);
+    var $submitButton = $form.find('button[type="submit"]');
+    var originalButtonText = $submitButton.html();
+    $submitButton
+      .prop("disabled", true)
+      .html('<i class="fas fa-spinner fa-spin"></i> Đang lưu...');
+
+    var data = {
+      fullname: $("#update_fullname").val(),
+      email: $("#update_email").val(),
+      csrfmiddlewaretoken: $form
+        .find('input[name="csrfmiddlewaretoken"]')
+        .val(),
+    };
+
+    $.post('{% url "dashboard:tenant_update_info" %}', data, function (resp) {
+      if (resp.success) {
+        $("#updateInfoModalSuccess")
+          .text(resp.message || "Đã cập nhật thông tin thành công!")
+          .show();
+        setTimeout(function () {
+          location.reload();
+        }, 1500);
+      } else {
+        alert(resp.message || "Có lỗi xảy ra khi cập nhật thông tin.");
+        $submitButton.prop("disabled", false).html(originalButtonText);
+      }
+    }).fail(function () {
+      alert("Yêu cầu cập nhật thất bại. Vui lòng thử lại.");
+      $submitButton.prop("disabled", false).html(originalButtonText);
+    });
+  });
+</script>
+{% endblock %}

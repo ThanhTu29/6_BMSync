@@ -1,0 +1,153 @@
+{% extends 'dashboard/manager_base.html' %} 
+{% block title %}Cập nhật thông tin - BMSync{% endblock %} 
+{% block extra_head %}
+<style>
+  .update-info-card {
+    max-width: 480px;
+    margin: 32px auto 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 6px 32px #4a6cf733;
+    padding: 40px 32px 32px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .update-info-title {
+    color: #1e3c72;
+    font-size: 1.4em;
+    font-weight: 800;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  .update-info-form label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 6px;
+    margin-top: 10px;
+    display: block;
+  }
+  .update-info-form input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1.5px solid #e3eafe;
+    margin-bottom: 10px;
+    font-size: 1.08em;
+    background: #f7faff;
+    transition: border 0.2s, box-shadow 0.2s;
+  }
+  .update-info-form input:focus {
+    border: 1.5px solid #1e3c72;
+    box-shadow: 0 0 0 2px #e3eafe;
+    outline: none;
+  }
+  .form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 24px;
+  }
+  .btn {
+    min-width: 120px;
+    padding: 12px 0;
+    border-radius: 8px;
+    font-size: 1.08em;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    text-decoration: none;
+    box-shadow: 0 2px 8px #e3eafe;
+  }
+  .btn-gradient {
+    background: linear-gradient(90deg, #1e3c72 60%, #2a5298 100%);
+    color: #fff;
+  }
+  .btn-gradient:hover {
+    background: linear-gradient(90deg, #274bb6 60%, #1e3c72 100%);
+    transform: translateY(-2px) scale(1.03);
+  }
+  .btn-outline {
+    background: #fff;
+    color: #1e3c72;
+    border: 2px solid #1e3c72;
+  }
+  .btn-outline:hover {
+    background: #e3eafe;
+    color: #274bb6;
+    border-color: #274bb6;
+    transform: translateY(-2px) scale(1.03);
+  }
+  .alert {
+    margin-bottom: 18px;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 1.05em;
+    font-weight: 600;
+    color: #fff;
+    background: #28a745;
+    display: none;
+    text-align: center;
+  }
+  .alert-error {
+    background: #dc3545;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="update-info-card">
+  <div class="update-info-title">Cập nhật thông tin tài khoản</div>
+  <div id="alert-success" class="alert">Cập nhật thành công!</div>
+  <div id="alert-error" class="alert alert-error">
+    Có lỗi xảy ra, vui lòng thử lại.
+  </div>
+  <form id="updateInfoForm" class="update-info-form">
+    {% csrf_token %}
+    <label for="fullname">Họ tên</label>
+    <input
+      type="text"
+      id="fullname"
+      name="fullname"
+      value="{{ user_profile.user.get_full_name }}"
+      required
+    />
+    <label for="email">Email</label>
+    <input
+      type="email"
+      id="email"
+      name="email"
+      value="{{ user_profile.user.email }}"
+      required
+    />
+    <div class="form-actions">
+      <a href="{% url 'dashboard:manager_account' %}" class="btn btn-outline"
+        >Quay lại</a
+      >
+      <button type="submit" class="btn btn-gradient">Lưu thay đổi</button>
+    </div>
+  </form>
+</div>
+{% endblock %} {% block extra_script %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(function () {
+    $("#updateInfoForm").on("submit", function (e) {
+      e.preventDefault();
+      $("#alert-success").hide();
+      $("#alert-error").hide();
+      $.ajax({
+        url: window.location.pathname,
+        method: "POST",
+        data: $(this).serialize(),
+        success: function (res) {
+          $("#alert-success").fadeIn();
+        },
+        error: function () {
+          $("#alert-error").fadeIn();
+        },
+      });
+    });
+  });
+</script>
+{% endblock %}

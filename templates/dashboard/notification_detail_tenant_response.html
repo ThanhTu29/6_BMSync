@@ -1,0 +1,145 @@
+{% load static %}
+<div class="tenant-response-modal-content" style="padding: 15px">
+  <h4 style="margin-top: 0; color: #337ab7">Phản hồi hoặc Yêu cầu mới</h4>
+  <p style="font-size: 0.9em; color: #555">
+    <strong>Thông báo gốc:</strong> {{ notification.message }}
+  </p>
+
+  <form id="tenantResponseForm" style="margin-top: 20px">
+    <input type="hidden" name="action" value="tenant_response" />
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
+
+    <div class="form-group" style="margin-bottom: 15px">
+      <label
+        for="tenant_response_detail"
+        style="
+          display: block;
+          margin-bottom: 5px;
+          font-weight: bold;
+          color: #333;
+        "
+        >Nội dung phản hồi/yêu cầu của bạn:</label
+      >
+      <textarea
+        name="detail"
+        id="tenant_response_detail"
+        class="form-control"
+        required
+        rows="4"
+        style="
+          width: 100%;
+          padding: 8px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          box-sizing: border-box;
+        "
+      ></textarea>
+    </div>
+
+    <div class="form-group" style="margin-bottom: 15px">
+      <label
+        for="tenant_response_request_type"
+        style="
+          display: block;
+          margin-bottom: 5px;
+          font-weight: bold;
+          color: #333;
+        "
+        >Loại yêu cầu (nếu có):</label
+      >
+      <select
+        name="request_type"
+        id="tenant_response_request_type"
+        class="form-control"
+        style="
+          width: 100%;
+          padding: 8px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          box-sizing: border-box;
+        "
+      >
+        <option value="">-- Chọn nếu là yêu cầu mới --</option>
+        <option value="add_device">Yêu cầu thêm thiết bị</option>
+        <option value="maintenance">Yêu cầu bảo trì</option>
+        <option value="other">Khác</option>
+      </select>
+    </div>
+
+    <button
+      type="submit"
+      id="submitTenantResponseBtn"
+      class="btn btn-primary"
+      style="
+        background-color: #337ab7;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1em;
+      "
+    >
+      Gửi
+    </button>
+
+    <div
+      id="tenantResponseResult"
+      style="
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 4px;
+        text-align: center;
+      "
+    ></div>
+  </form>
+
+  <script>
+    $(document).ready(function () {
+      if (
+        typeof window.tenantResponseFormAttached === "undefined" ||
+        !window.tenantResponseFormAttached
+      ) {
+        $(document).on("submit", "#tenantResponseForm", function (e) {
+          e.preventDefault();
+          var form = $(this);
+          var submitButton = form.find("#submitTenantResponseBtn");
+          var resultDiv = form.find("#tenantResponseResult");
+
+          submitButton.prop("disabled", true).text("Đang gửi...");
+          resultDiv.html("").removeClass("alert alert-success alert-danger");
+
+          $.post(
+            `/dashboard/notifications/{{ notification.id }}/`,
+            form.serialize(),
+            function (resp) {
+              if (resp.success) {
+                resultDiv
+                  .html(resp.msg)
+                  .addClass("alert alert-success")
+                  .css("color", "green");
+                setTimeout(function () {
+                  closeNotificationModal();
+                  updateUnreadCountInSidebar();
+                }, 1500); // Increased timeout for better UX
+              } else {
+                resultDiv
+                  .html(resp.msg || "Có lỗi xảy ra.")
+                  .addClass("alert alert-danger")
+                  .css("color", "red");
+                submitButton.prop("disabled", false).text("Gửi");
+              }
+            }
+          ).fail(function () {
+            resultDiv
+              .html("Yêu cầu thất bại. Vui lòng thử lại.")
+              .addClass("alert alert-danger")
+              .css("color", "red");
+            submitButton.prop("disabled", false).text("Gửi");
+          });
+        });
+        window.tenantResponseFormAttached = true;
+      }
+    });
+  </script>
+</div>

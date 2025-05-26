@@ -1,0 +1,2070 @@
+{% extends "base.html" %} 
+{% load static %} 
+{% block title %}BMSync - Quản lý Thiết bị Tòa nhà Thông minh{% endblock %} 
+{% block content %}
+
+<head>
+  <!-- Add marked.js for Markdown rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<!-- Chatbot Widget -->
+<div id="bmsync-chatbot" class="chatbot-widget">
+  <div class="chat-header">
+    <img
+      src="{% static 'img/images.png' %}"
+      alt="BMSync Assistant"
+      class="chat-logo"
+    />
+    <span>BMSync Assistant</span>
+    <button id="close-chat" onclick="toggleChat()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div id="chat-messages" class="chat-messages">
+    <div class="bot-message">
+      <div class="message-with-avatar">
+        <img
+          src="{% static 'img/images.png' %}"
+          alt="BMSync Assistant"
+          class="message-avatar"
+        />
+        <div
+          class="message-content markdown-content"
+          id="welcome-message"
+        ></div>
+      </div>
+    </div>
+  </div>
+  <div class="chat-input">
+    <input type="text" id="user-input" placeholder="Nhập câu hỏi của bạn..." />
+    <button onclick="sendMessage()">
+      <i class="fas fa-paper-plane"></i>
+    </button>
+  </div>
+</div>
+
+<div id="chat-bubble" class="chat-bubble" onclick="toggleChat()">
+  <i class="fas fa-comments"></i>
+  <span class="notification-badge">1</span>
+</div>
+
+<style>
+  .chatbot-widget {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    width: 350px;
+    height: 500px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+    display: none;
+    flex-direction: column;
+    z-index: 1000;
+    overflow: hidden;
+  }
+
+  .chat-header {
+    padding: 15px;
+    background: linear-gradient(135deg, #4263eb 0%, #3157e2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .chat-logo {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .chat-logo i {
+    font-size: 20px;
+  }
+
+  .chat-header button {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.3s;
+  }
+
+  .chat-header button:hover {
+    opacity: 1;
+  }
+
+  .chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #f8f9fa;
+  }
+
+  .bot-message,
+  .user-message {
+    margin-bottom: 15px;
+    padding: 15px;
+    border-radius: 10px;
+    max-width: 85%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  }
+
+  .bot-message {
+    background: white;
+    margin-right: auto;
+    color: #333;
+  }
+
+  .bot-features {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+  }
+
+  .bot-features li {
+    margin: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .bot-features i {
+    color: #4263eb;
+  }
+
+  .user-message {
+    background: #4263eb;
+    color: white;
+    margin-left: auto;
+  }
+
+  .chat-input {
+    padding: 15px;
+    background: white;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 10px;
+  }
+
+  .chat-input input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 25px;
+    outline: none;
+    font-size: 14px;
+    transition: border-color 0.3s;
+  }
+
+  .chat-input input:focus {
+    border-color: #4263eb;
+  }
+
+  .chat-input button {
+    background: #4263eb;
+    color: white;
+    border: none;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+  }
+
+  .chat-input button:hover {
+    transform: scale(1.05);
+  }
+
+  .chat-bubble {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #4263eb 0%, #3157e2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    transition: transform 0.3s;
+  }
+
+  .notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ff4757;
+    color: white;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    font-weight: bold;
+    animation: bounce 1s infinite;
+  }
+
+  @keyframes bounce {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-3px);
+    }
+  }
+
+  .chat-bubble:hover {
+    transform: scale(1.1);
+  }
+
+  .chat-bubble i {
+    font-size: 24px;
+  }
+
+  /* Thống kê dashboard */
+  .dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  }
+
+  .stat-card {
+    padding: 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    text-align: center;
+    transition: transform 0.3s;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .stat-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 15px;
+    background: #4263eb;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .stat-icon i {
+    font-size: 24px;
+    color: white;
+  }
+
+  .stat-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: #152781;
+    margin-bottom: 5px;
+  }
+
+  .stat-label {
+    color: #666;
+    font-size: 14px;
+  }
+
+  .message-with-avatar {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .message-content {
+    flex: 1;
+  }
+
+  .markdown-content {
+    line-height: 1.6;
+  }
+
+  .markdown-content h4 {
+    margin: 0 0 12px 0;
+    color: #152781;
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
+  .markdown-content p {
+    margin: 12px 0;
+  }
+
+  .markdown-content ul {
+    margin: 12px 0;
+    padding-left: 20px;
+    list-style-type: none;
+  }
+
+  .markdown-content ul li {
+    margin: 10px 0;
+    line-height: 1.5;
+    position: relative;
+    padding-left: 25px;
+    color: #4263eb;
+    font-weight: 500;
+  }
+
+  .markdown-content ul li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #4263eb;
+    font-size: 20px;
+    line-height: 1;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .markdown-content ul li:hover {
+    color: #2b4acb;
+    transform: translateX(5px);
+    transition: all 0.3s ease;
+  }
+
+  .markdown-content p {
+    margin: 12px 0;
+    color: #333;
+    line-height: 1.6;
+  }
+
+  .markdown-content h4 {
+    margin: 0 0 16px 0;
+    color: #152781;
+    font-size: 16px;
+    line-height: 1.4;
+    font-weight: 600;
+  }
+
+  .markdown-content strong {
+    color: #4263eb;
+    font-weight: 600;
+  }
+
+  .markdown-content * {
+    white-space: pre-wrap;
+  }
+
+  .bot-message {
+    background: white;
+    margin-right: auto;
+    color: #333;
+    padding: 15px;
+    border-radius: 10px;
+    max-width: 85%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  }
+
+  .user-message {
+    background: #4263eb;
+    color: white;
+    margin-left: auto;
+    padding: 15px;
+    border-radius: 10px;
+    max-width: 85%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  }
+</style>
+
+<script>
+  // Configure marked.js
+  marked.setOptions({
+    breaks: true,
+    gfm: true,
+  });
+
+  // Initial welcome message
+  const welcomeMessage = `## Chào bạn! 
+
+Tôi là BMSync Assistant, sẵn sàng hỗ trợ bạn tìm hiểu về BMSync - Hệ thống quản lý thiết bị tòa nhà thông minh.
+
+Bạn có câu hỏi nào liên quan đến các tính năng, lợi ích, đối tượng sử dụng hay bất kỳ thông tin nào khác về BMSync không? 
+
+Ví dụ như:
+
+* **BMSync có thể giúp gì cho việc quản lý tòa nhà của tôi?**
+* **BMSync hỗ trợ những loại thiết bị nào?**
+* **Làm thế nào để đăng ký sử dụng BMSync?**
+
+Hãy cho tôi biết bạn muốn tìm hiểu về điều gì nhé!`;
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const welcomeMessageEl = document.getElementById("welcome-message");
+    welcomeMessageEl.innerHTML = marked.parse(welcomeMessage);
+  });
+
+  let chatVisible = false;
+
+  function toggleChat() {
+    const chatbot = document.getElementById("bmsync-chatbot");
+    const bubble = document.getElementById("chat-bubble");
+    chatVisible = !chatVisible;
+    chatbot.style.display = chatVisible ? "flex" : "none";
+    bubble.style.display = chatVisible ? "none" : "flex";
+
+    // Hide notification badge when chat is opened
+    if (chatVisible) {
+      const badge = bubble.querySelector(".notification-badge");
+      if (badge) {
+        badge.style.display = "none";
+      }
+    }
+  }
+
+  // Hide notification badge when clicking anywhere in the chat
+  document
+    .getElementById("bmsync-chatbot")
+    .addEventListener("click", function () {
+      const badge = document.querySelector(".notification-badge");
+      if (badge) {
+        badge.style.display = "none";
+      }
+    });
+
+  // Show notification badge when page loads
+  document.addEventListener("DOMContentLoaded", function () {
+    const badge = document.querySelector(".notification-badge");
+    if (badge) {
+      badge.style.display = "flex";
+    }
+  });
+
+  async function sendMessage() {
+    const input = document.getElementById("user-input");
+    const messages = document.getElementById("chat-messages");
+    const userMessage = input.value.trim();
+
+    if (!userMessage) return;
+
+    // Add user message
+    messages.innerHTML += `<div class="user-message">${userMessage}</div>`;
+    input.value = "";
+    messages.scrollTop = messages.scrollHeight;
+
+    // Show typing indicator
+    const typingId = Date.now();
+    messages.innerHTML += `
+    <div class="bot-message" id="typing-${typingId}">
+      <div class="message-with-avatar">
+        <img
+          src="{% static 'img/images.png' %}"
+          alt="BMSync Assistant"
+          class="message-avatar"
+        />
+        <div class="message-content">Đang nhập...</div>
+      </div>
+    </div>
+  `;
+
+    try {
+      const myHeaders = new Headers();
+      myHeaders.append("Content-Type", "application/json");
+
+      const raw = JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: `Bạn là BMSync Assistant, một chatbot AI cho hệ thống BMSync - Hệ thống quản lý thiết bị tòa nhà thông minh.
+
+Thông tin về BMSync:
+- Giải pháp toàn diện để quản lý thiết bị và bảo trì tòa nhà
+- Tính năng chính: quản lý thiết bị, lập lịch bảo trì, báo cáo phân tích
+- Đối tượng sử dụng: quản lý tòa nhà, người thuê, nhân viên bảo trì
+- Lợi ích: tăng hiệu quả, tiết kiệm chi phí, theo dõi bảo trì tốt hơn
+- Hỗ trợ nhiều loại tòa nhà: văn phòng, chung cư, trường học
+- Tích hợp mobile app để quản lý mọi lúc mọi nơi
+- Hệ thống thông báo thông minh về bảo trì và sự cố
+- Báo cáo chi tiết về hiệu suất thiết bị
+
+Câu hỏi: ${userMessage}
+
+Hãy trả lời bằng tiếng Việt, tập trung vào các chủ đề liên quan đến BMSync. Nếu câu hỏi không liên quan, hãy nhẹ nhàng hướng người dùng về các chủ đề về BMSync.`,
+              },
+            ],
+          },
+        ],
+        safetySettings: [
+          {
+            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+            threshold: "BLOCK_ONLY_HIGH",
+          },
+        ],
+      });
+
+      const requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        body: raw,
+        redirect: "follow",
+      };
+
+      const response = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyAHf1Ph01xnUcMd8dLxoAYCVqLvu5df76M",
+        requestOptions
+      );
+
+      const data = await response.json();
+      console.log("API Response:", data);
+
+      // Remove typing indicator
+      const typingElement = document.getElementById(`typing-${typingId}`);
+      if (typingElement) {
+        typingElement.remove();
+      }
+
+      // Add bot response with avatar and markdown rendering
+      let generatedText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (generatedText) {
+        messages.innerHTML += `
+        <div class="bot-message">
+          <div class="message-with-avatar">
+            <img
+              src="{% static 'img/images.png' %}"
+              alt="BMSync Assistant"
+              class="message-avatar"
+            />
+            <div class="message-content markdown-content">${marked.parse(
+              generatedText
+            )}</div>
+          </div>
+        </div>
+      `;
+      } else {
+        messages.innerHTML += `
+        <div class="bot-message">
+          <div class="message-with-avatar">
+            <img
+              src="{% static 'img/images.png' %}"
+              alt="BMSync Assistant"
+              class="message-avatar"
+            />
+            <div class="message-content">Xin lỗi, tôi không thể xử lý câu hỏi của bạn lúc này. Vui lòng thử lại sau.</div>
+          </div>
+        </div>
+      `;
+      }
+      messages.scrollTop = messages.scrollHeight;
+    } catch (error) {
+      console.error("Error:", error);
+      const typingElement = document.getElementById(`typing-${typingId}`);
+      if (typingElement) {
+        typingElement.remove();
+      }
+      messages.innerHTML += `
+      <div class="bot-message">
+        <div class="message-with-avatar">
+          <img
+            src="{% static 'img/images.png' %}"
+            alt="BMSync Assistant"
+            class="message-avatar"
+          />
+          <div class="message-content">Xin lỗi, có lỗi xảy ra. Vui lòng thử lại sau.</div>
+        </div>
+      </div>
+    `;
+      messages.scrollTop = messages.scrollHeight;
+    }
+  }
+
+  // Handle Enter key
+  document
+    .getElementById("user-input")
+    .addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        sendMessage();
+      }
+    });
+</script>
+
+{% if not user.is_authenticated %}
+<!-- Hero Section cho người dùng chưa đăng nhập -->
+<section
+  class="hero-section"
+  style="
+    background-image: url('{% static 'img/background.jpg' %}');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  "
+>
+  <div class="hero-content">
+    <div class="hero-badge">Giải pháp quản lý #1</div>
+    <h1 class="main-title-quizlet">HỆ THỐNG QUẢN LÝ THIẾT BỊ THÔNG MINH</h1>
+    <p class="hero-subheading">
+      BMSync – Nâng tầm quản lý tài sản & thiết bị tòa nhà
+    </p>
+    <p class="hero-description">
+      Giải pháp toàn diện giúp tối ưu hóa quy trình quản lý, bảo trì và theo dõi
+      thiết bị trong tòa nhà văn phòng, trường học và các công trình hiện đại.
+    </p>
+    <div class="hero-actions">
+      <a href="{% url 'register' %}" class="btn-primary-quizlet">
+        <i class="fas fa-user-plus"></i> Đăng ký ngay
+      </a>
+      <a href="{% url 'about' %}" class="btn-secondary">
+        <i class="fas fa-info-circle"></i> Tìm hiểu thêm
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Số liệu thống kê -->
+<section class="metrics-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>BMSync - Đối tác tin cậy của doanh nghiệp quản lý tòa nhà</h2>
+      <p>
+        Với hơn 5 năm kinh nghiệm, chúng tôi tự hào cung cấp giải pháp quản lý
+        thiết bị tòa nhà hàng đầu tại Việt Nam
+      </p>
+    </div>
+    <div class="metrics-container">
+      <div class="metric-item">
+        <div class="metric-number">500+</div>
+        <div class="metric-label">Tòa nhà đang sử dụng</div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-number">98%</div>
+        <div class="metric-label">Khách hàng hài lòng</div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-number">45%</div>
+        <div class="metric-label">Tiết kiệm chi phí vận hành</div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-number">24/7</div>
+        <div class="metric-label">Hỗ trợ kỹ thuật</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Tính năng nổi bật -->
+<section class="features-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Tính năng nổi bật</h2>
+      <p>BMSync mang đến những giải pháp hoàn hảo cho việc quản lý thiết bị</p>
+    </div>
+    <div class="features-container">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fas fa-tasks"></i>
+        </div>
+        <h3>Quản lý toàn diện</h3>
+        <p>
+          Theo dõi thiết bị theo mã, loại, vị trí với giao diện trực quan để sử
+          dụng
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fas fa-map-marker-alt"></i>
+        </div>
+        <h3>Liên kết địa điểm</h3>
+        <p>
+          Liên kết thiết bị với từng phòng/khu vực cụ thể, hỗ trợ bản đồ tòa nhà
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fas fa-tools"></i>
+        </div>
+        <h3>Quy trình bảo trì</h3>
+        <p>
+          Lịch trình bảo trì tự động, lịch sử sửa chữa và theo dõi tuổi thọ
+          thiết bị
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Ứng dụng di động -->
+<section class="mobile-app-section">
+  <div class="container">
+    <div class="mobile-app-content">
+      <div class="mobile-app-text">
+        <h2>Ứng dụng di động BMSync</h2>
+        <p>
+          Quản lý thiết bị tòa nhà mọi lúc, mọi nơi ngay trên thiết bị di động
+          của bạn
+        </p>
+        <ul class="mobile-features-list">
+          <li>
+            <i class="fas fa-check"></i> Theo dõi trạng thái thiết bị theo thời
+            gian thực
+          </li>
+          <li>
+            <i class="fas fa-check"></i> Nhận thông báo bảo trì và cảnh báo sự
+            cố
+          </li>
+          <li><i class="fas fa-check"></i> Tạo yêu cầu bảo trì nhanh chóng</li>
+          <li>
+            <i class="fas fa-check"></i> Truy cập báo cáo và thống kê mọi lúc
+          </li>
+        </ul>
+        <div class="app-download-btns">
+          <a href="#" class="app-btn" onclick="showFeatureMsg(event)">
+            <i class="fab fa-google-play"></i>
+            <span>Google Play</span>
+          </a>
+          <a href="#" class="app-btn" onclick="showFeatureMsg(event)">
+            <i class="fab fa-apple"></i>
+            <span>App Store</span>
+          </a>
+        </div>
+      </div>
+      <div class="mobile-app-image">
+        <div class="phone-mockup">
+          <div class="phone-screen">
+            <div class="app-interface">
+              <div class="app-header">
+                <i class="fas fa-building"></i>
+                <span>BMSync</span>
+              </div>
+              <div class="app-stats">
+                <div class="stat-box">
+                  <i class="fas fa-check-circle"></i> <span>12</span>
+                </div>
+                <div class="stat-box">
+                  <i class="fas fa-exclamation-triangle"></i> <span>3</span>
+                </div>
+                <div class="stat-box">
+                  <i class="fas fa-tools"></i> <span>5</span>
+                </div>
+              </div>
+              <div class="app-devices">
+                <div class="device-item">
+                  <i class="fas fa-thermometer-half"></i> Thiết bị điều hòa
+                </div>
+                <div class="device-item">
+                  <i class="fas fa-lightbulb"></i> Hệ thống ánh sáng
+                </div>
+                <div class="device-item">
+                  <i class="fas fa-door-closed"></i> Kiểm soát cửa
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Giải pháp cho từng loại công trình -->
+<section class="solutions-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Giải pháp phù hợp</h2>
+      <p>BMSync cung cấp các giải pháp phù hợp với từng loại công trình</p>
+    </div>
+    <div class="solutions-grid">
+      <div class="solution-item">
+        <div class="solution-icon">
+          <i class="fas fa-building"></i>
+        </div>
+        <h3>Tòa nhà văn phòng</h3>
+        <p>
+          Quản lý thiết bị văn phòng, hệ thống HVAC, điện, nước và các tiện ích
+          chung
+        </p>
+        <a href="#" class="solution-link"
+          >Xem chi tiết <i class="fas fa-arrow-right"></i
+        ></a>
+      </div>
+      <div class="solution-item">
+        <div class="solution-icon">
+          <i class="fas fa-home"></i>
+        </div>
+        <h3>Chung cư cao cấp</h3>
+        <p>
+          Quản lý thiết bị căn hộ, hệ thống an ninh, thang máy và tiện ích cư
+          dân
+        </p>
+        <a href="#" class="solution-link"
+          >Xem chi tiết <i class="fas fa-arrow-right"></i
+        ></a>
+      </div>
+      <div class="solution-item">
+        <div class="solution-icon">
+          <i class="fas fa-shopping-cart"></i>
+        </div>
+        <h3>Trung tâm thương mại</h3>
+        <p>Quản lý thiết bị trung tâm, hệ thống chiếu sáng, HVAC và an ninh</p>
+        <a href="#" class="solution-link"
+          >Xem chi tiết <i class="fas fa-arrow-right"></i
+        ></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Quy trình làm việc -->
+<section class="workflow-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Quy trình làm việc đơn giản</h2>
+      <p>BMSync giúp tối ưu hóa quy trình quản lý thiết bị từ A-Z</p>
+    </div>
+    <div class="workflow-process">
+      <div class="workflow-process-connector"></div>
+      <div class="workflow-process-arrow workflow-arrow-1"></div>
+      <div class="workflow-process-arrow workflow-arrow-2"></div>
+      <div class="workflow-process-arrow workflow-arrow-3"></div>
+
+      <div class="workflow-process-item">
+        <div class="workflow-item">
+          <div class="workflow-number">1</div>
+          <div class="workflow-content">
+            <h3>Đăng ký thiết bị</h3>
+            <p>
+              Thêm thông tin chi tiết, mã thiết bị, nhà sản xuất và thông số kỹ
+              thuật
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="workflow-process-item">
+        <div class="workflow-item">
+          <div class="workflow-number">2</div>
+          <div class="workflow-content">
+            <h3>Phân bố vị trí</h3>
+            <p>Gắn thiết bị vào phòng/khu vực cụ thể trong tòa nhà</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="workflow-process-item">
+        <div class="workflow-item">
+          <div class="workflow-number">3</div>
+          <div class="workflow-content">
+            <h3>Lập lịch bảo trì</h3>
+            <p>Tạo lịch bảo trì định kỳ và nhận thông báo tự động</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="workflow-process-item">
+        <div class="workflow-item">
+          <div class="workflow-number">4</div>
+          <div class="workflow-content">
+            <h3>Giám sát & Báo cáo</h3>
+            <p>Xem báo cáo hiệu suất thiết bị và lịch sử bảo trì</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Các tính năng khác -->
+<section class="additional-features">
+  <div class="container">
+    <div class="section-header">
+      <h2>Các tính năng khác</h2>
+      <p>BMSync không chỉ dừng lại ở quản lý cơ bản</p>
+    </div>
+    <div class="additional-features-grid">
+      <div class="feature-item">
+        <i class="fas fa-chart-line"></i>
+        <span>Phân tích dữ liệu và dự báo hỏng hóc</span>
+      </div>
+      <div class="feature-item">
+        <i class="fas fa-qrcode"></i>
+        <span>Quét mã QR để truy xuất thông tin nhanh</span>
+      </div>
+      <div class="feature-item">
+        <i class="fas fa-file-export"></i>
+        <span>Xuất báo cáo đầy đủ định dạng PDF, Excel</span>
+      </div>
+      <div class="feature-item">
+        <i class="fas fa-users"></i>
+        <span>Phân quyền người dùng chi tiết</span>
+      </div>
+      <div class="feature-item">
+        <i class="fas fa-bell"></i>
+        <span>Hệ thống thông báo thông minh</span>
+      </div>
+      <div class="feature-item">
+        <i class="fas fa-cloud"></i>
+        <span>Sao lưu dữ liệu an toàn trên cloud</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-content">
+      <h2>Sẵn sàng tối ưu hóa quản lý thiết bị tòa nhà?</h2>
+      <p>
+        Hãy đăng ký ngay hôm nay để trải nghiệm sức mạnh của nền tảng BMSync
+      </p>
+      <div class="cta-buttons">
+        <a href="{% url 'register' %}" class="btn-primary-quizlet">
+          <i class="fas fa-user-plus"></i> Đăng ký ngay
+        </a>
+        <a href="{% url 'contact' %}" class="btn-outline">
+          <i class="fas fa-headset"></i> Liên hệ tư vấn
+        </a>
+      </div>
+    </div>
+    <div class="cta-image">
+      <div class="cta-shape"></div>
+      <div class="dashboard-preview">
+        <div class="dashboard-header">
+          <div class="dashboard-title">
+            <i class="fas fa-chart-line"></i> Dashboard
+          </div>
+          <div class="dashboard-actions">
+            <i class="fas fa-bell"></i>
+            <i class="fas fa-cog"></i>
+            <i class="fas fa-user"></i>
+          </div>
+        </div>
+        <div class="dashboard-stats">
+          <div class="dash-stat">
+            <div class="dash-stat-icon"><i class="fas fa-server"></i></div>
+            <div class="dash-stat-number">150+</div>
+            <div class="dash-stat-label">Thiết bị</div>
+          </div>
+          <div class="dash-stat">
+            <div class="dash-stat-icon"><i class="fas fa-tools"></i></div>
+            <div class="dash-stat-number">24</div>
+            <div class="dash-stat-label">Bảo trì</div>
+          </div>
+          <div class="dash-stat">
+            <div class="dash-stat-icon"><i class="fas fa-chart-pie"></i></div>
+            <div class="dash-stat-number">95%</div>
+            <div class="dash-stat-label">Hiệu suất</div>
+          </div>
+        </div>
+        <div class="dashboard-chart">
+          <div class="chart-title">Thống kê thiết bị theo trạng thái</div>
+          <div class="chart-container">
+            <div class="chart-bar" style="height: 80%; background: #4caf50">
+              <span class="chart-label">Hoạt động tốt</span>
+            </div>
+            <div class="chart-bar" style="height: 60%; background: #ffc107">
+              <span class="chart-label">Cần bảo trì</span>
+            </div>
+            <div class="chart-bar" style="height: 20%; background: #f44336">
+              <span class="chart-label">Đang sửa chữa</span>
+            </div>
+          </div>
+        </div>
+        <div class="dashboard-recent">
+          <div class="recent-title">Hoạt động gần đây</div>
+          <div class="recent-item">
+            <i class="fas fa-check-circle text-success"></i>
+            <span>Bảo trì định kỳ máy lạnh P.501</span>
+          </div>
+          <div class="recent-item">
+            <i class="fas fa-exclamation-circle text-warning"></i>
+            <span>Yêu cầu kiểm tra hệ thống điện P.302</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Khách hàng nói gì về chúng tôi</h2>
+      <p>Những đánh giá từ các khách hàng đã và đang sử dụng BMSync</p>
+    </div>
+
+    <div class="testimonials-slider">
+      <div class="testimonial-item">
+        <div class="testimonial-content">
+          <p>
+            "BMSync đã giúp chúng tôi tiết kiệm 40% thời gian trong việc quản lý
+            và bảo trì thiết bị tòa nhà. Giao diện thân thiện và dễ sử dụng."
+          </p>
+        </div>
+        <div class="testimonial-author">
+          <div class="author-image">
+            <img
+              src="{% static 'img/avatar1.jpg' %}"
+              alt="Avatar"
+              onerror="this.src='https://via.placeholder.com/60'"
+            />
+          </div>
+          <div class="author-info">
+            <h4>Tăng Quang Nhật Nam</h4>
+            <p>Giám đốc kỹ thuật - Tada</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-item">
+        <div class="testimonial-content">
+          <p>
+            "Hệ thống thông báo bảo trì tự động của BMSync giúp chúng tôi không
+            bỏ lỡ bất kỳ lịch bảo trì nào, đảm bảo các thiết bị luôn hoạt động
+            tốt."
+          </p>
+        </div>
+        <div class="testimonial-author">
+          <div class="author-image">
+            <img
+              src="{% static 'img/avatar2.png' %}"
+              alt="Avatar"
+              onerror="this.src='https://via.placeholder.com/60'"
+            />
+          </div>
+          <div class="author-info">
+            <h4>Võ Hoàng Phúc</h4>
+            <p>Quản lý tòa nhà - Tada</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="faq-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Câu hỏi thường gặp</h2>
+      <p>Giải đáp các thắc mắc phổ biến về BMSync</p>
+    </div>
+
+    <div class="faq-container">
+      <div class="faq-item">
+        <div class="faq-question">
+          <h3>BMSync có thích hợp cho mọi loại tòa nhà không?</h3>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          <p>
+            BMSync được thiết kế để đáp ứng nhu cầu quản lý thiết bị cho nhiều
+            loại tòa nhà khác nhau, từ văn phòng, chung cư đến trường học và
+            trung tâm thương mại. Hệ thống có thể tùy chỉnh để phù hợp với quy
+            mô và đặc thù của từng loại công trình.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">
+          <h3>Chi phí triển khai BMSync là bao nhiêu?</h3>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          <p>
+            Chi phí triển khai BMSync phụ thuộc vào quy mô tòa nhà, số lượng
+            thiết bị cần quản lý và các tính năng bổ sung. Chúng tôi cung cấp
+            nhiều gói dịch vụ khác nhau để phù hợp với ngân sách của khách hàng.
+            Vui lòng liên hệ với chúng tôi để được tư vấn chi tiết.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">
+          <h3>Mất bao lâu để triển khai BMSync?</h3>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          <p>
+            Thời gian triển khai trung bình từ 2-4 tuần, tùy thuộc vào quy mô dự
+            án. Quy trình bao gồm khảo sát, cài đặt, nhập dữ liệu thiết bị, đào
+            tạo nhân viên và vận hành thử nghiệm.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">
+          <h3>BMSync có hỗ trợ tích hợp với các hệ thống khác không?</h3>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          <p>
+            Có, BMSync hỗ trợ tích hợp với nhiều hệ thống quản lý tòa nhà khác
+            như BMS (Building Management System), hệ thống HVAC, hệ thống an
+            ninh, phòng cháy chữa cháy và các phần mềm kế toán phổ biến.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="newsletter-section">
+  <div class="container">
+    <div class="newsletter-content">
+      <h2>Đăng ký nhận tin</h2>
+      <p>Cập nhật những tính năng mới nhất và mẹo quản lý thiết bị hiệu quả</p>
+      <form class="newsletter-form-large">
+        <input type="email" placeholder="Nhập email của bạn" />
+        <button type="button" onclick="showFeatureMsg(event)">
+          Đăng ký ngay <i class="fas fa-paper-plane"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+{% else %} 
+{% if user_role == 'manager' %}
+<!-- Dashboard cho Manager -->
+<section class="manager-dashboard-section">
+  <div class="container">
+    <div class="welcome-banner">
+      <div class="welcome-content">
+        <h1>Xin chào, {{ user.username }}!</h1>
+        <p>
+          Chào mừng trở lại với hệ thống quản lý BMSync. Đây là tổng quan về hệ
+          thống quản lý thiết bị tòa nhà của bạn.
+        </p>
+      </div>
+      <div class="quick-stats">
+        <div class="quick-stat-item">
+          <i class="fas fa-tablet-alt"></i>
+          <span>{{ total_devices }} Thiết bị</span>
+        </div>
+        <div class="quick-stat-item">
+          <i class="fas fa-users"></i>
+          <span>{{ new_notifications }} Thông báo mới</span>
+        </div>
+      </div>
+    </div>
+    <div class="dashboard-overview">
+      <div class="overview-header">
+        <h2><i class="fas fa-chart-line"></i> Tổng quan hệ thống</h2>
+        <div class="date-filter">
+          <span>Hiển thị: </span>
+          <select id="date-range">
+            <option value="today">Hôm nay</option>
+            <option value="week" selected>Tuần này</option>
+            <option value="month">Tháng này</option>
+            <option value="quarter">Quý này</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="dashboard-stats">
+      <div class="stat-card primary">
+        <div class="stat-icon"><i class="fas fa-boxes"></i></div>
+        <div class="stat-content">
+          <div class="stat-value">{{ total_devices }}</div>
+          <div class="stat-label">Tổng thiết bị</div>
+          <div class="stat-trend positive">
+            <i class="fas fa-arrow-up"></i> 5% so với tháng trước
+          </div>
+        </div>
+      </div>
+      <div class="stat-card info">
+        <div class="stat-icon"><i class="fas fa-clipboard-list"></i></div>
+        <div class="stat-content">
+          <div class="stat-value">{{ maintenance_requests }}</div>
+          <div class="stat-label">Yêu cầu bảo trì</div>
+          <div class="stat-trend negative">
+            <i class="fas fa-arrow-down"></i> 12% so với tháng trước
+          </div>
+        </div>
+      </div>
+      <div class="stat-card warning">
+        <div class="stat-icon"><i class="fas fa-exclamation-circle"></i></div>
+        <div class="stat-content">
+          <div class="stat-value">{{ pending_requests }}</div>
+          <div class="stat-label">Đang chờ xử lý</div>
+          <div class="stat-trend neutral">
+            <i class="fas fa-minus"></i> Không thay đổi
+          </div>
+        </div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-content">
+          <div class="stat-value">{{ operational_rate }}%</div>
+          <div class="stat-label">Tỷ lệ hoạt động</div>
+          <div class="stat-trend positive">
+            <i class="fas fa-arrow-up"></i> 2% so với tháng trước
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="manager-quick-actions">
+      <h2>Thao tác nhanh</h2>
+      <div class="action-buttons">
+        <a href="{% url 'dashboard:manager_devices' %}" class="action-btn">
+          <i class="fas fa-tablet-alt"></i> Quản lý thiết bị
+        </a>
+        <a href="{% url 'dashboard:manager_requests' %}" class="action-btn">
+          <i class="fas fa-tools"></i> Quản lý bảo trì
+        </a>
+        <a href="{% url 'dashboard:manager_reports' %}" class="action-btn">
+          <i class="fas fa-chart-bar"></i> Báo cáo & Thống kê
+        </a>
+        <a href="{% url 'dashboard:manager_devices' %}" class="action-btn">
+          <i class="fas fa-map-marked-alt"></i> Quản lý khu vực
+        </a>
+        <a href="{% url 'dashboard:manager_account' %}" class="action-btn">
+          <i class="fas fa-user-cog"></i> Tài khoản của tôi
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+{% elif user_role == 'tenant' %}
+<!-- Dashboard cho Tenant -->
+<section class="tenant-dashboard-section">
+  <div class="container">
+    <div class="welcome-banner">
+      <div class="welcome-content">
+        <h1>Xin chào, {{ user.get_full_name|default:user.username }}!</h1>
+        <p>
+          Chào mừng trở lại với hệ thống quản lý thiết bị BMSync. Dưới đây là
+          tổng quan về thiết bị và yêu cầu bảo trì của bạn.
+        </p>
+      </div>
+    </div>
+    <div class="dashboard-stats">
+      <div class="stat-card primary">
+        <div class="stat-icon"><i class="fas fa-tablet-alt"></i></div>
+        <div class="stat-content">
+          <div class="stat-value">{{ my_devices }}</div>
+          <div class="stat-label">Thiết bị của tôi</div>
+        </div>
+      </div>
+      <div class="stat-card info">
+        <div class="stat-icon"><i class="fas fa-clipboard-list"></i></div>
+        <div class="stat-content">
+          <div class="stat-value">{{ my_requests }}</div>
+          <div class="stat-label">Yêu cầu bảo trì</div>
+        </div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-icon"><i class="fas fa-check-double"></i></div>
+        <div class="stat-content">
+          <div class="stat-value">{{ completed_requests }}</div>
+          <div class="stat-label">Đã hoàn thành</div>
+        </div>
+      </div>
+      <div class="stat-card info">
+        <div class="stat-icon"><i class="fas fa-history"></i></div>
+        <div class="stat-content">
+          <div class="stat-value">{{ maintenance_history }}</div>
+          <div class="stat-label">Lịch sử bảo trì</div>
+        </div>
+      </div>
+    </div>
+    <div class="tenant-quick-actions">
+      <h2>Thao tác nhanh</h2>
+      <div class="action-buttons">
+        <a href="{% url 'dashboard:tenant_devices' %}" class="action-btn">
+          <i class="fas fa-tablet-alt"></i> Thiết bị của tôi
+        </a>
+        <a href="{% url 'dashboard:tenant_requests' %}" class="action-btn">
+          <i class="fas fa-tools"></i> Yêu cầu bảo trì
+        </a>
+        <a href="{% url 'dashboard:tenant_add_device' %}" class="action-btn">
+          <i class="fas fa-plus-circle"></i> Yêu cầu thêm thiết bị
+        </a>
+        <a href="{% url 'dashboard:tenant_account' %}" class="action-btn">
+          <i class="fas fa-user-cog"></i> Tài khoản của tôi
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+{% elif user_role == 'maintenance' %}
+<!-- Dashboard cho Nhân viên bảo trì -->
+<section class="maintenance-dashboard-section">
+  <div class="container">
+    <div class="welcome-banner">
+      <div class="welcome-content">
+        <h1>Dashboard, {{ user.get_full_name|default:user.username }}!</h1>
+        <p>Đây là tổng quan nhiệm vụ bảo trì của bạn.</p>
+      </div>
+    </div>
+    <div class="dashboard-stats">
+      <div class="stat-card primary">
+        <div class="stat-icon"><i class="fas fa-tasks"></i></div>
+        <div class="stat-content">
+          <div class="stat-value">{{ assigned_tasks }}</div>
+          <div class="stat-label">Tổng công việc</div>
+        </div>
+      </div>
+      <div class="stat-card info">
+        <div class="stat-icon"><i class="fas fa-bolt"></i></div>
+        <div class="stat-content">
+          <div class="stat-value">{{ new_tasks }}</div>
+          <div class="stat-label">Việc mới</div>
+        </div>
+      </div>
+      <div class="stat-card warning">
+        <div class="stat-icon"><i class="fas fa-spinner"></i></div>
+        <div class="stat-content">
+          <div class="stat-value">{{ processing_tasks }}</div>
+          <div class="stat-label">Đang xử lý</div>
+        </div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-content">
+          <div class="stat-value">{{ completed_tasks }}</div>
+          <div class="stat-label">Đã hoàn thành</div>
+        </div>
+      </div>
+    </div>
+    <div class="maintenance-quick-actions">
+      <div class="action-buttons">
+        <a href="{% url 'dashboard:maintenance_tasks' %}" class="action-btn">
+          <i class="fas fa-tasks"></i> Công việc
+        </a>
+        <a href="{% url 'dashboard:maintenance_history' %}" class="action-btn">
+          <i class="fas fa-history"></i> Lịch sử
+        </a>
+        <a href="{% url 'dashboard:notifications' %}" class="action-btn">
+          <i class="fas fa-bell"></i> Thông báo
+        </a>
+        <a href="{% url 'dashboard:maintenance_account' %}" class="action-btn">
+          <i class="fas fa-user-cog"></i> Tài khoản
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+{% else %}
+<!-- Fallback cho người dùng đã đăng nhập nhưng không rõ vai trò -->
+<section class="dashboard-section">
+  <div class="container">
+    <div class="welcome-banner">
+      <div class="welcome-content">
+        <h1>Xin chào, {{ user.username }}!</h1>
+        <p>Chào mừng trở lại với hệ thống quản lý thiết bị BMSync.</p>
+      </div>
+    </div>
+
+    <div class="quick-access">
+      <h2>Truy cập nhanh</h2>
+      <div class="action-buttons">
+        <a href="{% url 'dashboard:dashboard' %}" class="action-btn">
+          <i class="fas fa-tachometer-alt"></i> Đến Dashboard
+        </a>
+        <a href="{% url 'dashboard:notifications' %}" class="action-btn">
+          <i class="fas fa-bell"></i> Thông báo
+        </a>
+        <a href="{% url 'account_info' %}" class="action-btn">
+          <i class="fas fa-user-cog"></i> Tài khoản
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %} {% endif %}
+
+<style>
+  /* CSS cho các section của dashboard */
+  .welcome-banner {
+    background: linear-gradient(135deg, #a2b9d6 0%, #080e0f 100%);
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    color: #fff;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .welcome-content h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
+  }
+
+  .welcome-content p {
+    font-size: 16px;
+    opacity: 0.9;
+  }
+
+  .dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  }
+
+  .stat-card {
+    padding: 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    text-align: center;
+    transition: transform 0.3s;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .stat-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 15px;
+    background: #4263eb;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .stat-icon i {
+    font-size: 24px;
+    color: white;
+  }
+
+  .stat-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: #152781;
+    margin-bottom: 5px;
+  }
+
+  .stat-label {
+    color: #666;
+    font-size: 14px;
+  }
+
+  .action-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+  }
+
+  .action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    color: #333;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    border: 1px solid #eee;
+  }
+
+  .action-btn i {
+    margin-right: 10px;
+    font-size: 18px;
+    color: #0a67eb;
+  }
+
+  .action-btn:hover {
+    background: #f8f9fa;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    color: #0a67eb;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .welcome-banner {
+      padding: 20px;
+    }
+
+    .dashboard-stats {
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+
+    .stat-card {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .stat-icon {
+      margin-right: 0;
+      margin-bottom: 15px;
+    }
+
+    .action-buttons {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* CSS bổ sung cho trang chủ Manager */
+  .welcome-banner {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .quick-stats {
+    display: flex;
+    margin-top: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+  }
+
+  .quick-stat-item {
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+    padding: 5px 10px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+  }
+
+  .quick-stat-item i {
+    margin-right: 8px;
+    font-size: 16px;
+  }
+
+  .dashboard-overview {
+    margin-bottom: 25px;
+  }
+
+  .overview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .overview-header h2 {
+    display: flex;
+    align-items: center;
+    font-size: 22px;
+    margin: 0;
+  }
+
+  .overview-header h2 i {
+    margin-right: 10px;
+    color: #0a67eb;
+  }
+
+  .date-filter {
+    display: flex;
+    align-items: center;
+  }
+
+  .date-filter span {
+    margin-right: 10px;
+    color: #666;
+  }
+
+  .date-filter select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #f8f9fa;
+    color: #333;
+  }
+
+  .stat-trend {
+    font-size: 12px;
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+  }
+
+  .stat-trend i {
+    margin-right: 4px;
+    font-size: 10px;
+  }
+
+  .stat-trend.positive {
+    color: #28a745;
+  }
+
+  .stat-trend.negative {
+    color: #dc3545;
+  }
+
+  .stat-trend.neutral {
+    color: #6c757d;
+  }
+
+  .dashboard-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+
+  .dashboard-col-left {
+    flex: 3;
+  }
+
+  .dashboard-col-right {
+    flex: 2;
+  }
+
+  .dashboard-panel {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  }
+
+  .dashboard-panel h3 {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 12px;
+  }
+
+  .dashboard-panel h3 i {
+    margin-right: 10px;
+    color: #fdfdfd;
+  }
+
+  .priority-tasks {
+    margin-bottom: 15px;
+  }
+
+  .task-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background: #f8f9fa;
+    border-left: 4px solid #ddd;
+  }
+
+  .task-item.urgent {
+    border-left-color: #dc3545;
+  }
+
+  .task-item.high {
+    border-left-color: #fd7e14;
+  }
+
+  .task-item.normal {
+    border-left-color: #20c997;
+  }
+
+  .task-status {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 15px;
+  }
+
+  .task-item.urgent .task-status {
+    background: #dc3545;
+  }
+
+  .task-item.high .task-status {
+    background: #fd7e14;
+  }
+
+  .task-item.normal .task-status {
+    background: #20c997;
+  }
+
+  .task-content {
+    flex: 1;
+  }
+
+  .task-title {
+    font-weight: 500;
+    margin-bottom: 5px;
+  }
+
+  .task-meta {
+    display: flex;
+    font-size: 12px;
+    color: #6c757d;
+  }
+
+  .task-meta span {
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+  }
+
+  .task-meta i {
+    margin-right: 5px;
+  }
+
+  .task-actions {
+    display: flex;
+  }
+
+  .btn-task-action {
+    background: white;
+    border: 1px solid #ddd;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 5px;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-task-action:hover {
+    background: #f1f3f5;
+    color: #0a67eb;
+  }
+
+  .view-all-link {
+    display: inline-block;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #0a67eb;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background 0.2s;
+  }
+
+  .view-all-link:hover {
+    background: #f0f7ff;
+  }
+
+  .view-all-link i {
+    font-size: 12px;
+    margin-left: 5px;
+  }
+
+  .alerts-list {
+    margin-bottom: 15px;
+  }
+
+  .alert-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background: #f8f9fa;
+  }
+
+  .alert-item.critical {
+    background: #fff5f5;
+  }
+
+  .alert-item.warning {
+    background: #fff9db;
+  }
+
+  .alert-item.info {
+    background: #e7f5ff;
+  }
+
+  .alert-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    color: white;
+  }
+
+  .alert-item.critical .alert-icon {
+    background: #dc3545;
+  }
+
+  .alert-item.warning .alert-icon {
+    background: #fd7e14;
+  }
+
+  .alert-item.info .alert-icon {
+    background: #228be6;
+  }
+
+  .alert-content {
+    flex: 1;
+  }
+
+  .alert-title {
+    font-weight: 500;
+    margin-bottom: 3px;
+  }
+
+  .alert-time {
+    font-size: 12px;
+    color: #6c757d;
+  }
+
+  .alert-actions {
+    display: flex;
+  }
+
+  .btn-alert-action {
+    background: white;
+    border: 1px solid #ddd;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 5px;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-alert-action:hover {
+    background: #f1f3f5;
+    color: #0a67eb;
+  }
+
+  .performance-panel {
+    height: calc(100% - 340px);
+    min-height: 280px;
+  }
+
+  .performance-chart {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .chart-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .chart-circle {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: conic-gradient(
+      #28a745 0% 78%,
+      #17a2b8 78% 94%,
+      #ffc107 94% 100%
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .chart-inner {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+  }
+
+  .chart-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    margin-right: 8px;
+  }
+
+  .legend-color.optimal {
+    background: #28a745;
+  }
+
+  .legend-color.normal {
+    background: #17a2b8;
+  }
+
+  .legend-color.attention {
+    background: #ffc107;
+  }
+
+  .maintenance-schedule {
+    margin-bottom: 15px;
+  }
+
+  .schedule-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background: #f8f9fa;
+  }
+
+  .schedule-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background: #0a67eb;
+    color: white;
+    border-radius: 8px;
+    margin-right: 15px;
+  }
+
+  .schedule-day {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .schedule-month {
+    font-size: 12px;
+    opacity: 0.8;
+  }
+
+  .schedule-content {
+    flex: 1;
+  }
+
+  .schedule-title {
+    font-weight: 500;
+    margin-bottom: 3px;
+  }
+
+  .schedule-location {
+    font-size: 12px;
+    color: #6c757d;
+  }
+
+  .schedule-status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .schedule-status.planned {
+    background: #e9ecef;
+    color: #495057;
+  }
+
+  .schedule-status.confirmed {
+    background: #d3f9d8;
+    color: #2b8a3e;
+  }
+
+  .schedule-status.pending {
+    background: #fff3bf;
+    color: #e67700;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 992px) {
+    .dashboard-row {
+      flex-direction: column;
+    }
+
+    .dashboard-col-left,
+    .dashboard-col-right {
+      width: 100%;
+    }
+
+    .performance-panel {
+      height: auto;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .quick-stats {
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .quick-stat-item {
+      margin-right: 0;
+    }
+
+    .overview-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .task-meta {
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .task-meta span {
+      margin-right: 0;
+    }
+  }
+</style>
+
+<script>
+  function showFeatureMsg(event) {
+    event.preventDefault();
+    alert("Tính năng này đang được phát triển và sẽ sớm ra mắt!");
+  }
+
+  // Thêm script cho trang Manager
+  document.addEventListener("DOMContentLoaded", function () {
+    // Mã JavaScript để xử lý các tương tác trên trang Manager
+    // Sẽ được triển khai sau
+  });
+</script>
+{% endblock %}

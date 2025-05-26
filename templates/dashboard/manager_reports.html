@@ -1,0 +1,848 @@
+{% extends 'dashboard/manager_base.html' %} 
+{% load static %} 
+{% block title %}Báo cáo & Thống kê - BMSync{% endblock %} 
+{% block extra_head %}
+<link
+  rel="stylesheet"
+  href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"
+/>
+<style>
+  .report-info-card {
+    background: linear-gradient(90deg, #e3eafe 60%, #f4f7fb 100%);
+    border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(30, 60, 114, 0.08);
+    padding: 24px 28px 18px 28px;
+    margin-bottom: 32px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .report-info-title {
+    font-size: 1.25em;
+    font-weight: 800;
+    color: #1e3c72;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .report-info-desc {
+    font-size: 1.08em;
+    color: #222;
+    line-height: 1.6;
+  }
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.3);
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  .modal-overlay.show {
+    display: flex;
+  }
+  .modal-box {
+    background: #fff;
+    border-radius: 18px;
+    padding: 36px 32px 28px 32px;
+    min-width: 340px;
+    width: 500px;
+    max-width: 95vw;
+    box-shadow: 0 8px 40px #4a6cf755;
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin: 0 !important;
+    box-sizing: border-box;
+  }
+  .modal-close {
+    position: absolute;
+    right: 18px;
+    top: 12px;
+    font-size: 1.8em;
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .modal-close:hover {
+    color: #e74c3c;
+  }
+  .modal-box h3 {
+    color: #1e3c72;
+    font-weight: 900;
+    margin-bottom: 18px;
+    text-align: center;
+    letter-spacing: 0.5px;
+  }
+  .modal-box .form-group label {
+    font-weight: 700;
+    color: #1e3c72;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .modal-box .form-control {
+    border-radius: 8px;
+    border: 1.5px solid #e3eafe;
+    padding: 8px 12px;
+    font-size: 1em;
+    margin-bottom: 8px;
+    width: 100%;
+    background: #f7fafd;
+    transition: border 0.2s;
+  }
+  .modal-box .form-control:focus {
+    border: 1.5px solid #1e3c72;
+    outline: none;
+  }
+  .modal-box .btn-gradient {
+    min-width: 110px;
+    font-size: 1.08em;
+    padding: 10px 0;
+    border-radius: 8px;
+    margin-left: 8px;
+  }
+  .modal-box .btn-secondary {
+    background: #e3eafe;
+    color: #1e3c72;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    padding: 10px 0;
+    min-width: 90px;
+    margin-right: 8px;
+    transition: background 0.2s;
+  }
+  .modal-box .btn-secondary:hover {
+    background: #d6e0f5;
+    color: #1e3c72;
+  }
+  .btn-create-chart {
+    background: linear-gradient(90deg, #1e3c72 60%, #2a5298 100%);
+    color: #fff;
+    border: none;
+    border-radius: 24px;
+    font-weight: 800;
+    font-size: 1.13em;
+    padding: 12px 32px;
+    box-shadow: 0 4px 16px #e3eafe;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+  .btn-create-chart:hover {
+    background: linear-gradient(90deg, #274bb6 60%, #1e3c72 100%);
+    transform: translateY(-2px) scale(1.04);
+    color: #fff;
+    box-shadow: 0 6px 24px #e3eafe;
+  }
+  /* General gradient button style (blue) - copied from dashboard */
+  .btn-gradient {
+    background: linear-gradient(90deg, #1e3c72 60%, #2a5298 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    padding: 8px 18px; /* Consistent padding */
+    min-width: 90px;
+    white-space: nowrap;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px #e3eafe;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px; /* Space between icon and text */
+  }
+  .btn-gradient:hover {
+    background: linear-gradient(90deg, #274bb6 60%, #1e3c72 100%);
+    transform: translateY(-2px) scale(1.03);
+    color: #fff;
+  }
+  /* Danger gradient button style (red) */
+  .btn-gradient-danger {
+    background: linear-gradient(90deg, #e74c3c 60%, #c0392b 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    padding: 8px 18px; /* Consistent padding */
+    min-width: 90px;
+    white-space: nowrap;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px; /* Space between icon and text */
+  }
+  .btn-gradient-danger:hover {
+    background: linear-gradient(90deg, #c0392b 60%, #e74c3c 100%);
+    transform: translateY(-2px) scale(1.03);
+    color: #fff;
+  }
+  .dashboard-table-container {
+    /* Ensure this container has padding if not already */
+    padding: 18px; /* Added from dashboard style */
+    background: #fff; /* Added from dashboard style */
+    border-radius: 10px; /* Added from dashboard style */
+    box-shadow: 0 2px 8px #e3eafe; /* Added from dashboard style */
+  }
+  /* Badge styles for report types */
+  .badge-status-bar,
+  .badge-status-pie,
+  .badge-status-line,
+  .badge-status-doughnut {
+    color: #fff;
+    border-radius: 10px; /* Consistent with new buttons */
+    padding: 6px 12px; /* Adjusted padding for table cell */
+    font-weight: 600; /* Slightly less bold than buttons */
+    font-size: 0.9em; /* Adjusted for table cell */
+    min-width: 80px; /* Adjusted min-width */
+    text-align: center;
+    display: inline-block;
+    line-height: 1.4;
+  }
+  .badge-status-bar {
+    background: linear-gradient(
+      135deg,
+      #5dade2 0%,
+      #2e86c1 100%
+    ); /* Light blue to darker blue */
+  }
+  .badge-status-pie {
+    background: linear-gradient(
+      135deg,
+      #af7ac5 0%,
+      #884ea0 100%
+    ); /* Light purple to darker purple */
+  }
+  .badge-status-line {
+    background: linear-gradient(
+      135deg,
+      #58d68d 0%,
+      #239b56 100%
+    ); /* Light green to darker green */
+  }
+  .badge-status-doughnut {
+    background: linear-gradient(
+      135deg,
+      #f5b041 0%,
+      #d35400 100%
+    ); /* Orange to darker orange */
+  }
+  .badge-type-device,
+  .badge-type-maintenance,
+  .badge-type-system {
+    background: linear-gradient(90deg, #e74c3c 60%, #c0392b 100%);
+    color: #fff !important;
+    font-weight: bold;
+    border-radius: 10px;
+    padding: 6px 14px;
+    font-size: 1em;
+    letter-spacing: 0.5px;
+  }
+  /* Add more specific report type badges if needed */
+</style>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/chart.js/dist/Chart.min.css"
+/>
+{% endblock %} {% block content %}
+<div class="dashboard-header" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 24px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+  <div style="display: flex; align-items: center; gap: 16px;">
+    <div style="background: #4263eb; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+      <i class="fas fa-chart-line" style="color: white; font-size: 20px;"></i>
+    </div>
+    <div>
+      <h2 style="color: #152781; font-weight: 700; margin: 0; font-size: 1.8rem;">Báo cáo & Thống kê</h2>
+      <p style="color: #4263eb; margin: 4px 0 0 0; font-size: 0.95rem;">Phân tích dữ liệu và theo dõi hiệu suất hệ thống</p>
+    </div>
+  </div>
+</div>
+<div style="display: flex; justify-content: flex-end; margin-bottom: 12px">
+  <button class="btn btn-create-chart" onclick="openChartModal()">
+    <i class="fas fa-chart-bar"></i> Tạo biểu đồ
+  </button>
+</div>
+<div class="report-info-card">
+  <div class="report-info-title">
+    <i class="fas fa-info-circle"></i> Thông tin tổng quan
+  </div>
+  <div class="report-info-desc">
+    Trang này giúp <b>Quản lý (Manager)</b> theo dõi tổng quan hệ thống:
+    <b>số lượng thiết bị</b>, <b>yêu cầu bảo trì</b>,
+    <b>trạng thái hoàn thành</b>, <b>sự cố</b>, v.v.<br />
+    Bạn có thể xem bảng dữ liệu, xuất file, hoặc bổ sung
+    <b>biểu đồ thống kê trực quan</b> nếu cần.
+  </div>
+</div>
+<div
+  class="dashboard-table-container"
+  style="
+    margin-bottom: 32px;
+    position: relative; /* Added for aspect ratio control */
+  "
+>
+  <div
+    style="
+      width: 100%;
+      padding-bottom: 50%; /* Aspect ratio 2:1, adjust as needed */
+      position: relative;
+    "
+  >
+    <canvas
+      id="deviceChart"
+      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%"
+    ></canvas>
+  </div>
+  <div
+    id="chart-actions"
+    style="margin-top: 18px; display: none; gap: 12px; align-items: center"
+  >
+    <input
+      id="chartNameInput"
+      type="text"
+      placeholder="Đặt tên cho biểu đồ..."
+      style="
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1.5px solid #e3eafe;
+        min-width: 220px;
+        margin-right: 8px;
+      "
+    />
+    <button class="btn btn-gradient" id="saveChartBtn">Lưu biểu đồ</button>
+  </div>
+  <div
+    id="noDataMsg"
+    style="display: none; color: #e74c3c; font-weight: 600; margin-top: 12px"
+  >
+    Không có dữ liệu để hiển thị!
+  </div>
+</div>
+<div class="dashboard-table-container">
+  <table id="reports-table" class="display" style="width: 100%">
+    <thead>
+      <tr>
+        <th>Tiêu đề</th>
+        <th>Loại</th>
+        <th>Tác giả</th>
+        <th>Ngày tạo</th>
+        <th>Thao tác</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for report in reports %}
+      <tr>
+        <td>{{ report.title }}</td>
+        <td>
+          <span class="badge badge-type-{{ report.type }}"
+            >{{ report.get_type_display }}</span
+          >
+        </td>
+        <td>
+          {{report.author.user.get_full_name|default:report.author.user.username}}
+        </td>
+        <td>{{ report.created_at|date:'d/m/Y H:i' }}</td>
+        <td style="white-space: nowrap">
+          <a
+            href="{% url 'dashboard:manager_chart_detail' report.id %}"
+            class="btn-gradient"
+            ><i class="fas fa-eye"></i> Xem chi tiết</a
+          >
+          <a
+            href="#"
+            class="btn-gradient-danger"
+            style="margin-left: 8px"
+            data-id="{{ report.id }}"
+          >
+            <i class="fas fa-trash"></i> Xóa
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<!-- Modal tạo biểu đồ -->
+<div id="chartModal" class="modal-overlay">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeChartModal()">&times;</button>
+    <h3 style="color: #1e3c72; font-weight: 800; margin-bottom: 18px">
+      Tạo biểu đồ thống kê
+    </h3>
+    <form id="createChartForm">
+      <div class="form-group">
+        <label for="chartType">Loại biểu đồ:</label>
+        <select id="chartType" name="chartType" class="form-control">
+          <option value="bar">Biểu đồ cột (Bar)</option>
+          <option value="line">Biểu đồ đường (Line)</option>
+          <option value="pie">Biểu đồ tròn (Pie)</option>
+          <option value="doughnut">Biểu đồ Donut</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-top: 15px">
+        <label for="dataSource">Nguồn dữ liệu:</label>
+        <select id="dataSource" name="dataSource" class="form-control">
+          <option value="device">Thiết bị</option>
+          <option value="request">Yêu cầu bảo trì</option>
+          <option value="user">Người dùng</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-top: 15px">
+        <label for="groupBy">Nhóm theo dữ liệu:</label>
+        <select id="groupBy" name="groupBy" class="form-control">
+          {/* Options will be populated by JavaScript */}
+        </select>
+      </div>
+
+      <div
+        class="form-group"
+        id="selectedYearGroup"
+        style="display: none; margin-top: 15px"
+      >
+        <label for="selectedYearInput"
+          >Chọn năm (nhập 'all' hoặc để trống = tất cả):</label
+        >
+        <input
+          type="text"
+          id="selectedYearInput"
+          name="selectedYearInput"
+          class="form-control"
+          placeholder="Ví dụ: 2023, all, hoặc để trống"
+        />
+      </div>
+
+      <div
+        style="
+          text-align: right;
+          margin-top: 20px;
+          display: flex;
+          justify-content: flex-end;
+          gap: 8px;
+        "
+      >
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="closeChartModal()"
+        >
+          Hủy
+        </button>
+        <button type="button" class="btn btn-gradient" id="generateChartBtn">
+          Xác nhận
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+<!-- Modal xác nhận xóa -->
+<div id="deleteConfirmModal" class="modal-overlay">
+  <div class="modal-box" style="max-width: 350px">
+    <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+    <h3 style="margin-bottom: 18px">Xác nhận xóa</h3>
+    <div
+      style="
+        font-size: 1.08em;
+        color: #222;
+        margin-bottom: 22px;
+        text-align: center;
+      "
+    >
+      Bạn có chắc chắn muốn xóa biểu đồ này không?
+    </div>
+    <div style="display: flex; justify-content: flex-end; gap: 10px">
+      <button class="btn btn-secondary" onclick="closeDeleteModal()">
+        Hủy
+      </button>
+      <button class="btn btn-gradient-danger" id="confirmDeleteBtn">Xóa</button>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_script %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  $(document).ready(function () {
+    $("#reports-table").DataTable({
+      language: { url: "{% static 'dashboard/js/i18n/vi.json' %}" },
+      responsive: true,
+      autoWidth: false,
+    });
+  });
+
+  let deviceChartInstance = null;
+  function renderDeviceChart(labels, data, type = "bar", label = "") {
+    const ctx = document.getElementById("deviceChart").getContext("2d");
+    if (deviceChartInstance) deviceChartInstance.destroy();
+    deviceChartInstance = new Chart(ctx, {
+      type: type,
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: label,
+            data: data,
+            backgroundColor:
+              type === "pie" || type === "doughnut"
+                ? [
+                    "#1e3c72", // Blue
+                    "#af7ac5", // Purple
+                    "#58d68d", // Green
+                    "#f5b041", // Orange
+                    "#e74c3c", // Red
+                    "#5dade2", // Light Blue
+                    "#f7dc6f", // Yellow
+                    "#cacfd2", // Grey
+                  ]
+                : type === "bar"
+                ? "#5dade2"
+                : type === "line"
+                ? "#58d68d"
+                : "#1e3c72",
+            borderColor:
+              type === "line"
+                ? "#239b56"
+                : type === "pie" || type === "doughnut"
+                ? "#fff"
+                : "rgba(0,0,0,0)",
+            borderWidth:
+              type === "pie" || type === "doughnut" || type === "line" ? 2 : 1,
+            borderRadius: type === "bar" ? 6 : 0,
+            barPercentage: 0.7,
+            categoryPercentage: 0.6,
+            tension: type === "line" ? 0.3 : 0,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: type === "pie" || type === "doughnut" },
+          title: { display: false },
+        },
+        scales:
+          type === "pie" || type === "doughnut"
+            ? {}
+            : {
+                x: { grid: { display: false } },
+                y: { beginAtZero: true, grid: { color: "#e3eafe" } },
+              },
+      },
+    });
+    if (data && data.length && data.some((v) => v > 0)) {
+      document.getElementById("chart-actions").style.display = "flex";
+      document.getElementById("noDataMsg").style.display = "none";
+    } else {
+      document.getElementById("chart-actions").style.display = "none";
+      document.getElementById("noDataMsg").style.display = "block";
+    }
+  }
+
+  let myChart;
+
+  function updateGroupByOptions() {
+    const dataSource = $("#dataSource").val();
+    const groupBySelect = $("#groupBy");
+    groupBySelect.empty(); // Clear existing options
+
+    if (dataSource === "device") {
+      groupBySelect.append('<option value="month">Tháng</option>');
+      groupBySelect.append('<option value="year">Năm</option>');
+      groupBySelect.append('<option value="status">Trạng thái</option>');
+      groupBySelect.append('<option value="type">Loại</option>');
+    } else if (dataSource === "request") {
+      groupBySelect.append('<option value="month">Tháng</option>');
+      groupBySelect.append('<option value="year">Năm</option>');
+      groupBySelect.append('<option value="status">Trạng thái</option>');
+      groupBySelect.append('<option value="priority">Mức ưu tiên</option>');
+    } else if (dataSource === "user") {
+      groupBySelect.append('<option value="role">Vai trò</option>');
+      groupBySelect.append('<option value="month">Tháng</option>');
+      groupBySelect.append('<option value="year">Năm</option>');
+    }
+
+    // Set default value and trigger visibility check
+    groupBySelect.val("month");
+    toggleSelectedYearVisibility();
+  }
+
+  function openChartModal() {
+    console.log("openChartModal called");
+    $("#chartModal").addClass("show");
+    // Reset form fields
+    $("#chartType").val("bar");
+    $("#dataSource").val("device");
+    $("#chartNameInput").val("");
+    $("#chart-actions").hide();
+    $("#selectedYearInput").val("");
+    updateGroupByOptions();
+    if (myChart) {
+      myChart.destroy();
+    }
+  }
+
+  function toggleSelectedYearVisibility() {
+    if ($("#groupBy").val() === "month") {
+      $("#selectedYearGroup").show();
+    } else {
+      $("#selectedYearGroup").hide();
+      $("#selectedYearInput").val(""); // Clear value when hidden
+    }
+  }
+
+  // Call toggleSelectedYearVisibility when groupBy changes
+  $("#groupBy").on("change", toggleSelectedYearVisibility);
+
+  // Add event listener for dataSource change
+  $("#dataSource").on("change", updateGroupByOptions);
+
+  // Call updateGroupByOptions when page loads
+  $(document).ready(function () {
+    updateGroupByOptions();
+  });
+
+  async function fetchChartData() {
+    const chartType = $("#chartType").val();
+    const dataSource = $("#dataSource").val();
+    const groupBy = $("#groupBy").val();
+    let selectedYear = $("#selectedYearInput").val().trim(); // Get selected year
+
+    // Treat "all" or empty as no specific year for backend
+    if (selectedYear.toLowerCase() === "all") {
+      selectedYear = "";
+    }
+
+    console.log("Fetching chart data with params:", {
+      chartType,
+      dataSource,
+      groupBy,
+      selectedYear,
+    });
+
+    try {
+      const response = await fetch(
+        "{% url 'dashboard:manager_chart_data_api' %}",
+        {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({
+            chartType: chartType,
+            dataSource: dataSource,
+            groupBy: groupBy,
+            selectedYear: selectedYear, // Send selectedYear to backend
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Lỗi không xác định từ server." }));
+        throw new Error(
+          errorData.error || `Network response was not ok (${response.status})`
+        );
+      }
+
+      const responseData = await response.json();
+      if (responseData.error) {
+        throw new Error(responseData.error);
+      }
+
+      if (myChart) {
+        myChart.destroy();
+      }
+      renderDeviceChart(
+        responseData.labels,
+        responseData.data,
+        chartType,
+        responseData.label
+      );
+      $("#chart-actions").show(); // Show save button and name input
+    } catch (error) {
+      console.error("Error fetching or rendering chart:", error);
+      alert("Đã có lỗi xảy ra: " + error.message);
+    }
+  }
+
+  $("#generateChartBtn").click(fetchChartData);
+
+  function closeChartModal() {
+    console.log("closeChartModal called");
+    $("#chartModal").removeClass("show");
+  }
+  document.getElementById("createChartForm").onsubmit = function (e) {
+    e.preventDefault();
+    const form = e.target;
+    const chartType = form.chartType.value;
+    const dataSource = form.querySelector('[name="dataSource"]').value;
+    const groupBy = form.querySelector('[name="groupBy"]').value;
+    $.ajax({
+      url: "{% url 'dashboard:manager_chart_data_api' %}",
+      method: "POST",
+      data: {
+        chartType: chartType,
+        dataSource: dataSource,
+        groupBy: groupBy,
+        csrfmiddlewaretoken: "{{ csrf_token }}",
+      },
+      success: function (res) {
+        renderDeviceChart(res.labels, res.data, chartType, res.label);
+        closeChartModal();
+      },
+      error: function () {
+        alert("Không thể lấy dữ liệu biểu đồ!");
+      },
+    });
+  };
+
+  // Xử lý nút Xóa với modal xác nhận
+  let chartIdToDelete = null;
+
+  $(document).on("click", ".btn-gradient-danger", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const chartId = $(this).data("id");
+    console.log("Delete button clicked, chartId:", chartId);
+    if (chartId) {
+      chartIdToDelete = chartId;
+      $("#deleteConfirmModal").addClass("show");
+    }
+  });
+
+  function closeDeleteModal() {
+    console.log("closeDeleteModal called");
+    $("#deleteConfirmModal").removeClass("show");
+    chartIdToDelete = null;
+  }
+
+  $("#confirmDeleteBtn").on("click", function () {
+    if (!chartIdToDelete) return;
+
+    $.ajax({
+      url: `/dashboard/manager/reports/delete_chart/${chartIdToDelete}/`,
+      type: "POST",
+      data: {
+        csrfmiddlewaretoken: "{{ csrf_token }}",
+      },
+      success: function (response) {
+        closeDeleteModal();
+        if (response.success) {
+          showToast("Biểu đồ đã được xóa.", "success");
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          showToast("Lỗi khi xóa biểu đồ: " + response.error, "error");
+        }
+      },
+      error: function () {
+        closeDeleteModal();
+        showToast("Lỗi kết nối khi xóa biểu đồ.", "error");
+      },
+    });
+  });
+
+  function showToast(msg, type = "success") {
+    let toast = document.createElement("div");
+    toast.innerText = msg;
+    toast.style.position = "fixed";
+    toast.style.top = "30px";
+    toast.style.right = "30px";
+    toast.style.zIndex = 99999;
+    toast.style.background = type === "success" ? "#27ae60" : "#e74c3c";
+    toast.style.color = "#fff";
+    toast.style.padding = "14px 28px";
+    toast.style.borderRadius = "8px";
+    toast.style.fontWeight = "bold";
+    toast.style.boxShadow = "0 2px 12px rgba(0,0,0,0.15)";
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.remove();
+    }, 1800);
+  }
+
+  $(function () {});
+
+  // === LƯU BIỂU ĐỒ ===
+  $("#saveChartBtn").click(function () {
+    console.log("Save chart button clicked");
+    const name = $("#chartNameInput").val().trim();
+    if (!name) {
+      showToast("Vui lòng nhập tên cho biểu đồ!", "error");
+      console.log("No chart name");
+      return;
+    }
+    if (
+      !deviceChartInstance ||
+      !deviceChartInstance.data ||
+      !deviceChartInstance.data.labels ||
+      !deviceChartInstance.data.datasets ||
+      !deviceChartInstance.data.datasets[0]
+    ) {
+      showToast("Bạn cần tạo và xem trước biểu đồ trước khi lưu!", "error");
+      console.log("No chart instance or data");
+      return;
+    }
+    const chartType = deviceChartInstance.config.type;
+    const labels = deviceChartInstance.data.labels;
+    const data = deviceChartInstance.data.datasets[0].data;
+    const label = deviceChartInstance.data.datasets[0].label;
+    // Lấy reportType dựa vào dataSource
+    let reportType = "device";
+    const dataSource = $("#dataSource").val();
+    if (dataSource === "request") reportType = "maintenance";
+    else if (dataSource === "user") reportType = "system";
+    console.log("AJAX save params:", {
+      name,
+      chartType,
+      labels,
+      data,
+      label,
+      reportType,
+    });
+    $.ajax({
+      url: "{% url 'dashboard:manager_save_chart' %}",
+      method: "POST",
+      data: {
+        name: name,
+        chartType: chartType,
+        labels: JSON.stringify(labels),
+        data: JSON.stringify(data),
+        label: label,
+        reportType: reportType,
+        csrfmiddlewaretoken: "{{ csrf_token }}",
+      },
+      success: function (res) {
+        console.log("Save chart AJAX success", res);
+        showToast("Đã lưu biểu đồ!", "success");
+        setTimeout(() => location.reload(), 1000);
+      },
+      error: function (xhr, status, error) {
+        showToast("Không thể lưu biểu đồ!", "error");
+        console.log("Save chart AJAX error", xhr, status, error);
+      },
+    });
+  });
+</script>
+{% endblock %}

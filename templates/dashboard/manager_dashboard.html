@@ -1,0 +1,428 @@
+{% extends "dashboard/manager_base.html" %} 
+{% load static %} 
+{% block title %}Dashboard - BMSync{% endblock %} 
+{% block extra_head %}
+<link
+  rel="stylesheet"
+  href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"
+/>
+<style>
+  .dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+  .dashboard-card {
+    background: linear-gradient(135deg, #e3eafe 60%, #f4f7fb 100%);
+    border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(30, 60, 114, 0.08);
+    padding: 18px 18px 12px 18px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: box-shadow 0.2s, transform 0.2s;
+    position: relative;
+    margin: 0;
+  }
+  .dashboard-card .big-icon {
+    font-size: 1.2em;
+    margin-bottom: 6px;
+    color: #1e3c72;
+    background: #fff;
+    border-radius: 50%;
+    padding: 10px;
+    box-shadow: 0 2px 8px #e3eafe;
+  }
+  .dashboard-card .card-title {
+    font-size: 1.05em;
+    color: #1e3c72;
+    font-weight: 600;
+    margin-bottom: 2px;
+    margin-top: 2px;
+    text-align: center;
+  }
+  .dashboard-card .card-value {
+    font-size: 1.6em;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 4px;
+  }
+  .dashboard-section-title {
+    font-size: 1.15em;
+    color: #1e3c72;
+    font-weight: 700;
+    margin: 32px 0 12px 0;
+  }
+  .dashboard-table-container {
+    margin-bottom: 32px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px #e3eafe;
+    padding: 18px;
+  }
+  .btn-gradient {
+    background: linear-gradient(90deg, #1e3c72 60%, #2a5298 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    padding: 8px 18px;
+    min-width: 90px;
+    white-space: nowrap;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px #e3eafe;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn-gradient:hover {
+    background: linear-gradient(90deg, #274bb6 60%, #1e3c72 100%);
+    transform: translateY(-2px) scale(1.03);
+    color: #fff;
+  }
+  @media (max-width: 900px) {
+    .dashboard-cards {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 600px) {
+    .dashboard-cards {
+      grid-template-columns: 1fr;
+    }
+  }
+  .badge-status-device,
+  .badge-type-device,
+  .badge-status-Device\ Report {
+    background: #e74c3c !important;
+    color: #fff !important;
+    font-weight: 700;
+    border: none;
+    box-shadow: 0 2px 8px #e3eafe;
+  }
+  .badge-status-system,
+  .badge-type-system,
+  .badge-status-System\ Report {
+    background: #ff9800 !important;
+    color: #fff !important;
+    font-weight: 700;
+    border: none;
+    box-shadow: 0 2px 8px #e3eafe;
+  }
+  .btn-mini {
+    font-size: 0.98em;
+    padding: 5px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    border: none;
+    background: linear-gradient(90deg, #1e3c72 60%, #2a5298 100%);
+    color: #fff;
+    transition: all 0.18s;
+    box-shadow: 0 2px 8px #e3eafe;
+    display: inline-block;
+    margin: 0 2px 4px 0;
+    text-decoration: none;
+  }
+  .btn-mini:hover {
+    background: linear-gradient(90deg, #274bb6 60%, #1e3c72 100%);
+    color: #fff;
+    transform: translateY(-2px) scale(1.03);
+  }
+  .btn-gradient-danger {
+    background: linear-gradient(90deg, #e74c3c 60%, #c0392b 100%) !important;
+    color: #fff !important;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    padding: 5px 14px;
+    min-width: 80px;
+    white-space: nowrap;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+    text-decoration: none;
+    display: inline-block;
+    margin: 0 2px 4px 0;
+  }
+  .btn-gradient-danger:hover {
+    background: linear-gradient(90deg, #c0392b 60%, #e74c3c 100%) !important;
+    color: #fff !important;
+    transform: translateY(-2px) scale(1.03);
+  }
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+  .dashboard-header .greeting {
+    font-size: 2.3rem;
+    font-weight: 800;
+    color: #1e3c72;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .dashboard-header .actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .chat-modal-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #4263eb 0%, #3157e2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .chat-modal-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(66, 99, 235, 0.2);
+  }
+  .chat-modal-btn i {
+    font-size: 1.2rem;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="dashboard-cards">
+  <div class="dashboard-card">
+    <span class="big-icon"><i class="fas fa-server"></i></span>
+    <div class="card-title">Tổng thiết bị</div>
+    <div class="card-value">{{ device_count }}</div>
+  </div>
+  <div class="dashboard-card">
+    <span class="big-icon"><i class="fas fa-tools"></i></span>
+    <div class="card-title">Bảo trì đang diễn ra</div>
+    <div class="card-value">{{ active_maintenance|length }}</div>
+  </div>
+  <div class="dashboard-card">
+    <span class="big-icon"><i class="fas fa-exclamation-triangle"></i></span>
+    <div class="card-title">Sự cố ưu tiên</div>
+    <div class="card-value">{{ critical_issues|default:0 }}</div>
+  </div>
+  <div class="dashboard-card">
+    <span class="big-icon"><i class="fas fa-check-circle"></i></span>
+    <div class="card-title">Bảo trì đã hoàn thành</div>
+    <div class="card-value">{{ completed_maintenance_count|default:0 }}</div>
+  </div>
+</div>
+<div class="dashboard-section-title">Báo cáo gần đây</div>
+<div class="dashboard-table-container">
+  <table id="reports-table" class="display" style="width: 100%">
+    <thead>
+      <tr>
+        <th>Tiêu đề</th>
+        <th>Loại</th>
+        <th>Tác giả</th>
+        <th>Ngày tạo</th>
+        <th>Thao tác</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if reports %} {% for report in reports %}
+      <tr>
+        <td>{{ report.title }}</td>
+        <td>
+          <span class="badge badge-status-{{ report.type }}">
+            {{ report.get_type_display }}
+          </span>
+        </td>
+        <td>{{ report.author }}</td>
+        <td>{{ report.created_at|date:'d/m/Y H:i' }}</td>
+        <td>
+          <a
+            href="{% url 'dashboard:manager_chart_detail' report.id %}"
+            class="btn-mini"
+          >
+            <i class="fas fa-eye"></i> Xem chi tiết
+          </a>
+        </td>
+      </tr>
+      {% endfor %} {% endif %}
+    </tbody>
+  </table>
+</div>
+<div class="dashboard-section-title">Bảo trì đang hoạt động</div>
+<div class="dashboard-table-container">
+  <table id="maintenance-table" class="display" style="width: 100%">
+    <thead>
+      <tr>
+        <th>Tiêu đề</th>
+        <th>Thiết bị</th>
+        <th>Trạng thái</th>
+        <th>Nhân viên</th>
+        <th>Tiến độ</th>
+        <th>Thao tác</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if active_maintenance %} {% for task in active_maintenance %}
+      <tr>
+        <td>{{ task.title }}</td>
+        <td>{{ task.maintenance_request.device.name }}</td>
+        <td>
+          <span class="badge badge-status-{{ task.status }}">
+            {{ task.get_status_display }}
+          </span>
+        </td>
+        <td>{{ task.assigned_to }}</td>
+        <td>{{ task.progress|default:'0' }}%</td>
+        <td>
+          <a href="#" class="btn-mini"><i class="fas fa-eye"></i> Chi tiết</a>
+        </td>
+      </tr>
+      {% endfor %} {% endif %}
+    </tbody>
+  </table>
+</div>
+<div class="dashboard-section-title">Bảo trì đã hoàn thành</div>
+<div class="dashboard-table-container">
+  <table id="completed-maintenance-table" class="display" style="width: 100%">
+    <thead>
+      <tr>
+        <th>Tiêu đề</th>
+        <th>Thiết bị</th>
+        <th>Trạng thái</th>
+        <th>Nhân viên</th>
+        <th>Tiến độ</th>
+        <th>Thao tác</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if completed_maintenance %} {% for task in completed_maintenance %}
+      <tr>
+        <td>{{ task.title }}</td>
+        <td>{{ task.maintenance_request.device.name }}</td>
+        <td>
+          <span class="badge badge-status-{{ task.status }}">
+            {{ task.get_status_display }}
+          </span>
+        </td>
+        <td>{{ task.assigned_to }}</td>
+        <td>100%</td>
+        <td>
+          <a href="#" class="btn-mini"><i class="fas fa-eye"></i> Chi tiết</a>
+        </td>
+      </tr>
+      {% endfor %} {% endif %}
+    </tbody>
+  </table>
+</div>
+<!-- Modal chi tiết bảo trì -->
+<div
+  id="maintenanceDetailModal"
+  style="
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+  "
+>
+  <div
+    style="
+      background: #fff;
+      border-radius: 14px;
+      min-width: 320px;
+      max-width: 95vw;
+      box-shadow: 0 8px 40px #4a6cf755;
+      padding: 32px 28px 24px 28px;
+      position: relative;
+    "
+  >
+    <button
+      onclick="closeMaintenanceDetailModal()"
+      style="
+        position: absolute;
+        right: 18px;
+        top: 12px;
+        font-size: 1.8em;
+        background: none;
+        border: none;
+        color: #888;
+        cursor: pointer;
+      "
+    >
+      &times;
+    </button>
+    <h3
+      style="
+        color: #1e3c72;
+        font-weight: 800;
+        margin-bottom: 18px;
+        text-align: center;
+      "
+    >
+      Chi tiết bảo trì
+    </h3>
+    <div id="maintenanceDetailContent"></div>
+  </div>
+</div>
+{% endblock %} {% block extra_script %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    try {
+      // Initialize DataTables with empty data if no records
+      const tables = [
+        "#reports-table",
+        "#maintenance-table",
+        "#completed-maintenance-table",
+      ];
+      tables.forEach((tableId) => {
+        $(tableId).DataTable({
+          language: {
+            url: "{% static 'dashboard/js/i18n/vi.json' %}",
+            emptyTable: "Không có dữ liệu",
+          },
+          searching: true,
+          paging: true,
+          info: true,
+          responsive: true,
+        });
+      });
+    } catch (error) {
+      console.error("Error initializing DataTables:", error);
+    }
+  });
+
+  function closeMaintenanceDetailModal() {
+    $("#maintenanceDetailModal").hide();
+  }
+
+  $(document).on("click", ".dashboard-table-container .btn-mini", function (e) {
+    if ($(this).text().includes("Chi tiết")) {
+      e.preventDefault();
+      const $row = $(this).closest("tr");
+      const title = $row.find("td").eq(0).text().trim();
+      const device = $row.find("td").eq(1).text().trim();
+      const status = $row.find("td").eq(2).text().trim();
+      const staff = $row.find("td").eq(3).text().trim();
+      const progress = $row.find("td").eq(4).text().trim();
+
+      let html = `<div style='margin-bottom:10px'><b>Tiêu đề:</b> ${title}</div>`;
+      html += `<div style='margin-bottom:10px'><b>Thiết bị:</b> ${device}</div>`;
+      html += `<div style='margin-bottom:10px'><b>Trạng thái:</b> ${status}</div>`;
+      html += `<div style='margin-bottom:10px'><b>Nhân viên:</b> ${staff}</div>`;
+      html += `<div style='margin-bottom:10px'><b>Tiến độ:</b> ${progress}</div>`;
+
+      $("#maintenanceDetailContent").html(html);
+      $("#maintenanceDetailModal").css("display", "flex");
+    }
+  });
+</script>
+{% endblock %}

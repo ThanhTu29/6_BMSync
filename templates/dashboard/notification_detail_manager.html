@@ -1,0 +1,73 @@
+{% extends 'dashboard/manager_base.html' %} 
+{% block title %}Chi tiết thông báo - BMSync{% endblock %} 
+{% block extra_head %}
+<style>
+  .notification-detail-manager {
+    max-width: 520px;
+    margin: 40px auto 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 6px 32px #4a6cf733;
+    padding: 36px 32px 32px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .notification-detail-manager h3 {
+    color: #1e3c72;
+    font-size: 1.3em;
+    font-weight: 800;
+    margin-bottom: 18px;
+  }
+  .notification-detail-manager .notification-content {
+    font-size: 1.08em;
+    color: #222;
+    margin-bottom: 18px;
+  }
+  .notification-detail-manager .notification-time {
+    color: #888;
+    font-size: 0.98em;
+    margin-bottom: 8px;
+  }
+  .action-buttons {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px;
+    align-items: center;
+  }
+  .btn-outline {
+    background: #fff;
+    color: #1e3c72;
+    border: 2px solid #1e3c72;
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 12px 28px;
+    font-size: 1.08em;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0;
+  }
+  .btn-outline:hover {
+    background: #e3eafe;
+    color: #274bb6;
+    border-color: #274bb6;
+    transform: translateY(-2px) scale(1.03);
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="notification-detail-manager">
+  <h3>Chi tiết thông báo</h3>
+  <div class="notification-content">{{ notification.message }}</div>
+  <div class="notification-time">
+    <i>Thời gian: {{ notification.timestamp|date:'d/m/Y H:i' }}</i>
+  </div>
+  <div class="action-buttons" style="margin-top: 24px">
+    <a href="{% url 'dashboard:notifications' %}" class="btn-outline"
+      ><i class="fas fa-arrow-left" style="margin-right: 8px"></i>Quay lại</a
+    >
+  </div>
+</div>
+{% endblock %}

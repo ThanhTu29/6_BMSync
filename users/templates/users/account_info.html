@@ -1,0 +1,31 @@
+{% extends base_template_to_extend|default:'base.html' %}
+{% block content %}
+<div class="account-info-container">
+    <h2>Thông tin tài khoản</h2>
+    <table class="table table-bordered" style="width: auto;">
+        <tbody>
+            <tr>
+                <th style="width: 150px;">Tên đăng nhập</th>
+                <td>{{ user.username }}</td>
+            </tr>
+            <tr>
+                <th>Email</th>
+                <td>{{ user.email }}</td>
+            </tr>
+            <tr>
+                <th>Nhóm quyền</th>
+                <td>{% for group in user.groups.all %}{{ group.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+            </tr>
+            <tr>
+                <th>Trạng thái</th>
+                <td>{% if user.is_active %}Đang hoạt động{% else %}Đã khóa{% endif %}</td>
+            </tr>
+        </tbody>
+    </table>
+    {% if request.user.is_staff %}
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Quay lại trang quản trị</a>
+{% else %}
+    <a href="{% url 'home' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Quay lại trang chủ</a>
+{% endif %}
+</div>
+{% endblock %}

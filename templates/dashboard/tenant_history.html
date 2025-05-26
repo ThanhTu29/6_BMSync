@@ -1,0 +1,434 @@
+{% extends "dashboard/tenant_base.html" %} 
+{% block title %}Lịch sử bảo trì - BMSync{% endblock %} 
+{% block extra_head %}
+<link
+  rel="stylesheet"
+  href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"
+/>
+<style>
+  /* CSS cho các nút trong cột Thao tác - Đảm bảo tính nhất quán (nếu chưa có ở base) */
+  .actions-cell {
+    /* text-align: left; */ /* Cân nhắc đặt ở tenant_base.html nếu dùng chung */
+  }
+  .table-actions {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .table-actions .btn {
+    padding: 5px 10px;
+    font-size: 0.85em;
+    border-radius: 4px;
+    text-decoration: none;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .table-actions .btn:hover {
+    opacity: 0.85;
+  }
+  .table-actions .btn-details {
+    background-color: #3498db;
+  }
+
+  /* CSS cho hệ thống đánh giá sao */
+  .star-rating-container {
+    display: flex;
+    align-items: center;
+    gap: 2px; /* Khoảng cách nhỏ giữa các sao */
+  }
+  .star-rating-container .star {
+    font-size: 1.3em; /* Kích thước sao */
+    color: #ccc; /* Màu sao mặc định (chưa được chọn) */
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .star-rating-container .star:hover,
+  .star-rating-container .star.selected,
+  .star-rating-container .star.hovered {
+    color: #f1c40f; /* Màu vàng cho sao khi hover hoặc được chọn */
+  }
+  .star-rating-container .star.rated {
+    color: #f1c40f; /* Sao đã được đánh giá */
+    cursor: default; /* Không cho click lại nếu đã rated */
+  }
+  .rating-text {
+    font-size: 0.9em;
+    margin-left: 8px;
+    color: #555;
+  }
+
+  /* CSS cho rating modal (nếu chưa có ở base hoặc cần tùy chỉnh) */
+  /* #ratingModal .modal-box { ... } */
+  #ratingModalForm textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #e3eafe;
+    margin-bottom: 15px;
+    font-size: 1em;
+    resize: vertical;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="dashboard-header" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 24px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+  <div style="display: flex; align-items: center; gap: 16px;">
+    <div style="background: #4263eb; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+      <i class="fas fa-history" style="color: white; font-size: 20px;"></i>
+    </div>
+    <div>
+      <h1 style="color: #152781; font-weight: 700; margin: 0; font-size: 1.8rem;">Lịch sử bảo trì</h1>
+      <p style="color: #4263eb; margin: 4px 0 0 0; font-size: 0.95rem;">Xem lại các yêu cầu bảo trì đã hoàn thành</p>
+    </div>
+  </div>
+</div>
+
+<div class="dashboard-table-container">
+  <table id="history-table" class="display" style="width: 100%">
+    <thead>
+      <tr>
+        <th>Công việc</th>
+        <th>Thiết bị</th>
+        <th>Trạng thái</th>
+        <th>Ngày hoàn thành</th>
+        <th>Nhân viên</th>
+        <th>Đánh giá</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for record in maintenance_history %}
+      <tr>
+        <td>{{ record.title }}</td>
+        <td>{{ record.maintenance_request.device.name }}</td>
+        <td>
+          <span class="badge badge-status-{{ record.status|lower }}"
+            >{{ record.get_status_display }}</span
+          >
+        </td>
+        <td>{{ record.due_date|date:'d/m/Y' }}</td>
+        <td>
+          {% if record.assigned_to %} {{ record.assigned_to.user.get_full_name|default:record.assigned_to.user.username }} {% else %} N/A {% endif %}
+        </td>
+        <td
+          class="actions-cell star-rating-cell"
+          data-task-id="{{ record.id }}"
+        >
+          {% if record.rating %}
+          <div class="star-rating-container already-rated">
+            {% for i in "12345" %}
+            <span
+              class="star fas fa-star {% if i|add:0 <= record.rating %}rated{% endif %}"
+            ></span>
+            {% endfor %}
+            <span class="rating-text">({{ record.rating }}/5)</span>
+          </div>
+          {% else %}
+          <button
+            class="btn btn-primary btn-rate"
+            data-task-id="{{ record.id }}"
+            style="
+              padding: 6px 16px;
+              font-size: 0.95em;
+              border-radius: 6px;
+              display: inline-flex;
+              align-items: center;
+              gap: 6px;
+            "
+          >
+            <i class="fas fa-star"></i> Đánh giá
+          </button>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Rating Modal đặt ở cuối content, ẩn mặc định -->
+<div id="ratingModal" class="modal-overlay" style="display: none">
+  <div class="modal-box" style="min-width: 350px; max-width: 95vw">
+    <div class="modal-header">
+      <h3>Đánh giá dịch vụ bảo trì</h3>
+      <button class="modal-close" onclick="closeModal('ratingModal')">
+        &times;
+      </button>
+    </div>
+    <form id="ratingModalForm">
+      {% csrf_token %}
+      <input type="hidden" id="ratingTaskId" name="task_id" />
+      <div class="form-group">
+        <label>Bạn đánh giá:</label>
+        <div
+          class="star-rating-container modal-stars"
+          style="
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            justify-content: flex-start;
+          "
+        >
+          <span class="star far fa-star" data-value="1"></span>
+          <span class="star far fa-star" data-value="2"></span>
+          <span class="star far fa-star" data-value="3"></span>
+          <span class="star far fa-star" data-value="4"></span>
+          <span class="star far fa-star" data-value="5"></span>
+        </div>
+        <span id="selectedRatingValue" style="font-weight: bold; color: #f1c40f"
+          >0</span
+        >
+        sao
+      </div>
+      <div class="form-group">
+        <label for="rating_comment">Bình luận của bạn (không bắt buộc):</label>
+        <textarea
+          id="rating_comment"
+          name="rating_comment"
+          rows="3"
+          style="width: 100%; min-height: 60px"
+        ></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width: 100%">
+        Gửi đánh giá
+      </button>
+    </form>
+    <div
+      id="ratingSubmitMsg"
+      style="margin-top: 10px; text-align: center"
+    ></div>
+  </div>
+</div>
+
+{% endblock %} {% block extra_script %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script>
+  // Basic modal functions (can be removed if globally available and working)
+  function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.add("active");
+    }
+  }
+
+  function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.remove("active");
+    }
+    // Clear previous submission messages
+    $("#ratingSubmitMsg").text("").removeClass("success error");
+  }
+
+  $(document).ready(function () {
+    $("#history-table").DataTable({
+      language: {
+        url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/vi.json",
+      },
+      order: [], // Potentially disable initial sorting or sort by a specific column
+      columnDefs: [
+        { targets: [5], orderable: false }, // Disable sorting for the rating column
+      ],
+    });
+
+    let currentRating = 0;
+    let currentTaskId = null;
+
+    // Khi click nút Đánh giá
+    $(document).on("click", ".btn-rate", function () {
+      currentTaskId = $(this).data("task-id");
+      currentRating = 0;
+      $("#ratingTaskId").val(currentTaskId);
+      $("#selectedRatingValue").text("0");
+      updateModalStars(0);
+      $("#rating_comment").val("");
+      $("#ratingModal").css("display", "flex");
+    });
+
+    // --- Star interaction in the table ---
+    $(".star-rating-cell .to-rate .star").on("click", function () {
+      currentTaskId = $(this).closest(".star-rating-cell").data("task-id");
+      currentRating = $(this).data("value");
+
+      $("#ratingTaskId").val(currentTaskId);
+      $("#selectedRatingValue").text(currentRating);
+
+      // Update stars in the modal before opening
+      updateModalStars(currentRating);
+      openModal("ratingModal");
+    });
+
+    // --- Star interaction in the modal ---
+    $("#ratingModal .modal-stars .star").on("click", function () {
+      currentRating = $(this).data("value");
+      $("#selectedRatingValue").text(currentRating);
+      updateModalStars(currentRating);
+    });
+
+    // Hover effect for stars (both table and modal)
+    $(".star-rating-container .star").on("mouseenter", function () {
+      const ratingContainer = $(this).parent();
+      if (ratingContainer.hasClass("already-rated")) return; // No hover for already rated
+
+      const value = $(this).data("value");
+      ratingContainer.find(".star").each(function (index) {
+        if (index < value) {
+          $(this)
+            .addClass("hovered")
+            .removeClass("far fa-star")
+            .addClass("fas fa-star");
+        } else {
+          $(this)
+            .removeClass("hovered")
+            .removeClass("fas fa-star")
+            .addClass("far fa-star");
+        }
+      });
+    });
+
+    $(".star-rating-container").on("mouseleave", function () {
+      if ($(this).hasClass("already-rated")) return;
+      const starsToUpdate = $(this).find(".star");
+      let actualRating = 0;
+      if ($(this).hasClass("modal-stars")) {
+        // modal stars
+        actualRating = currentRating; // Use the currently selected rating for modal
+      } else if ($(this).hasClass("to-rate")) {
+        // table stars (to-rate)
+        // For table stars, if nothing is selected yet, all should be 'far'
+        // If a rating was clicked to open modal, that's handled by modal logic
+        // Here, we just reset to 'far' unless they are 'selected' (which we aren't using yet for table)
+        actualRating = 0; // Reset hover on table
+      }
+
+      starsToUpdate.each(function (index) {
+        if (index < actualRating) {
+          $(this)
+            .removeClass("hovered")
+            .removeClass("far fa-star")
+            .addClass("fas fa-star selected");
+        } else {
+          $(this)
+            .removeClass("hovered selected")
+            .removeClass("fas fa-star")
+            .addClass("far fa-star");
+        }
+      });
+      // Special case for modal: re-apply 'selected' class based on currentRating after mouseleave
+      if ($(this).hasClass("modal-stars")) {
+        updateModalStars(currentRating);
+      }
+    });
+
+    function updateModalStars(rating) {
+      $("#ratingModal .modal-stars .star").each(function (index) {
+        if (index < rating) {
+          $(this).removeClass("far fa-star").addClass("fas fa-star selected");
+        } else {
+          $(this).removeClass("fas fa-star selected").addClass("far fa-star");
+        }
+      });
+    }
+
+    // --- AJAX Form Submission ---
+    $("#ratingModalForm").on("submit", function (e) {
+      e.preventDefault();
+      const taskId = $("#ratingTaskId").val();
+      const ratingComment = $("#rating_comment").val();
+      const ratingSubmitMsg = $("#ratingSubmitMsg");
+
+      if (currentRating === 0) {
+        ratingSubmitMsg
+          .text("Vui lòng chọn số sao đánh giá.")
+          .removeClass("success")
+          .addClass("error");
+        return;
+      }
+      ratingSubmitMsg.text("Đang gửi...").removeClass("error success");
+
+      $.ajax({
+        url: "/dashboard/rate_task/", // Django URL for rating submission
+        type: "POST",
+        data: {
+          task_id: taskId,
+          rating: currentRating,
+          rating_comment: ratingComment,
+          csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+        },
+        success: function (response) {
+          if (response.success) {
+            closeModal("ratingModal");
+            ratingSubmitMsg
+              .text("Đánh giá đã được gửi thành công!")
+              .addClass("success")
+              .removeClass("error");
+
+            // Update the table row
+            const ratedRowCell = $(
+              `.star-rating-cell[data-task-id='${taskId}']`
+            );
+            let starsHtml = '<div class="star-rating-container already-rated">';
+            for (let i = 1; i <= 5; i++) {
+              starsHtml += `<span class="star fas fa-star ${
+                i <= currentRating ? "rated" : ""
+              }"></span>`;
+            }
+            starsHtml += `<span class="rating-text">(${currentRating}/5)</span></div>`;
+            ratedRowCell.html(starsHtml);
+
+            // Clear form
+            $("#rating_comment").val("");
+            currentRating = 0;
+            $("#selectedRatingValue").text("0");
+            updateModalStars(0); // Reset modal stars
+
+            // Optionally, fade out success message after a few seconds
+            setTimeout(function () {
+              ratingSubmitMsg.text("").removeClass("success error");
+            }, 3000);
+          } else {
+            ratingSubmitMsg
+              .text(response.message || "Có lỗi xảy ra. Vui lòng thử lại.")
+              .addClass("error")
+              .removeClass("success");
+          }
+        },
+        error: function (xhr) {
+          let errorMsg = "Lỗi kết nối. Vui lòng thử lại.";
+          if (xhr.responseJSON && xhr.responseJSON.message) {
+            errorMsg = xhr.responseJSON.message;
+          }
+          ratingSubmitMsg
+            .text(errorMsg)
+            .addClass("error")
+            .removeClass("success");
+        },
+      });
+    });
+
+    // Close modal with Escape key
+    $(document).on("keydown", function (event) {
+      if (event.key === "Escape") {
+        if ($("#ratingModal").hasClass("active")) {
+          closeModal("ratingModal");
+        }
+      }
+    });
+
+    // Đóng modal
+    window.closeModal = function (id) {
+      $("#" + id).css("display", "none");
+      $("#ratingSubmitMsg").text("").removeClass("success error");
+    };
+
+    // Sửa lại openModal cho đúng overlay
+    function openModal(id) {
+      $("#" + id).css("display", "flex");
+    }
+  });
+</script>
+{% endblock %}

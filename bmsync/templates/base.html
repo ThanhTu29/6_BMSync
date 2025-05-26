@@ -1,0 +1,374 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}BMSync{% endblock %}</title>
+    <meta name="description" content="BMSync - Hệ thống quản lý thiết bị tòa nhà thông minh">
+    <meta name="keywords" content="quản lý thiết bị, tòa nhà thông minh, bảo trì thiết bị">
+    <script src="{% static 'js/theme.js' %}"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Oswald:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{% static 'style.css' %}" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="icon" type="image/png" href="{% static 'favicon.png' %}">
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="/" class="logo">
+                <div class="logo-icon"><i class="fas fa-building-shield"></i></div>
+                <span class="logo-highlight">BM</span>Sync
+            </a>
+            <nav class="main-nav">
+          <a
+            href="{% url 'home' %}"
+            class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
+          >
+                    <i class="fas fa-home"></i> <span>Trang chủ</span>
+                </a>
+                {% if not user.is_authenticated %}
+          <a
+            href="{% url 'about' %}"
+            class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}"
+          >
+                    <i class="fas fa-info-circle"></i> <span>Giới thiệu</span>
+                </a>
+          <a
+            href="{% url 'services' %}"
+            class="nav-link {% if request.resolver_match.url_name == 'services' %}active{% endif %}"
+          >
+                    <i class="fas fa-cogs"></i> <span>Dịch vụ</span>
+                </a>
+          <a
+            href="{% url 'contact' %}"
+            class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}"
+          >
+                    <i class="fas fa-envelope"></i> <span>Liên hệ</span>
+                </a>
+                {% endif %}
+                {% if user.is_authenticated %}
+                {% if user.role == 'tenant' %}
+          <a
+            href="{% url 'dashboard:notifications' %}"
+            class="nav-link {% if request.resolver_match.url_name == 'notifications' %}active{% endif %}"
+          >
+                    <i class="fas fa-bell"></i> <span>Thông báo</span>
+                    {% if unread_notifications_count > 0 %}
+                    <span class="badge">{{ unread_notifications_count }}</span>
+                    {% endif %}
+          </a>
+                {% elif user.role == 'manager' %}
+          <a
+            href="{% url 'dashboard:notifications' %}"
+            class="nav-link {% if request.resolver_match.url_name == 'notifications' %}active{% endif %}"
+          >
+                    <i class="fas fa-bell"></i> <span>Thông báo</span>
+                    {% if unread_notifications_count > 0 %}
+                    <span class="badge">{{ unread_notifications_count }}</span>
+                    {% endif %}
+          </a>
+                {% elif user.role == 'maintenance' %}
+          <a
+            href="{% url 'dashboard:notifications' %}"
+            class="nav-link {% if request.resolver_match.url_name == 'notifications' %}active{% endif %}"
+          >
+                    <i class="fas fa-bell"></i> <span>Thông báo</span>
+                    {% if unread_notifications_count > 0 %}
+                    <span class="badge">{{ unread_notifications_count }}</span>
+                    {% endif %}
+          </a>
+                {% else %}
+          <a
+            href="{% url 'dashboard:notifications' %}"
+            class="nav-link {% if request.resolver_match.url_name == 'notifications' %}active{% endif %}"
+          >
+                    <i class="fas fa-bell"></i> <span>Thông báo</span>
+                    {% if unread_notifications_count > 0 %}
+                    <span class="badge">{{ unread_notifications_count }}</span>
+                    {% endif %}
+          </a>
+                {% endif %}
+          <a
+            href="{% url 'dashboard:dashboard' %}"
+            class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+          >
+                    <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+                </a>
+                <div class="nav-divider"></div>
+          <a
+            href="{% url 'account_info' %}"
+                    class="nav-link user-link {% if request.resolver_match.url_name == 'account_info' %}active{% endif %}"
+                >
+                    <i class="fas fa-user-circle"></i> <span>{{ user.username }}</span>
+                </a>
+                <a href="{% url 'logout' %}" class="nav-link logout-link">
+                    <i class="fas fa-sign-out-alt"></i> <span>Đăng xuất</span>
+                </a>
+                {% else %}
+                <div class="nav-divider"></div>
+          <a
+            href="{% url 'login' %}"
+                    class="nav-link auth-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}"
+                >
+                    <i class="fas fa-sign-in-alt"></i> <span>Đăng nhập</span>
+                </a>
+                <a
+                    href="{% url 'register' %}"
+                    class="nav-link register-link {% if request.resolver_match.url_name == 'register' %}active{% endif %}"
+                >
+                    <i class="fas fa-user-plus"></i> <span>Đăng ký</span>
+                </a>
+                {% endif %}
+            </nav>
+            <button class="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <div id="feature-msg">
+        <i class="fas fa-code-branch"></i> Tính năng này đang được phát triển bởi nhóm 6
+        <span onclick="document.getElementById('feature-msg').style.display='none'">&times;</span>
+    </div>
+
+    <main class="site-content">
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <script>
+        // Giữ lại script cho feature message
+        function showFeatureMsg(e) {
+            e.preventDefault();
+        document.getElementById("feature-msg").style.display = "block";
+        }
+    </script>
+    {% block extra_script %}
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+            // Alert dismissal
+        const successAlerts = document.querySelectorAll(".alert-success");
+        successAlerts.forEach(function (alert) {
+          setTimeout(function () {
+            alert.style.transition = "opacity 0.5s ease-out";
+            alert.style.opacity = "0";
+            setTimeout(function () {
+              alert.style.display = "none";
+                    }, 500); 
+                }, 5000); 
+            });
+
+            // Cập nhật link active cho navbar
+        const navLinks = document.querySelectorAll(".main-nav a.nav-link");
+            const currentPath = window.location.pathname;
+        navLinks.forEach((link) => {
+          if (link.getAttribute("href") === currentPath) {
+            link.classList.add("active");
+                }
+            });
+
+            // Header scroll effect
+            const header = document.querySelector('.site-header');
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 50) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            });
+            
+            // Mobile menu toggle
+            const menuToggle = document.querySelector('.mobile-menu-toggle');
+            const mainNav = document.querySelector('.main-nav');
+            
+            if (menuToggle) {
+                menuToggle.addEventListener('click', function() {
+                    mainNav.classList.toggle('show-mobile');
+                    this.classList.toggle('active');
+                    
+                    if (this.classList.contains('active')) {
+                        this.innerHTML = '<i class="fas fa-times"></i>';
+                    } else {
+                        this.innerHTML = '<i class="fas fa-bars"></i>';
+                    }
+                });
+            }
+
+        // Hiệu ứng xuất hiện cho các phần tử khi scroll
+        const animateOnScroll = function() {
+          const elements = document.querySelectorAll('.feature-card, .solution-item, .metric-item, .workflow-item');
+          
+          elements.forEach(element => {
+            const elementPosition = element.getBoundingClientRect().top;
+            const windowHeight = window.innerHeight;
+            
+            if (elementPosition < windowHeight - 50) {
+              element.classList.add('visible');
+              element.style.opacity = '1';
+              element.style.transform = 'translateY(0)';
+            }
+          });
+        };
+
+        // Thiết lập các phần tử ban đầu
+        const setupInitialStyles = function() {
+          const elements = document.querySelectorAll('.feature-card, .solution-item, .metric-item, .workflow-item');
+          
+          elements.forEach((element, index) => {
+            element.style.opacity = '0';
+            element.style.transform = 'translateY(30px)';
+            element.style.transition = `all 0.6s ease ${index * 0.1}s`;
+          });
+        };
+
+        // Số liệu thống kê tăng dần (counter animation)
+        const animateCounters = function() {
+          const statElements = document.querySelectorAll('.stat-number');
+          
+          statElements.forEach(stat => {
+            const elementPosition = stat.getBoundingClientRect().top;
+            const windowHeight = window.innerHeight;
+            
+            if (elementPosition < windowHeight - 50 && !stat.classList.contains('counted')) {
+              stat.classList.add('counted');
+              
+              const target = parseInt(stat.getAttribute('data-count'));
+              const duration = 2000; // 2 seconds
+              const stepTime = 50; // update every 50ms
+              const totalSteps = duration / stepTime;
+              const stepSize = target / totalSteps;
+              let current = 0;
+              
+              const timer = setInterval(() => {
+                current += stepSize;
+                if (current > target) {
+                  current = target;
+                  clearInterval(timer);
+                }
+                stat.textContent = Math.floor(current);
+              }, stepTime);
+            }
+          });
+        };
+
+        // Thêm hiệu ứng parallax cho background
+        const parallaxEffect = function() {
+          const heroSection = document.querySelector('.hero-section');
+          if (heroSection) {
+            window.addEventListener('scroll', () => {
+              const scrollPosition = window.scrollY;
+              heroSection.style.backgroundPosition = `center ${30 + scrollPosition * 0.05}%`;
+            });
+          }
+        };
+
+        // Khởi chạy các hiệu ứng
+        setupInitialStyles();
+        animateOnScroll();
+        animateCounters();
+        parallaxEffect();
+
+        // Theo dõi sự kiện scroll để kích hoạt hiệu ứng
+        window.addEventListener('scroll', function() {
+          animateOnScroll();
+          animateCounters();
+        });
+
+        // FAQ toggle (nếu có)
+        const faqItems = document.querySelectorAll('.faq-item');
+        if (faqItems) {
+          faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+            question.addEventListener('click', () => {
+              item.classList.toggle('active');
+            });
+          });
+        }
+
+        // Initialize AOS animation
+        AOS.init({
+          duration: 800,
+          once: true,
+          offset: 100
+        });
+        });
+    </script>
+    {% endblock %}
+
+    <footer class="site-footer-container">
+        <div class="footer-content">
+            <div class="footer-column">
+                <h5><i class="fas fa-building-shield"></i> BMSync</h5>
+                <ul>
+                    <li><a href="/info/"><i class="fas fa-info-circle"></i> Về chúng tôi</a></li>
+                    <li><a href="#"><i class="fas fa-briefcase"></i> Sự nghiệp</a></li>
+                    <li><a href="/contact/"><i class="fas fa-envelope"></i> Liên hệ</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h5><i class="fas fa-cubes"></i> Sản phẩm</h5>
+                <ul>
+                    <li><a href="/service/"><i class="fas fa-cogs"></i> Dịch vụ</a></li>
+                    <li><a href="#"><i class="fas fa-star"></i> Tính năng</a></li>
+                    <li><a href="#"><i class="fas fa-tag"></i> Giá cả</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h5><i class="fas fa-hands-helping"></i> Hỗ trợ</h5>
+                <ul>
+                    <li><a href="#"><i class="fas fa-question-circle"></i> Trung tâm trợ giúp</a></li>
+                    <li><a href="#"><i class="fas fa-file-contract"></i> Điều khoản dịch vụ</a></li>
+                    <li><a href="#"><i class="fas fa-shield-alt"></i> Chính sách bảo mật</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h5><i class="fas fa-hashtag"></i> Theo dõi chúng tôi</h5>
+                <div class="social-icons">
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    <a href="#" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+                </div>
+                <p class="footer-newsletter">
+                    <small>Đăng ký nhận bản tin</small>
+                    <div class="newsletter-form">
+                        <input type="email" placeholder="Email của bạn">
+                        <button type="button"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+        <p>
+                &copy; {% now "Y" %} BMSync. All rights reserved. <span class="highlight">Phát triển bởi Nhóm 6.</span>
+        </p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AOS Animation Library -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+</body>
+</html>

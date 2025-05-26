@@ -1,0 +1,142 @@
+{% extends 'dashboard/manager_base.html' %}
+{% block title %}Chi tiết biểu đồ - BMSync{% endblock %} 
+{% block extra_head %}
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/chart.js/dist/Chart.min.css"
+/>
+<style>
+  .chart-detail-card {
+    max-width: 540px;
+    margin: 32px auto 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 6px 32px #4a6cf733;
+    padding: 40px 32px 32px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .chart-detail-card h2 {
+    color: #1e3c72;
+    font-size: 2em;
+    font-weight: 900;
+    margin-bottom: 24px;
+    letter-spacing: 1px;
+  }
+  .badge {
+    font-size: 1.08em;
+    padding: 6px 16px;
+    border-radius: 16px;
+  }
+  .btn-outline {
+    background: #fff;
+    color: #1e3c72;
+    border: 2px solid #1e3c72;
+    border-radius: 8px;
+    font-weight: 700;
+    padding: 10px 24px;
+    font-size: 1.08em;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 24px;
+  }
+  .btn-outline:hover {
+    background: #e3eafe;
+    color: #274bb6;
+    border-color: #274bb6;
+    transform: translateY(-2px) scale(1.03);
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="chart-detail-card">
+  <h2>{{ chart.title }}</h2>
+  <p>
+    <b>Loại biểu đồ:</b>
+    <span class="badge badge-status-{{ chart.type }}"
+      >{{ chart.get_type_display|default:chart.type }}</span
+    >
+  </p>
+  <div style="width: 100%; margin: 24px 0">
+    <canvas id="chartDetailCanvas" height="80"></canvas>
+    <div
+      id="noDataMsg"
+      style="display: none; color: #e74c3c; font-weight: 600; margin-top: 12px"
+    >
+      Không có dữ liệu để hiển thị!
+    </div>
+  </div>
+  <p><b>Ngày tạo:</b> {{ chart.created_at|date:'d/m/Y H:i' }}</p>
+  <pre
+    style="
+      background: #f8f8f8;
+      color: #c00;
+      font-size: 0.95em;
+      padding: 8px 12px;
+      border-radius: 8px;
+      overflow-x: auto;
+      max-width: 100%;
+    "
+  >
+  <a href="{% url 'dashboard:manager_reports' %}" class="btn-outline"
+    >Quay lại</a
+  >
+</div>
+{% endblock %} {% block extra_script %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Lấy dữ liệu từ context (view)
+  const labels = {{ labels|safe }};
+  const data = {{ data|safe }};
+  const type = "{{ type|default:'bar' }}";
+  const label = "{{ label|default:'Biểu đồ' }}";
+  const ctx = document.getElementById("chartDetailCanvas").getContext("2d");
+  if (labels.length === 0 || data.length === 0) {
+    document.getElementById('noDataMsg').style.display = 'block';
+  } else {
+    new Chart(ctx, {
+      type: type,
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: label,
+            data: data,
+            backgroundColor:
+              type === "pie"
+                ? [
+                    "#1e3c72",
+                    "#2a5298",
+                    "#ff9800",
+                    "#f44336",
+                    "#4caf50",
+                    "#00bcd4",
+                    "#9c27b0",
+                    "#607d8b",
+                  ]
+                : "#1e3c72",
+            borderRadius: 8,
+            barPercentage: 0.7,
+            categoryPercentage: 0.6,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: type === "pie" },
+          title: { display: false },
+        },
+        scales:
+          type === "pie"
+            ? {}
+            : {
+                x: { grid: { display: false } },
+                y: { beginAtZero: true, grid: { color: "#e3eafe" } },
+              },
+      },
+    });
+  }
+</script>
+{% endblock %}

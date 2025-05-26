@@ -1,0 +1,69 @@
+{% extends "dashboard/maintenance_base.html" %} 
+{% block title %}Chi tiết công việc - BMSync{% endblock %} 
+{% block extra_head %}
+<style>
+  .task-detail-card {
+    max-width: 520px;
+    margin: 32px auto 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 6px 32px #4a6cf733;
+    padding: 36px 32px 28px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .task-detail-card h2 {
+    color: #1e3c72;
+    font-size: 1.5em;
+    font-weight: 900;
+    margin-bottom: 18px;
+    letter-spacing: 1px;
+  }
+  .badge {
+    font-size: 1.08em;
+    padding: 6px 16px;
+    border-radius: 16px;
+  }
+  .btn-outline {
+    background: #fff;
+    color: #1e3c72;
+    border: 2px solid #1e3c72;
+    border-radius: 8px;
+    font-weight: 700;
+    padding: 10px 24px;
+    font-size: 1.08em;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 24px;
+  }
+  .btn-outline:hover {
+    background: #e3eafe;
+    color: #274bb6;
+    border-color: #274bb6;
+    transform: translateY(-2px) scale(1.03);
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="task-detail-card">
+  <h2>{{ task.title }}</h2>
+  <div><b>Thiết bị:</b> {{ task.maintenance_request.device.name }}</div>
+  <div>
+    <b>Trạng thái:</b>
+    <span class="badge badge-status-{{ task.status }}"
+      >{{ task.get_status_display }}</span
+    >
+  </div>
+  <div><b>Tiến độ:</b> {{ task.progress|default:0 }}%</div>
+  <div><b>Ngày giao:</b> {{ task.created_at|date:'d/m/Y H:i' }}</div>
+  <div><b>Hạn hoàn thành:</b> {{ task.due_date|date:'d/m/Y' }}</div>
+  <div><b>Ghi chú:</b> {{ task.maintenance_request.note|default:'-' }}</div>
+  <div style="margin-top: 18px">
+    <b>Mô tả:</b><br />{{ task.description|linebreaks }}
+  </div>
+  <a href="{% url 'dashboard:maintenance_tasks' %}" class="btn-outline"
+    >Quay lại</a
+  >
+</div>
+{% endblock %}

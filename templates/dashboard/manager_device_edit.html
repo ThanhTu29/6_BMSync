@@ -1,0 +1,120 @@
+{% extends 'dashboard/manager_base.html' %} 
+{% block title %}Chỉnh sửa thiết bị - BMSync{% endblock %} 
+{% block extra_head %}
+<style>
+  .edit-device-card {
+    max-width: 600px;
+    margin: 32px auto 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 6px 32px #4a6cf733;
+    padding: 40px 32px 32px 32px;
+  }
+  .edit-device-header {
+    margin-bottom: 32px;
+  }
+  .edit-device-title {
+    color: #1e3c72;
+    font-size: 1.8em;
+    font-weight: 800;
+    margin: 0 0 8px 0;
+  }
+  .edit-device-subtitle {
+    color: #666;
+    font-size: 1.1em;
+    margin: 0;
+  }
+  .edit-device-form label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 6px;
+    margin-top: 16px;
+    display: block;
+  }
+  .edit-device-form input,
+  .edit-device-form select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1.5px solid #e3eafe;
+    margin-bottom: 10px;
+    font-size: 1.08em;
+    background: #f7faff;
+    transition: border 0.2s, box-shadow 0.2s;
+  }
+  .edit-device-form input:focus,
+  .edit-device-form select:focus {
+    border: 1.5px solid #1e3c72;
+    box-shadow: 0 0 0 2px #e3eafe;
+    outline: none;
+  }
+  .form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 32px;
+  }
+  .btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1.1em;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background: linear-gradient(90deg, #1e3c72 60%, #2a5298 100%);
+    color: white;
+  }
+  .btn-secondary {
+    background: #6c757d;
+    color: white;
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+</style>
+{% endblock %} 
+
+{% block content %}
+<div class="edit-device-card">
+  <div class="edit-device-header">
+    <h1 class="edit-device-title">Chỉnh sửa thiết bị</h1>
+    <p class="edit-device-subtitle">Cập nhật thông tin thiết bị "{{ device.name }}"</p>
+  </div>
+
+  <form method="post" class="edit-device-form">
+    {% csrf_token %}
+    
+    <label for="name">Tên thiết bị</label>
+    <input type="text" id="name" name="name" value="{{ device.name }}" required>
+
+    <label for="device_type">Loại thiết bị</label>
+    <select id="device_type" name="device_type" required>
+      <option value="ac" {% if device.device_type == 'ac' %}selected{% endif %}>Điều hòa</option>
+      <option value="light" {% if device.device_type == 'light' %}selected{% endif %}>Đèn</option>
+      <option value="camera" {% if device.device_type == 'camera' %}selected{% endif %}>Camera</option>
+      <option value="sensor" {% if device.device_type == 'sensor' %}selected{% endif %}>Cảm biến</option>
+      <option value="other" {% if device.device_type == 'other' %}selected{% endif %}>Khác</option>
+    </select>
+
+    <label for="location">Vị trí</label>
+    <input type="text" id="location" name="location" value="{{ device.location }}" required>
+
+    <label for="status">Trạng thái</label>
+    <select id="status" name="status" required>
+      <option value="active" {% if device.status == 'active' %}selected{% endif %}>Hoạt động</option>
+      <option value="inactive" {% if device.status == 'inactive' %}selected{% endif %}>Không hoạt động</option>
+      <option value="maintenance" {% if device.status == 'maintenance' %}selected{% endif %}>Bảo trì</option>
+      <option value="error" {% if device.status == 'error' %}selected{% endif %}>Lỗi</option>
+    </select>
+
+    <div class="form-actions">
+      <a href="{% url 'dashboard:manager_device_detail' device.id %}" class="btn btn-secondary">Hủy</a>
+      <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+    </div>
+  </form>
+</div>
+{% endblock %} 

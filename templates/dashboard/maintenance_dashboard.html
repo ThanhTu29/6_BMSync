@@ -1,0 +1,534 @@
+{% extends "dashboard/maintenance_base.html" %} 
+{% block title %}Dashboard - BMSync{% endblock %} 
+{% block extra_head %}
+<style>
+  /* Dashboard cards */
+  .dashboard-cards {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .dashboard-card {
+    background: linear-gradient(135deg, #34495e 60%, #3c7499 100%);
+    color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    min-width: 200px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .dashboard-card .card-icon {
+    font-size: 0rem;
+    margin-bottom: 8px;
+    color: #3498db;
+    background: #fff;
+    border-radius: 80%;
+    padding: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  .dashboard-card .card-title {
+    font-size: 1em;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #ecf0f1;
+  }
+  .dashboard-card .card-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #fff;
+  }
+  /* Shortcuts */
+  .dashboard-shortcuts {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .shortcut-btn {
+    background-color: #34495e;
+    color: #ecf0f1;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 1em;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s, color 0.2s;
+  }
+  .shortcut-btn:hover {
+    background-color: #3498db;
+    color: #fff;
+  }
+  /* Table container */
+  .dashboard-table-container {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    padding: 16px;
+  }
+  .dashboard-table-container h2 {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  table.display {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    color: #2c3e50;
+  }
+  table.display thead {
+    background-color: #3498db;
+    color: #fff;
+  }
+  table.display th,
+  table.display td {
+    padding: 10px;
+    text-align: left;
+  }
+  table.display tbody tr {
+    background-color: #ecf0f1;
+    transition: background-color 0.2s;
+  }
+  table.display tbody tr:hover {
+    background-color: #dfe6e9;
+  }
+  .btn-mini {
+    font-size: 0.98em;
+    padding: 5px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    border: none;
+    background: linear-gradient(90deg, #1e3c72 60%, #2a5298 100%);
+    color: #fff;
+    transition: all 0.18s;
+    box-shadow: 0 2px 8px #e3eafe;
+    display: inline-block;
+    margin: 0 2px 4px 0;
+    text-decoration: none;
+  }
+  .btn-mini:hover {
+    background: linear-gradient(90deg, #274bb6 60%, #1e3c72 100%);
+    color: #fff;
+    transform: translateY(-2px) scale(1.03);
+  }
+  .progress-badge {
+    background: #e3eafe;
+    color: #1976d2;
+    font-weight: 700;
+    border-radius: 8px;
+    padding: 4px 12px;
+    min-width: 48px;
+    display: inline-block;
+    text-align: center;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="dashboard-cards">
+  <div class="dashboard-card">
+    <span class="card-icon" style="font-size: 1.3rem; padding: 6px"
+      ><i class="fas fa-tasks"></i
+    ></span>
+    <span class="card-title">Tổng công việc</span>
+    <span class="card-value">{{ total_tasks }}</span>
+  </div>
+  <div class="dashboard-card">
+    <span class="card-icon" style="font-size: 1.3rem; padding: 6px"
+      ><i class="fas fa-bolt"></i
+    ></span>
+    <span class="card-title">Việc mới</span>
+    <span class="card-value">{{ pending_tasks }}</span>
+  </div>
+  <div class="dashboard-card">
+    <span class="card-icon" style="font-size: 1.3rem; padding: 6px"
+      ><i class="fas fa-spinner"></i
+    ></span>
+    <span class="card-title">Đang xử lý</span>
+    <span class="card-value">{{ in_progress_tasks }}</span>
+  </div>
+  <div class="dashboard-card">
+    <span class="card-icon" style="font-size: 1.3rem; padding: 6px"
+      ><i class="fas fa-check-circle"></i
+    ></span>
+    <span class="card-title">Đã hoàn thành</span>
+    <span class="card-value">{{ completed_tasks }}</span>
+  </div>
+</div>
+<div class="dashboard-shortcuts">
+  <a href="{% url 'dashboard:maintenance_tasks' %}" class="shortcut-btn">
+    <i class="fas fa-tasks"></i> Công việc
+  </a>
+  <a href="{% url 'dashboard:maintenance_history' %}" class="shortcut-btn">
+    <i class="fas fa-history"></i> Lịch sử
+  </a>
+  <a href="{% url 'dashboard:notifications' %}" class="shortcut-btn">
+    <i class="fas fa-bell"></i> Thông báo
+  </a>
+  <a href="{% url 'dashboard:maintenance_account' %}" class="shortcut-btn">
+    <i class="fas fa-user"></i> Tài khoản
+  </a>
+</div>
+<div class="dashboard-table-container">
+  <h2><i class="fas fa-tasks"></i> Danh sách công việc bảo trì</h2>
+  <div style="display: flex; gap: 16px; margin-bottom: 12px">
+    <input
+      type="text"
+      id="search-tasks"
+      placeholder="Tìm kiếm..."
+      style="padding: 6px 12px; border-radius: 6px; border: 1px solid #ccc"
+    />
+    <select
+      id="filter-status"
+      style="padding: 6px 12px; border-radius: 6px; border: 1px solid #ccc"
+    >
+      <option value="">Tất cả trạng thái</option>
+      <option value="pending">Chờ xác nhận</option>
+      <option value="in_progress">Đang xử lý</option>
+      <option value="completed">Đã hoàn thành</option>
+    </select>
+  </div>
+  <table id="tasks-table" class="display">
+    <thead>
+      <tr>
+        <th>Tiêu đề</th>
+        <th>Thiết bị</th>
+        <th>Trạng thái</th>
+        <th>Ngày giao</th>
+        <th>Hạn hoàn thành</th>
+        <th>Ghi chú</th>
+        <th>Thao tác</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for task in maintenance_tasks %}
+      <tr data-status="{{ task.status }}">
+        <td>{{ task.title }}</td>
+        <td>{{ task.maintenance_request.device.name }}</td>
+        <td>
+          <span class="badge badge-status-{{ task.status }}"
+            >{{ task.get_status_display }}</span
+          >
+        </td>
+        <td>{{ task.created_at|date:'d/m/Y H:i' }}</td>
+        <td>{{ task.due_date|date:'d/m/Y' }}</td>
+        <td>{{ task.maintenance_request.note|default:'-' }}</td>
+        <td style="text-align: center">
+          <a
+            href="{% url 'dashboard:maintenance_task_detail' task.id %}"
+            class="btn-mini btn-detail"
+            >Chi tiết</a
+          >
+          {% if task.status == 'pending' %}
+          <a
+            href="#"
+            class="btn-mini btn-success btn-action"
+            onclick="startTask({{ task.id }}); return false;"
+            >Nhận việc</a
+          >
+          {% elif task.status == 'in_progress' %}
+          <a
+            href="#"
+            class="btn-mini btn-primary btn-action"
+            onclick="completeTask({{ task.id }}); return false;"
+            >Hoàn thành</a
+          >
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr class="no-data-row">
+        <td
+          colspan="7"
+          style="text-align: center; color: #888; font-style: italic"
+        >
+          Không có công việc nào.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="dashboard-table-container" style="margin-top: 32px">
+  <h2><i class="fas fa-check-circle"></i> Danh sách công việc hoàn thành</h2>
+  <div style="display: flex; gap: 16px; margin-bottom: 12px">
+    <input
+      type="text"
+      id="search-completed"
+      placeholder="Tìm kiếm..."
+      style="padding: 6px 12px; border-radius: 6px; border: 1px solid #ccc"
+    />
+  </div>
+  <table id="completed-tasks-table" class="display">
+    <thead>
+      <tr>
+        <th>Tiêu đề</th>
+        <th>Thiết bị</th>
+        <th>Trạng thái</th>
+        <th>Ngày hoàn thành</th>
+        <th>Hạn hoàn thành</th>
+        <th>Ghi chú</th>
+        <th>Thao tác</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for task in maintenance_tasks %} {% if task.status == 'completed' %}
+      <tr>
+        <td>{{ task.title }}</td>
+        <td>{{ task.maintenance_request.device.name }}</td>
+        <td>
+          <span class="badge badge-status-{{ task.status }}"
+            >{{ task.get_status_display }}</span
+          >
+        </td>
+        <td>{{ task.updated_at|date:'d/m/Y H:i' }}</td>
+        <td>{{ task.due_date|date:'d/m/Y' }}</td>
+        <td>{{ task.maintenance_request.note|default:'-' }}</td>
+        <td>
+          <a
+            href="{% url 'dashboard:maintenance_task_detail' task.id %}"
+            class="btn-mini btn-detail"
+            >Chi tiết</a
+          >
+        </td>
+      </tr>
+      {% endif %} {% empty %}
+      <tr class="no-data-row">
+        <td
+          colspan="7"
+          style="text-align: center; color: #888; font-style: italic"
+        >
+          Không có công việc hoàn thành.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="dashboard-table-container" style="margin-top: 32px">
+  <h2><i class="fas fa-hourglass-half"></i> Công việc đang chờ xác nhận</h2>
+  <div style="display: flex; gap: 16px; margin-bottom: 12px">
+    <input
+      type="text"
+      id="search-pending"
+      placeholder="Tìm kiếm..."
+      style="padding: 6px 12px; border-radius: 6px; border: 1px solid #ccc"
+    />
+  </div>
+  <table id="pending-tasks-table" class="display">
+    <thead>
+      <tr>
+        <th>Tiêu đề</th>
+        <th>Thiết bị</th>
+        <th>Trạng thái</th>
+        <th>Ngày giao</th>
+        <th>Hạn hoàn thành</th>
+        <th>Ghi chú</th>
+        <th>Thao tác</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for task in maintenance_tasks %} {% if task.status == 'pending' %}
+      <tr>
+        <td>{{ task.title }}</td>
+        <td>{{ task.maintenance_request.device.name }}</td>
+        <td>
+          <span class="badge badge-status-{{ task.status }}"
+            >{{ task.get_status_display }}</span
+          >
+        </td>
+        <td>{{ task.created_at|date:'d/m/Y H:i' }}</td>
+        <td>{{ task.due_date|date:'d/m/Y' }}</td>
+        <td>{{ task.maintenance_request.note|default:'-' }}</td>
+        <td>
+          <a
+            href="{% url 'dashboard:maintenance_task_detail' task.id %}"
+            class="btn-mini btn-detail"
+            >Chi tiết</a
+          >
+        </td>
+      </tr>
+      {% endif %} {% empty %}
+      <tr class="no-data-row">
+        <td
+          colspan="7"
+          style="text-align: center; color: #888; font-style: italic"
+        >
+          Không có công việc chờ xác nhận.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="dashboard-table-container" style="margin-top: 32px">
+  <h2><i class="fas fa-hourglass-half"></i> Tiến độ công việc</h2>
+  <div style="display: flex; gap: 16px; margin-bottom: 12px">
+    <input
+      type="text"
+      id="search-progress"
+      placeholder="Tìm kiếm..."
+      style="padding: 6px 12px; border-radius: 6px; border: 1px solid #ccc"
+    />
+  </div>
+  <table id="progress-table" class="display">
+    <thead>
+      <tr>
+        <th>Tiêu đề</th>
+        <th>Thiết bị</th>
+        <th>Trạng thái</th>
+        <th>Tiến độ</th>
+        <th>Thao tác</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for task in maintenance_tasks %}
+      <tr>
+        <td>{{ task.title }}</td>
+        <td>{{ task.maintenance_request.device.name }}</td>
+        <td>
+          <span class="badge badge-status-{{ task.status }}"
+            >{{ task.get_status_display }}</span
+          >
+        </td>
+        <td>
+          {% if task.status == 'in_progress' %}
+          <span class="progress-badge">{{ task.progress|default:0 }}%</span>
+          {% elif task.status == 'completed' %}
+          <span class="progress-badge">100%</span>
+          {% else %}
+          <span class="progress-badge">{{ task.progress|default:0 }}%</span>
+          {% endif %}
+        </td>
+        <td>
+          <a
+            href="{% url 'dashboard:maintenance_task_detail' task.id %}"
+            class="btn-mini btn-detail"
+            >Chi tiết</a
+          >
+        </td>
+      </tr>
+      {% empty %}
+      <tr class="no-data-row">
+        <td
+          colspan="7"
+          style="text-align: center; color: #888; font-style: italic"
+        >
+          Không có công việc nào.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %} {% block extra_script %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Lưu dữ liệu dashboard vào localStorage để chatbot có thể sử dụng
+    const dashboardData = {
+      total_tasks: {{ total_tasks }},
+      pending_tasks: {{ pending_tasks }},
+      in_progress_tasks: {{ in_progress_tasks }},
+      completed_tasks: {{ completed_tasks }}
+    };
+    localStorage.setItem('maintenance_dashboard_data', JSON.stringify(dashboardData));
+
+    // --- BẢNG CÔNG VIỆC BẢO TRÌ ---
+    const searchInput = document.getElementById("search-tasks");
+    const filterSelect = document.getElementById("filter-status");
+    const table = document.getElementById("tasks-table");
+    const rows = Array.from(table.querySelectorAll("tbody tr")).filter(
+      (row) => !row.classList.contains("no-data-row")
+    );
+
+    function filterTable() {
+      const search = searchInput.value.toLowerCase();
+      const status = filterSelect.value;
+      let visibleCount = 0;
+      rows.forEach((row) => {
+        const text = row.innerText.toLowerCase();
+        const rowStatus = row.getAttribute("data-status");
+        const matchSearch = text.includes(search);
+        const matchStatus = !status || rowStatus === status;
+        if (matchSearch && matchStatus) {
+          row.style.display = "";
+          visibleCount++;
+        } else {
+          row.style.display = "none";
+        }
+      });
+      const noDataRow = table.querySelector(".no-data-row");
+      if (noDataRow) {
+        noDataRow.style.display = visibleCount === 0 ? "" : "none";
+      }
+    }
+    searchInput.addEventListener("input", filterTable);
+    filterSelect.addEventListener("change", filterTable);
+
+    // --- BẢNG CÔNG VIỆC HOÀN THÀNH ---
+    const searchCompleted = document.getElementById("search-completed");
+    const completedTable = document.getElementById("completed-tasks-table");
+    const completedRows = Array.from(
+      completedTable.querySelectorAll("tbody tr")
+    ).filter((row) => !row.classList.contains("no-data-row"));
+    function filterCompletedTable() {
+      const search = searchCompleted.value.toLowerCase();
+      let visibleCount = 0;
+      completedRows.forEach((row) => {
+        const text = row.innerText.toLowerCase();
+        if (text.includes(search)) {
+          row.style.display = "";
+          visibleCount++;
+        } else {
+          row.style.display = "none";
+        }
+      });
+      const noDataRow = completedTable.querySelector(".no-data-row");
+      if (noDataRow) {
+        noDataRow.style.display = visibleCount === 0 ? "" : "none";
+      }
+    }
+    searchCompleted.addEventListener("input", filterCompletedTable);
+
+    // --- BẢNG CÔNG VIỆC ĐANG CHỜ XÁC NHẬN ---
+    const searchPending = document.getElementById("search-pending");
+    const pendingTable = document.getElementById("pending-tasks-table");
+    const pendingRows = Array.from(
+      pendingTable.querySelectorAll("tbody tr")
+    ).filter((row) => !row.classList.contains("no-data-row"));
+    function filterPendingTable() {
+      const search = searchPending.value.toLowerCase();
+      let visibleCount = 0;
+      pendingRows.forEach((row) => {
+        const text = row.innerText.toLowerCase();
+        if (text.includes(search)) {
+          row.style.display = "";
+          visibleCount++;
+        } else {
+          row.style.display = "none";
+        }
+      });
+      const noDataRow = pendingTable.querySelector(".no-data-row");
+      if (noDataRow) {
+        noDataRow.style.display = visibleCount === 0 ? "" : "none";
+      }
+    }
+    searchPending.addEventListener("input", filterPendingTable);
+  });
+  function startTask(taskId) {
+    // TODO: Implement AJAX to start task
+    alert("Nhận việc: " + taskId);
+  }
+  function completeTask(taskId) {
+    // TODO: Implement AJAX to complete task
+    alert("Hoàn thành: " + taskId);
+  }
+</script>
+{% endblock %}

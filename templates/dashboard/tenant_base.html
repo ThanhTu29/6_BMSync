@@ -1,0 +1,369 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Tenant Dashboard - BMSync{% endblock %}</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <link rel="stylesheet" href="{% static 'style.css' %}" />
+    <style>
+      body {
+        margin: 0;
+        font-family: "Poppins", Arial, sans-serif;
+        background: #f4f7fb;
+        color: #222;
+      }
+      .tenant-dashboard-wrapper {
+        display: flex;
+        min-height: 100vh;
+      }
+      .tenant-sidebar {
+        width: 240px;
+        background: linear-gradient(135deg, #4a6cf7 60%, #6a82fb 100%);
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        padding: 32px 0 0 0;
+        box-shadow: 2px 0 12px rgba(74, 108, 247, 0.08);
+      }
+      .tenant-sidebar .logo {
+        font-size: 2rem;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 32px;
+        letter-spacing: 2px;
+      }
+      .tenant-sidebar nav {
+        flex: 1;
+      }
+      .tenant-sidebar ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .tenant-sidebar li {
+        margin-bottom: 12px;
+      }
+      .tenant-sidebar a {
+        color: #fff;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        padding: 12px 32px;
+        border-left: 4px solid transparent;
+        transition: background 0.2s, border-color 0.2s;
+        font-size: 1.08em;
+      }
+      .tenant-sidebar a.active,
+      .tenant-sidebar a:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-left: 4px solid #fff;
+      }
+      .tenant-sidebar i {
+        margin-right: 12px;
+        font-size: 1.2em;
+      }
+      .tenant-main {
+        flex: 1;
+        padding: 40px 5vw 40px 5vw;
+        background: #f5f5f5;
+      }
+      .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+        color: #e3eafe;
+      }
+      .dashboard-header .greeting {
+        font-size: 2.3rem;
+        font-weight: 800;
+        color: #0235ff;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+      .dashboard-header .greeting i {
+        font-size: 2.5rem;
+        color: #4664fa;
+      }
+      .dashboard-header .role-badge {
+        background: #fff;
+        color: #4a6cf7;
+        font-weight: 700;
+        border-radius: 18px;
+        padding: 7px 22px;
+        font-size: 1.1em;
+        box-shadow: 0 2px 8px #e3eafe;
+        margin-left: 18px;
+        letter-spacing: 1px;
+      }
+      .dashboard-header .avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #e3eafe;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #4a6cf7;
+        margin-right: 16px;
+      }
+      @media (max-width: 900px) {
+        .tenant-dashboard-wrapper {
+          flex-direction: column;
+        }
+        .tenant-sidebar {
+          width: 100%;
+          flex-direction: row;
+          padding: 0;
+        }
+        .tenant-sidebar nav {
+          flex: 1;
+        }
+        .tenant-main {
+          padding: 24px 2vw;
+        }
+      }
+      .badge {
+        display: inline-block;
+        padding: 3px 12px;
+        border-radius: 12px;
+        font-size: 0.98em;
+        font-weight: 600;
+        color: #fff;
+        margin-right: 2px;
+      }
+      .badge-status-active {
+        background: #2ecc71;
+      }
+      .badge-status-inactive {
+        background: #888;
+      }
+      .badge-status-maintenance {
+        background: #f39c12;
+      }
+      .badge-status-pending {
+        background: #f39c12;
+      }
+      .badge-status-assigned {
+        background: #3498db;
+      }
+      .badge-status-in_progress {
+        background: #3498db;
+      }
+      .badge-status-completed {
+        background: #2ecc71;
+      }
+      .badge-status-cancelled {
+        background: #e74c3c;
+      }
+      .badge-priority-low {
+        background: #5dade2;
+      }
+      .badge-priority-medium {
+        background: #f1c40f;
+        color: #222;
+      }
+      .badge-priority-high {
+        background: #e67e22;
+      }
+      .badge-priority-critical {
+        background: #e74c3c;
+      }
+      .tenant-sidebar a .badge-count {
+        background-color: #e74c3c;
+        color: white;
+        border-radius: 10px;
+        padding: 2px 8px;
+        font-size: 0.8em;
+        margin-left: auto; /* Pushes badge to the right */
+        font-weight: bold;
+      }
+
+      /* Styles for table action buttons */
+      .actions-cell {
+        text-align: left; /* Default alignment for action cells */
+      }
+      .table-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px; /* Spacing between buttons */
+      }
+      .table-actions .btn {
+        padding: 6px 12px;
+        font-size: 0.9em;
+        border-radius: 5px;
+        text-decoration: none;
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: opacity 0.2s, background-color 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px; /* Space between icon and text */
+        line-height: 1.2; /* Ensure text vertical alignment */
+      }
+      .table-actions .btn:hover {
+        opacity: 0.85;
+      }
+      .table-actions .btn i {
+        /* margin-right: 4px; */ /* Replaced by gap */
+        font-size: 0.95em; /* Slightly smaller icon if needed */
+      }
+      .table-actions .btn-details {
+        background-color: #3498db; /* Blue */
+      }
+      .table-actions .btn-details:hover {
+        background-color: #2980b9;
+      }
+      .table-actions .btn-edit {
+        background-color: #f1c40f; /* Yellow */
+        color: #333; /* Dark text for yellow button */
+      }
+      .table-actions .btn-edit:hover {
+        background-color: #dab10d;
+      }
+      .table-actions .btn-delete {
+        background-color: #e74c3c; /* Red */
+      }
+      .table-actions .btn-delete:hover {
+        background-color: #c0392b;
+      }
+      /* End Styles for table action buttons */
+    </style>
+    {% block extra_head %} {% endblock %}
+  </head>
+  <body>
+    <div class="tenant-dashboard-wrapper">
+      <aside class="tenant-sidebar">
+        <div class="logo">BMSync</div>
+        <nav>
+          <ul>
+            <li>
+              <a
+                href="{% url 'dashboard:dashboard' %}"
+                class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+                ><i class="fas fa-tachometer-alt"></i> Dashboard</a
+              >
+            </li>
+            <li>
+              <a
+                href="{% url 'dashboard:tenant_devices' %}"
+                class="{% if request.resolver_match.url_name == 'tenant_devices' %}active{% endif %}"
+                ><i class="fas fa-server"></i> Thiết bị của tôi</a
+              >
+            </li>
+            <li>
+              <a
+                href="{% url 'dashboard:tenant_requests' %}"
+                class="{% if request.resolver_match.url_name == 'tenant_requests' %}active{% endif %}"
+                ><i class="fas fa-tools"></i> Yêu cầu bảo trì</a
+              >
+            </li>
+            <li>
+              <a
+                href="{% url 'dashboard:tenant_history' %}"
+                class="{% if request.resolver_match.url_name == 'tenant_history' %}active{% endif %}"
+                ><i class="fas fa-history"></i> Lịch sử bảo trì</a
+              >
+            </li>
+            <li>
+              <a
+                id="tenant-sidebar-notifications-link"
+                href="{% url 'dashboard:notifications' %}"
+                class="{% if request.resolver_match.url_name == 'notifications' %}active{% endif %}"
+                ><i class="fas fa-bell"></i> Thông báo {% if unread_notifications_count > 0 %}
+                <span class="badge-count" id="sidebarUnreadCount"
+                  >{{ unread_notifications_count }}</span
+                >
+                {% endif %}
+              </a>
+            </li>
+            <li>
+              <a
+                href="{% url 'dashboard:tenant_account' %}"
+                class="{% if request.resolver_match.url_name == 'tenant_account' %}active{% endif %}"
+                ><i class="fas fa-user"></i> Tài khoản</a
+              >
+            </li>
+            <li>
+              <a href="#" onclick="showDashboardChat(); return false;"
+                ><i class="fas fa-comments"></i> Trợ giúp</a
+              >
+            </li>
+            <li>
+              <a href="{% url 'logout' %}"
+                ><i class="fas fa-sign-out-alt"></i> Đăng xuất</a
+              >
+            </li>
+          </ul>
+        </nav>
+      </aside>
+      <main class="tenant-main">
+        <div class="dashboard-header">
+          <div class="greeting"></div>
+          <span class="role-badge"
+            ><i class="fas fa-user-shield"></i> Vai trò: Tenant</span
+          >
+        </div>
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    {% block extra_script %} {% endblock %}
+    <script>
+      function updateUnreadCountInSidebar() {
+        $.getJSON(
+          "{% url 'dashboard:notifications' %}?count_only=1",
+          function (data) {
+            const count = data.unread_count;
+            let badge = $("#sidebarUnreadCount");
+            let link = $("#tenant-sidebar-notifications-link"); // Get the link element
+
+            if (count > 0) {
+              if (badge.length === 0 && link.length > 0) {
+                // Check if link exists before appending
+                // Create badge if it doesn't exist and link exists
+                link.append(
+                  ' <span class="badge-count" id="sidebarUnreadCount">' +
+                    count +
+                    "</span>"
+                );
+                badge = $("#sidebarUnreadCount"); // Re-select the badge after creation
+              } else if (badge.length > 0) {
+                badge.text(count);
+              }
+              if (badge.length > 0) badge.show();
+            } else {
+              if (badge.length > 0) {
+                badge.hide();
+              }
+            }
+          }
+        );
+      }
+
+      $(document).ready(function () {
+        // Initial update
+        updateUnreadCountInSidebar();
+
+        // Periodically update, e.g., every 30 seconds (optional)
+        // setInterval(updateUnreadCountInSidebar, 30000);
+      });
+    </script>
+
+    <!-- Include Tenant Chatbot -->
+    {% include 'bmsync/tenant_chatbot.html' %}
+
+    <!-- Include Marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  </body>
+</html>

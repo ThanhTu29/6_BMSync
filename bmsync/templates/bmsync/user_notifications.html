@@ -1,0 +1,71 @@
+{% extends base_template_to_extend|default:'base.html' %}
+{% load static %}
+
+{% block title %}Thông báo của bạn{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2><i class="fas fa-bell"></i> Thông báo của bạn</h2>
+    <hr>
+    {% if page_obj.object_list %}
+        <div class="list-group mb-3">
+            {% for notification in page_obj.object_list %}
+                <a href="{% url 'mark_notification_as_read' notification.id %}?next={{ request.path }}" 
+                   class="list-group-item list-group-item-action {% if not notification.is_read %}list-group-item-primary font-weight-bold{% else %}list-group-item-light{% endif %}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="flex-grow-1 me-3">
+                            <span class="fw-bold">{{ notification.get_notification_type_display }}:</span>
+                            <span class="ms-1">{{ notification.message }}</span>
+                            <small class="text-muted ms-2">({{ notification.timestamp|timesince }} trước)</small>
+                            {% if not notification.is_read %}
+                                <small class="d-block text-muted fst-italic mt-1">Nhấn để đánh dấu là đã đọc.</small>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {% if not notification.is_read %}
+                                <span class="badge bg-primary rounded-pill">Mới</span>
+                            {% else %}
+                                <span class="badge bg-light text-dark border rounded-pill">Đã đọc</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page=1">&laquo; Đầu</a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Trước</a></li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }} <span class="sr-only">(current)</span></span></li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Tiếp</a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Cuối &raquo;</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            Bạn không có thông báo nào.
+        </div>
+    {% endif %}
+</div>
+    {% if request.user.is_staff %}
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary mt-3"><i class="fas fa-arrow-left"></i> Quay lại trang quản trị</a>
+    {% else %}
+        <a href="{% url 'home' %}" class="btn btn-outline-secondary mt-3"><i class="fas fa-arrow-left"></i> Quay lại trang chủ</a>
+    {% endif %}
+</div>
+{% endblock %}

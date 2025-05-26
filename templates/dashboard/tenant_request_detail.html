@@ -1,0 +1,85 @@
+{% extends 'dashboard/tenant_base.html' %} {% block title %}Chi tiết yêu cầu bảo
+trì - BMSync{% endblock %} {% block extra_head %}
+<style>
+  .request-detail-card {
+    max-width: 540px;
+    margin: 32px auto 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 6px 32px #4a6cf733;
+    padding: 40px 32px 32px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .request-detail-card h2 {
+    color: #4a6cf7;
+    font-size: 1.4em;
+    font-weight: 800;
+    margin-bottom: 18px;
+  }
+  .request-detail-list p {
+    margin: 8px 0;
+    font-size: 1.08em;
+  }
+  .device-info-form label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+    display: block;
+  }
+  .device-info-form input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1.5px solid #e3eafe;
+    margin-bottom: 10px;
+    font-size: 1.08em;
+    background: #f7faff;
+  }
+  .device-info-form input[readonly] {
+    background: #f4f7fb;
+    color: #888;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="request-detail-card">
+  <h2>Chi tiết yêu cầu bảo trì</h2>
+  <div class="request-detail-list">
+    <p><b>Tiêu đề:</b> {{ req.title }}</p>
+    <p><b>Mô tả:</b> {{ req.description }}</p>
+    <p>
+      <b>Trạng thái:</b>
+      <span class="badge badge-status-{{ req.status }}"
+        >{{ req.get_status_display }}</span
+      >
+    </p>
+    <p>
+      <b>Ưu tiên:</b>
+      <span class="badge badge-priority-{{ req.priority }}"
+        >{{ req.get_priority_display }}</span
+      >
+    </p>
+    <p><b>Ngày tạo:</b> {{ req.created_at|date:'d/m/Y H:i' }}</p>
+  </div>
+  {% if device %}
+  <h3 style="margin-top: 24px; color: #4a6cf7">Thông tin thiết bị liên quan</h3>
+  <form class="device-info-form">
+    <label>Tên thiết bị</label>
+    <input type="text" value="{{ device.name }}" readonly />
+    <label>Loại thiết bị</label>
+    <input type="text" value="{{ device.get_device_type_display }}" readonly />
+    <label>Vị trí lắp đặt</label>
+    <input type="text" value="{{ device.location }}" readonly />
+    <label>Trạng thái</label>
+    <input type="text" value="{{ device.get_status_display }}" readonly />
+  </form>
+  {% endif %}
+  <a
+    href="{% url 'dashboard:tenant_requests' %}"
+    class="btn btn-secondary"
+    style="margin-top: 18px"
+    >Quay lại</a
+  >
+</div>
+{% endblock %}

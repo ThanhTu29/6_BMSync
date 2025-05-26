@@ -1,0 +1,57 @@
+{% extends 'dashboard/tenant_base.html' %} {% block title %}Chi tiết thiết bị -
+BMSync{% endblock %} {% block extra_head %}
+<style>
+  .device-detail-card {
+    max-width: 520px;
+    margin: 32px auto 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 6px 32px #4a6cf733;
+    padding: 40px 32px 32px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .device-detail-card h2 {
+    color: #4a6cf7;
+    font-size: 1.4em;
+    font-weight: 800;
+    margin-bottom: 18px;
+  }
+  .device-detail-list p {
+    margin: 8px 0;
+    font-size: 1.08em;
+  }
+  .device-detail-actions {
+    margin-top: 18px;
+    display: flex;
+    gap: 12px;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="device-detail-card">
+  <h2>Chi tiết thiết bị</h2>
+  <div class="device-detail-list">
+    <p><b>Tên thiết bị:</b> {{ device.name }}</p>
+    <p><b>Loại:</b> {{ device.get_device_type_display }}</p>
+    <p><b>Vị trí:</b> {{ device.location }}</p>
+    <p>
+      <b>Trạng thái:</b>
+      <span class="badge badge-status-{{ device.status }}"
+        >{{ device.get_status_display }}</span
+      >
+    </p>
+    <p><b>Cập nhật:</b> {{ device.last_updated|date:'d/m/Y H:i' }}</p>
+  </div>
+  <div class="device-detail-actions">
+    <a
+      href="{% url 'dashboard:tenant_device_edit' device.id %}"
+      class="btn btn-warning"
+      >Sửa</a
+    >
+    <a href="{% url 'dashboard:tenant_devices' %}" class="btn btn-secondary"
+      >Quay lại</a
+    >
+  </div>
+</div>
+{% endblock %}

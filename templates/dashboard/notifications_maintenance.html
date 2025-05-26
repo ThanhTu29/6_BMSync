@@ -1,0 +1,185 @@
+{% extends "dashboard/maintenance_base.html" %} 
+{% block title %}Thông báo - BMSync{% endblock %} 
+{% block extra_head %}
+<style>
+  .notifications-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px #3498db33;
+    padding: 28px 32px;
+    margin-bottom: 32px;
+  }
+  .notification-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .notification-item {
+    background: #ecf0f1;
+    color: #2c3e50;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    padding: 18px 24px;
+    box-shadow: 0 2px 8px #3498db22;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    cursor: pointer;
+    border-left: 6px solid #3498db;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .notification-item.unread {
+    background: #d6eaff;
+    border-left: 6px solid #e67e22;
+  }
+  .notification-item:hover {
+    background: #d0e2f3;
+    border-left: 6px solid #3498db;
+  }
+  .notification-icon {
+    font-size: 1.3em;
+    color: #3498db;
+    min-width: 32px;
+    text-align: center;
+  }
+  .notification-content {
+    flex: 1;
+  }
+  .notification-time {
+    color: #888;
+    font-size: 0.98em;
+    margin-left: 18px;
+    min-width: 120px;
+    text-align: right;
+  }
+  .notification-badge {
+    background: #e67e22;
+    color: #fff;
+    border-radius: 10px;
+    padding: 2px 10px;
+    font-size: 0.95em;
+    margin-left: 8px;
+  }
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(44, 62, 80, 0.25);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+  }
+  .modal-box {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 4px 32px #4a6cf7aa;
+    padding: 36px 32px 28px 32px;
+    min-width: 340px;
+    max-width: 96vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: modalIn 0.18s cubic-bezier(0.4, 2, 0.6, 1) both;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  @keyframes modalIn {
+    0% {
+      transform: translateY(40px) scale(0.95);
+      opacity: 0;
+    }
+    100% {
+      transform: none;
+      opacity: 1;
+    }
+  }
+  .modal-close {
+    position: absolute;
+    top: 12px;
+    right: 18px;
+    font-size: 2.1em;
+    color: #888;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s;
+    z-index: 2;
+  }
+  .modal-close:hover {
+    color: #e74c3c;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="notifications-container">
+  <h2><i class="fas fa-bell"></i> Thông báo của bạn (Kỹ thuật viên)</h2>
+  <ul class="notification-list">
+    {% with count=0 %} {% for notification in notifications %} {% if notification.notification_type == "new_request" or notification.notification_type == "request_processed" or notification.notification_type == "task_completed" or notification.notification_type == "task_assigned" %} {% if count %}{% else %}{% widthratio 1 1 1 as count %}{% endif %}
+    <li
+      class="notification-item{% if not notification.is_read %} unread{% endif %}"
+      data-notification-id="{{ notification.id }}"
+    >
+      <span class="notification-icon"><i class="fas fa-bell"></i></span>
+      <div class="notification-content">
+        {{ notification.message }} {% if not notification.is_read %}<span
+          class="notification-badge"
+          >Mới</span
+        >{% endif %}
+      </div>
+      <span class="notification-time"
+        >{{ notification.timestamp|date:'d/m/Y H:i' }}</span
+      >
+    </li>
+    {% endif %} {% empty %}
+    <li style="color: #bbb; padding: 24px; text-align: center">
+      Không có thông báo nào.
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endwith %}
+<!-- Modal chi tiết thông báo -->
+<div id="notificationModal" class="modal-overlay" style="display: none">
+  <div class="modal-box" id="notificationModalBox">
+    <button class="modal-close" onclick="closeNotificationModal()">
+      &times;
+    </button>
+    <div id="notificationModalContent">Đang tải...</div>
+  </div>
+</div>
+{% endblock %} {% block extra_script %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  function openNotificationModal(id, item) {
+    $("#notificationModal").show();
+    $("#notificationModalContent").html("Đang tải...");
+    $.get(`/dashboard/notifications/${id}/`, function (html) {
+      $("#notificationModalContent").html(html);
+      // Đánh dấu đã đọc trên giao diện
+      $(item).removeClass("unread");
+      $(item).find(".notification-badge").remove();
+    });
+  }
+  function closeNotificationModal() {
+    $("#notificationModal").hide();
+  }
+  $(document).ready(function () {
+    $(".notification-item").on("click", function () {
+      const id = $(this).data("notification-id");
+      openNotificationModal(id, this);
+    });
+    // Đóng modal khi bấm nền mờ
+    $("#notificationModal").on("click", function (e) {
+      if (e.target === this) closeNotificationModal();
+    });
+    // Đóng modal bằng phím ESC
+    $(document).on("keydown", function (e) {
+      if (e.key === "Escape") closeNotificationModal();
+    });
+  });
+</script>
+{% endblock %}

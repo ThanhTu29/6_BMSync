@@ -1,0 +1,379 @@
+{% extends "dashboard/manager_base.html" %} 
+{% block title %}Chi tiết yêu cầu bảo trì - BMSync{% endblock %} 
+{% block extra_head %}
+<style>
+  .maintenance-request-detail-card {
+    max-width: 600px;
+    margin: 48px auto 0 auto;
+    background: #fff;
+    border-radius: 22px;
+    box-shadow: 0 8px 32px #4a6cf733;
+    padding: 44px 38px 36px 38px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    position: relative;
+  }
+  .maintenance-request-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+  .maintenance-request-detail-header .icon {
+    font-size: 2.2em;
+    color: #1e3c72;
+    background: #e3eafe;
+    border-radius: 50%;
+    padding: 12px;
+    box-shadow: 0 2px 8px #e3eafe;
+  }
+  .maintenance-request-detail-header h2 {
+    color: #1e3c72;
+    font-size: 1.5em;
+    font-weight: 900;
+    margin: 0;
+    letter-spacing: 1px;
+  }
+  .maintenance-request-detail-list {
+    margin-bottom: 18px;
+  }
+  .maintenance-request-detail-list p {
+    margin: 8px 0;
+    font-size: 1.12em;
+  }
+  .badge-status-pending {
+    background: linear-gradient(90deg, #ffe066 60%, #f1c40f 100%);
+    color: #b8860b;
+    border-radius: 14px;
+    padding: 6px 18px;
+    font-weight: 700;
+    font-size: 1.08em;
+    margin-right: 8px;
+  }
+  .badge-status-approved,
+  .badge-status-assigned {
+    background: linear-gradient(90deg, #3498db 60%, #2a5298 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 6px 18px;
+    font-weight: 700;
+    font-size: 1.08em;
+    margin-right: 8px;
+  }
+  .badge-status-in_progress {
+    background: linear-gradient(90deg, #e67e22 60%, #f39c12 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 6px 18px;
+    font-weight: 700;
+    font-size: 1.08em;
+    margin-right: 8px;
+  }
+  .badge-status-completed {
+    background: linear-gradient(90deg, #2ecc71 60%, #27ae60 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 6px 18px;
+    font-weight: 700;
+    font-size: 1.08em;
+    margin-right: 8px;
+  }
+  .badge-status-cancelled {
+    background: linear-gradient(90deg, #95a5a6 60%, #7f8c8d 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 6px 18px;
+    font-weight: 700;
+    font-size: 1.08em;
+    margin-right: 8px;
+  }
+  .badge-priority-medium {
+    background: linear-gradient(90deg, #f1c40f 60%, #f39c12 100%);
+    color: #222;
+    border-radius: 14px;
+    padding: 6px 18px;
+    font-weight: 700;
+    font-size: 1.08em;
+    margin-right: 8px;
+  }
+  .badge-priority-high {
+    background: linear-gradient(90deg, #e67e22 60%, #e74c3c 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 6px 18px;
+    font-weight: 700;
+    font-size: 1.08em;
+    margin-right: 8px;
+  }
+  .badge-priority-low {
+    background: linear-gradient(90deg, #5dade2 60%, #85c1e9 100%);
+    color: #222;
+    border-radius: 14px;
+    padding: 6px 18px;
+    font-weight: 700;
+    font-size: 1.08em;
+    margin-right: 8px;
+  }
+  .info-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 18px;
+    background: #f7faff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px #e3eafe44;
+  }
+  .info-table th,
+  .info-table td {
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 1.08em;
+  }
+  .info-table th {
+    background: #e3eafe;
+    color: #1e3c72;
+    font-weight: 700;
+    border-bottom: 1px solid #e3eafe;
+  }
+  .info-table tr:last-child td {
+    border-bottom: none;
+  }
+  .action-buttons {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px;
+    align-items: center;
+  }
+  .btn-gradient {
+    background: linear-gradient(90deg, #1e3c72 60%, #2a5298 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 12px 28px;
+    font-size: 1.08em;
+    box-shadow: 0 2px 8px #e3eafe;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .btn-gradient:hover {
+    background: linear-gradient(90deg, #274bb6 60%, #1e3c72 100%);
+    transform: translateY(-2px) scale(1.03);
+    color: #fff;
+  }
+  .btn-outline {
+    background: #fff;
+    color: #1e3c72;
+    border: 2px solid #1e3c72;
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 12px 28px;
+    font-size: 1.08em;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0;
+  }
+  .btn-outline:hover {
+    background: #e3eafe;
+    color: #274bb6;
+    border-color: #274bb6;
+    transform: translateY(-2px) scale(1.03);
+  }
+  .alert {
+    margin-top: 12px;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 1.05em;
+  }
+  .alert-success {
+    background: #eafaf1;
+    color: #218838;
+    border: 1px solid #b6fcd5;
+  }
+  .alert-danger {
+    background: #f8d7da;
+    color: #c82333;
+    border: 1px solid #f5c6cb;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="maintenance-request-detail-card">
+  <div class="maintenance-request-detail-header">
+    <span class="icon"><i class="fas fa-tools"></i></span>
+    <h2>Chi tiết yêu cầu bảo trì</h2>
+  </div>
+  <div class="maintenance-request-detail-list">
+    <p><b>Tiêu đề:</b> {{ maintenance_request.title }}</p>
+    <p><b>Mô tả:</b> {{ maintenance_request.description }}</p>
+    <p>
+      <b>Trạng thái:</b>
+      <span class="badge badge-status-{{ maintenance_request.status }}"
+        >{{ maintenance_request.get_status_display }}</span
+      >
+    </p>
+    <p>
+      <b>Ưu tiên:</b>
+      <span class="badge badge-priority-{{ maintenance_request.priority }}"
+        >{{ maintenance_request.get_priority_display }}</span
+      >
+    </p>
+    <p>
+      <b>Ngày tạo:</b> {{ maintenance_request.created_at|date:'d/m/Y H:i' }}
+    </p>
+  </div>
+  {% if maintenance_request.device %}
+  <h3
+    style="
+      margin-top: 24px;
+      color: #1e3c72;
+      font-size: 1.13em;
+      font-weight: 700;
+    "
+  >
+    Thông tin thiết bị liên quan
+  </h3>
+  <table class="info-table">
+    <tr>
+      <th>Tên thiết bị</th>
+      <th>Loại thiết bị</th>
+      <th>Vị trí lắp đặt</th>
+      <th>Trạng thái</th>
+    </tr>
+    <tr>
+      <td>{{ maintenance_request.device.name }}</td>
+      <td>{{ maintenance_request.device.get_device_type_display }}</td>
+      <td>{{ maintenance_request.device.location }}</td>
+      <td>
+        <span class="badge badge-status-{{ maintenance_request.device.status }}"
+          >{{ maintenance_request.device.get_status_display }}</span
+        >
+      </td>
+    </tr>
+  </table>
+  {% endif %} {% if maintenance_request.status == 'pending' %}
+  <form
+    id="approveMaintenanceRequestForm"
+    method="post"
+    style="margin-top: 18px"
+  >
+    {% csrf_token %}
+    <input type="hidden" name="action" value="approve_maintenance_request" />
+    <div class="action-buttons">
+      <button type="submit" class="btn-gradient">
+        <i class="fas fa-check-circle" style="margin-right: 8px"></i>Duyệt yêu
+        cầu
+      </button>
+    </div>
+    <div id="approveMsg"></div>
+  </form>
+  <script>
+    document
+      .getElementById("approveMaintenanceRequestForm")
+      .addEventListener("submit", function (e) {
+        e.preventDefault();
+        var form = this;
+        var data = new FormData(form);
+        fetch(window.location.href, {
+          method: "POST",
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+          body: data,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById("approveMsg").innerHTML = data.msg
+              ? '<div class="alert alert-success">' + data.msg + "</div>"
+              : '<div class="alert alert-danger">' +
+                (data.error || "Có lỗi xảy ra!") +
+                "</div>";
+            if (data.success) setTimeout(() => window.location.reload(), 1200);
+          });
+      });
+  </script>
+  {% elif maintenance_request.status == 'approved' %}
+  <form id="assignMaintenanceForm" method="post" style="margin-top: 18px">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="assign_maintenance" />
+    <label
+      for="assign_to"
+      style="font-weight: 600; color: #1e3c72; margin-bottom: 6px"
+      >Giao cho nhân viên bảo trì:</label
+    >
+    <select
+      id="assign_to"
+      name="assign_to"
+      required
+      style="
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 8px;
+        border: 1.5px solid #e3eafe;
+        margin-bottom: 16px;
+        font-size: 1.08em;
+      "
+    >
+      <option value="">-- Chọn nhân viên --</option>
+      {% for m in maintenances %}
+      <option value="{{ m.id }}">
+        {{ m.user.get_full_name|default:m.user.username }}
+      </option>
+      {% endfor %}
+    </select>
+    <div class="action-buttons">
+      <button type="submit" class="btn-gradient">
+        <i class="fas fa-user-plus" style="margin-right: 8px"></i>Giao việc
+      </button>
+    </div>
+    <div id="assignMsg"></div>
+  </form>
+  <script>
+    document
+      .getElementById("assignMaintenanceForm")
+      .addEventListener("submit", function (e) {
+        e.preventDefault();
+        var form = this;
+        var data = new FormData(form);
+        fetch(window.location.href, {
+          method: "POST",
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+          body: data,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById("assignMsg").innerHTML = data.msg
+              ? '<div class="alert alert-success">' + data.msg + "</div>"
+              : '<div class="alert alert-danger">' +
+                (data.error || "Có lỗi xảy ra!") +
+                "</div>";
+            if (data.success) setTimeout(() => window.location.reload(), 1200);
+          });
+      });
+  </script>
+  {% elif maintenance_request.status == 'assigned' %}
+  <div
+    style="
+      margin-top: 24px;
+      font-weight: 600;
+      color: #3498db;
+      font-size: 1.13em;
+    "
+  >
+    <i class="fas fa-user-check" style="margin-right: 8px"></i>Đã giao cho: {% if maintenance_request.assigned_to %} {% if maintenance_request.assigned_to.user.get_full_name %} {{ maintenance_request.assigned_to.user.get_full_name }} {% else %} {{ maintenance_request.assigned_to.user.username }} {% endif %} {% else %}
+    <span style="color: #e74c3c">(Chưa có nhân viên được giao)</span>
+    {% endif %}
+  </div>
+  {% endif %}
+  <div class="action-buttons" style="margin-top: 32px">
+    <a href="{% url 'dashboard:notifications' %}" class="btn-outline"
+      ><i class="fas fa-arrow-left" style="margin-right: 8px"></i>Quay lại</a
+    >
+  </div>
+</div>
+{% endblock %}

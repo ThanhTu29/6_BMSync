@@ -1,0 +1,1005 @@
+{% extends "dashboard/tenant_base.html" %} 
+{% load static %} 
+{% block title %}Dashboard - BMSync{% endblock %}
+{% block extra_head %}
+<link
+  rel="stylesheet"
+  href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"
+/>
+<style>
+  .dashboard-cards {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  .dashboard-card {
+    background: linear-gradient(135deg, #e3eafe 60%, #f4f7fb 100%);
+    border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(74, 108, 247, 0.08);
+    padding: 18px 18px 12px 18px;
+    flex: 1 1 0;
+    min-width: 200px;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: box-shadow 0.2s, transform 0.2s;
+    position: relative;
+    margin: 0;
+  }
+  .dashboard-card .big-icon {
+    font-size: 2.2em;
+    margin-bottom: 6px;
+    color: #4a6cf7;
+    background: #fff;
+    border-radius: 50%;
+    padding: 10px;
+    box-shadow: 0 2px 8px #e3eafe;
+  }
+  .dashboard-card .card-title {
+    font-size: 1.05em;
+    color: #4a6cf7;
+    font-weight: 600;
+    margin-bottom: 2px;
+    margin-top: 2px;
+    text-align: center;
+  }
+  .dashboard-card .card-value {
+    font-size: 1.6em;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 4px;
+  }
+  .dashboard-card .progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #e3eafe;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    overflow: hidden;
+  }
+  .dashboard-card .progress {
+    height: 100%;
+    background: #4a6cf7;
+    border-radius: 6px;
+    transition: width 0.5s;
+  }
+  .dashboard-card .progress.yellow {
+    background: #f1c40f;
+  }
+  .dashboard-card .progress.green {
+    background: #2ecc71;
+  }
+  .dashboard-card .btn {
+    margin-top: 6px;
+    font-size: 0.95em;
+  }
+  .dashboard-section-title {
+    font-size: 1.15em;
+    color: #4a6cf7;
+    font-weight: 700;
+    margin: 32px 0 12px 0;
+  }
+  .dashboard-table-container {
+    margin-bottom: 32px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px #e3eafe;
+    padding: 18px;
+  }
+  .dashboard-actions {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 24px;
+    justify-content: center;
+  }
+  .dashboard-actions .btn {
+    background: #4a6cf7;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 28px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px #e3eafe;
+    transition: background 0.2s;
+  }
+  .dashboard-actions .btn:hover {
+    background: #274bb6;
+  }
+  /* Modal styles */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(44, 62, 80, 0.25);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.active {
+    display: flex;
+  }
+  .modal-box {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 4px 32px #4a6cf733;
+    padding: 32px 28px;
+    min-width: 320px;
+    max-width: 95vw;
+    position: relative;
+    animation: modalIn 0.2s;
+  }
+  @keyframes modalIn {
+    from {
+      transform: translateY(-40px) scale(0.98);
+      opacity: 0;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
+  .modal-box .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+  }
+  .modal-box .modal-header h3 {
+    color: #4a6cf7;
+    margin: 0;
+    font-size: 1.3em;
+    font-weight: 700;
+  }
+  .modal-close {
+    position: static;
+    font-size: 1.5em;
+    color: #aaa;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 0;
+    line-height: 1;
+  }
+  .modal-close:hover {
+    color: #4a6cf7;
+  }
+  .modal-form label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+    display: block;
+  }
+  .modal-form input,
+  .modal-form textarea,
+  #ratingModalForm textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #e3eafe;
+    margin-bottom: 14px;
+    font-size: 1em;
+    box-sizing: border-box;
+  }
+  #ratingModalForm textarea {
+    min-height: 80px;
+    resize: vertical;
+  }
+  .modal-form .btn {
+    width: 100%;
+    margin-top: 8px;
+  }
+  .modal-success {
+    color: #2ecc71;
+    font-weight: 600;
+    text-align: center;
+    margin-top: 10px;
+  }
+  @media (max-width: 900px) {
+    .dashboard-cards {
+      flex-direction: column;
+      gap: 16px;
+    }
+    .dashboard-card {
+      max-width: 100%;
+    }
+  }
+  .table-actions .btn {
+    padding: 5px 10px;
+    font-size: 0.85em;
+    border-radius: 4px;
+    text-decoration: none;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .table-actions .btn:hover {
+    opacity: 0.85;
+  }
+  .table-actions .btn-details {
+    background-color: #3498db;
+  }
+  .table-actions .btn-edit {
+    background-color: #f1c40f;
+    color: #333;
+  }
+  .table-actions .btn-delete {
+    background-color: #e74c3c;
+  }
+  td.actions-cell {
+    text-align: left;
+  }
+  .table-actions {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* Improved table styling */
+  .dashboard-table-container table.display {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  .dashboard-table-container table.display th,
+  .dashboard-table-container table.display td {
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    text-align: left;
+    vertical-align: middle;
+  }
+  .dashboard-table-container table.display th {
+    background-color: #f8f9fa;
+    color: #333;
+    font-weight: 600;
+  }
+  .dashboard-table-container table.display tbody tr:hover {
+    background-color: #f1f5f9;
+  }
+  .badge {
+    padding: 4px 8px;
+    border-radius: 10px;
+    font-size: 0.8em;
+    font-weight: 600;
+    color: #fff;
+    text-transform: capitalize;
+  }
+  .badge-status-pending {
+    background-color: #f1c40f;
+    color: #333;
+  }
+  .badge-status-assigned {
+    background-color: #3498db;
+  }
+  .badge-status-in_progress {
+    background-color: #e67e22;
+  }
+  .badge-status-completed {
+    background-color: #2ecc71;
+  }
+  .badge-status-cancelled {
+    background-color: #95a5a6;
+  }
+  .badge-priority-low {
+    background-color: #2ecc71;
+  }
+  .badge-priority-medium {
+    background-color: #f1c40f;
+    color: #333;
+  }
+  .badge-priority-high {
+    background-color: #e74c3c;
+  }
+
+  /* CSS cho hệ thống đánh giá sao */
+  .star-rating-container {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .star-rating-container .star {
+    font-size: 1.3em;
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .star-rating-container .star:hover,
+  .star-rating-container .star.selected,
+  .star-rating-container .star.hovered {
+    color: #f1c40f;
+  }
+  .star-rating-container .star.rated {
+    color: #f1c40f;
+    cursor: default;
+  }
+  .rating-text {
+    font-size: 0.9em;
+    margin-left: 8px;
+    color: #555;
+  }
+  /* Style for success/error messages in modal */
+  #ratingSubmitMsg.success {
+    color: #2ecc71;
+    font-weight: bold;
+  }
+  #ratingSubmitMsg.error {
+    color: #e74c3c;
+    font-weight: bold;
+  }
+</style>
+{% endblock %} {% block content %}
+<div
+  class="dashboard-header"
+  style="
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    margin-bottom: 24px;
+  "
+>
+  <div style="display: flex; align-items: center; gap: 16px">
+    <div
+      style="
+        background: #4263eb;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      "
+    >
+      <i class="fas fa-user" style="color: white; font-size: 20px"></i>
+    </div>
+    <div>
+      <h2
+        style="color: #152781; font-weight: 700; margin: 0; font-size: 1.5rem"
+      >
+        Xin chào,
+        {{user_profile.user.get_full_name|default:user_profile.user.username }}!
+      </h2>
+      <p style="color: #152781; margin: 4px 0 0 0; font-size: 0.95rem">
+        Chào mừng bạn đến với BMSync - Hệ thống quản lý thiết bị thông minh
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="dashboard-actions">
+  <button class="btn" onclick="openModal('addDeviceModal')">
+    <i class="fas fa-plus"></i> Yêu cầu thêm thiết bị
+  </button>
+  <button class="btn" onclick="openModal('contactModal')">
+    <i class="fas fa-envelope"></i> Liên hệ quản trị
+  </button>
+</div>
+<div class="dashboard-cards">
+  <div class="dashboard-card">
+    <span class="big-icon"><i class="fas fa-server"></i></span>
+    <div class="card-title">Thiết bị của tôi</div>
+    <div class="card-value">{{ my_devices|length }}</div>
+    <div class="progress-bar">
+      <div
+        class="progress"
+        style="width: {{ percent_devices|default:0 }}%;"
+      ></div>
+    </div>
+    <a href="{% url 'dashboard:tenant_devices' %}" class="btn btn-sm btn-info"
+      >Xem chi tiết</a
+    >
+  </div>
+  <div class="dashboard-card">
+    <span class="big-icon"><i class="fas fa-tools"></i></span>
+    <div class="card-title">Yêu cầu bảo trì</div>
+    <div class="card-value">{{ maintenance_requests|length }}</div>
+    <div class="progress-bar">
+      <div
+        class="progress yellow"
+        style="width: {{ percent_requests|default:0 }}%;"
+      ></div>
+    </div>
+    <a href="{% url 'dashboard:tenant_requests' %}" class="btn btn-sm btn-info"
+      >Xem chi tiết</a
+    >
+  </div>
+  <div class="dashboard-card">
+    <span class="big-icon"><i class="fas fa-check-circle"></i></span>
+    <div class="card-title">Đã hoàn thành</div>
+    <div class="card-value">{{ completed_requests|default:0 }}</div>
+    <div class="progress-bar">
+      <div
+        class="progress green"
+        style="width: {{ percent_completed|default:0 }}%;"
+      ></div>
+    </div>
+    <a href="{% url 'dashboard:tenant_history' %}" class="btn btn-sm btn-info"
+      >Xem chi tiết</a
+    >
+  </div>
+</div>
+<div class="dashboard-section-title">Thiết bị của tôi</div>
+<div class="dashboard-table-container">
+  <table id="devices-table" class="display" style="width: 100%">
+    <thead>
+      <tr>
+        <th>Tên thiết bị</th>
+        <th>Loại</th>
+        <th>Vị trí</th>
+        <th>Trạng thái</th>
+        <th>Cập nhật</th>
+        <th>Thao tác</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for device in my_devices %}
+      <tr>
+        <td>{{ device.name }}</td>
+        <td>{{ device.get_device_type_display }}</td>
+        <td>{{ device.location }}</td>
+        <td>
+          <span class="badge badge-status-{{ device.status|lower }}"
+            >{{ device.get_status_display }}</span
+          >
+        </td>
+        <td>{{ device.last_updated|date:'d/m/Y H:i' }}</td>
+        <td class="actions-cell">
+          <div class="table-actions">
+            <a
+              href="{% url 'dashboard:tenant_device_detail' device.id %}"
+              class="btn btn-details"
+              ><i class="fas fa-eye"></i> Chi tiết</a
+            >
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="dashboard-section-title">Yêu cầu bảo trì</div>
+<div class="dashboard-table-container">
+  <table id="requests-table" class="display" style="width: 100%">
+    <thead>
+      <tr>
+        <th>Tiêu đề</th>
+        <th>Thiết bị</th>
+        <th>Trạng thái</th>
+        <th>Ưu tiên</th>
+        <th>Ngày tạo</th>
+        <th>Thao tác</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for req in maintenance_requests %}
+      <tr>
+        <td>{{ req.title }}</td>
+        <td>{{ req.device.name }}</td>
+        <td>
+          <span class="badge badge-status-{{ req.status|lower }}"
+            >{{ req.get_status_display }}</span
+          >
+        </td>
+        <td>
+          <span class="badge badge-priority-{{ req.priority|lower }}"
+            >{{ req.get_priority_display }}</span
+          >
+        </td>
+        <td>{{ req.created_at|date:'d/m/Y H:i' }}</td>
+        <td class="actions-cell">
+          <div class="table-actions">
+            <a
+              href="{% url 'dashboard:tenant_request_detail' req.id %}"
+              class="btn btn-details"
+              ><i class="fas fa-eye"></i> Chi tiết</a
+            >
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="dashboard-section-title">Đã hoàn thành</div>
+<div class="dashboard-table-container">
+  <table id="completed-tasks-table" class="display" style="width: 100%">
+    <thead>
+      <tr>
+        <th>Công việc</th>
+        <th>Thiết bị</th>
+        <th>Ngày hoàn thành</th>
+        <th>Nhân viên</th>
+        <th>Đánh giá</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for record in maintenance_history %}
+      <tr>
+        <td>{{ record.title }}</td>
+        <td>{{ record.maintenance_request.device.name }}</td>
+        <td>{{ record.due_date|date:"d/m/Y" }}</td>
+        <td>
+          {% if record.assigned_to %} {{ record.assigned_to.user.get_full_name|default:record.assigned_to.user.username
+          }} {% else %} N/A {% endif %}
+        </td>
+        <td
+          class="actions-cell star-rating-cell"
+          data-task-id="{{ record.id }}"
+        >
+          {% if record.rating %}
+          <div class="star-rating-container already-rated">
+            {% for i in "12345" %}
+            <span
+              class="star fas fa-star {% if i|add:0 <= record.rating %}rated{% endif %}"
+            ></span>
+            {% endfor %}
+            <span class="rating-text">({{ record.rating }}/5)</span>
+          </div>
+          {% else %}
+          <div class="star-rating-container to-rate">
+            <span class="star far fa-star" data-value="1"></span>
+            <span class="star far fa-star" data-value="2"></span>
+            <span class="star far fa-star" data-value="3"></span>
+            <span class="star far fa-star" data-value="4"></span>
+            <span class="star far fa-star" data-value="5"></span>
+          </div>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td></td>
+        <td></td>
+        <td style="text-align: center; color: #888; font-style: italic">
+          Chưa có công việc nào hoàn thành.
+        </td>
+        <td></td>
+        <td></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal: Yêu cầu thêm thiết bị -->
+<div id="addDeviceModal" class="modal-overlay">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('addDeviceModal')">
+      &times;
+    </button>
+    <h3>Yêu cầu thêm thiết bị</h3>
+    <form id="addDeviceForm" class="modal-form">
+      <label for="device_name">Tên thiết bị *</label>
+      <input type="text" id="device_name" name="device_name" required />
+      <label for="device_type">Loại thiết bị *</label>
+      <input type="text" id="device_type" name="device_type" required />
+      <label for="device_location">Vị trí lắp đặt *</label>
+      <input type="text" id="device_location" name="device_location" required />
+      <label for="device_note">Ghi chú</label>
+      <textarea id="device_note" name="device_note"></textarea>
+      <button type="submit" class="btn btn-primary">Gửi yêu cầu</button>
+      <div id="addDeviceSuccess" class="modal-success" style="display: none">
+        Đã gửi yêu cầu thành công!
+      </div>
+    </form>
+  </div>
+</div>
+<!-- Modal: Liên hệ quản lý -->
+<div id="contactModal" class="modal-overlay">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('contactModal')">
+      &times;
+    </button>
+    <h3>Liên hệ quản lý</h3>
+    <form id="contactForm" class="modal-form">
+      <label for="contact_subject">Tiêu đề *</label>
+      <input type="text" id="contact_subject" name="contact_subject" required />
+      <label for="contact_message">Nội dung *</label>
+      <textarea id="contact_message" name="contact_message" required></textarea>
+      <button type="submit" class="btn btn-primary">Gửi liên hệ</button>
+      <div id="contactSuccess" class="modal-success" style="display: none">
+        Đã gửi liên hệ thành công!
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Rating Modal -->
+<div id="ratingModal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Đánh giá dịch vụ bảo trì</h3>
+      <button class="modal-close" onclick="closeModal('ratingModal')">
+        &times;
+      </button>
+    </div>
+    <form id="ratingModalForm" class="modal-form">
+      {% csrf_token %}
+      <input type="hidden" id="ratingTaskId" name="task_id" />
+      <p style="margin-bottom: 10px; font-size: 1.1em">
+        Bạn đánh giá:
+        <span id="selectedRatingValue" style="font-weight: bold; color: #f1c40f"
+          >0</span
+        >
+        sao
+      </p>
+      <div
+        class="star-rating-container modal-stars"
+        style="font-size: 1.8em; margin-bottom: 20px; justify-content: center"
+      >
+        <span class="star far fa-star" data-value="1"></span>
+        <span class="star far fa-star" data-value="2"></span>
+        <span class="star far fa-star" data-value="3"></span>
+        <span class="star far fa-star" data-value="4"></span>
+        <span class="star far fa-star" data-value="5"></span>
+      </div>
+      <div class="form-group">
+        <label for="rating_comment">Bình luận của bạn (không bắt buộc):</label>
+        <textarea id="rating_comment" name="rating_comment" rows="3"></textarea>
+      </div>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        style="width: 100%; padding: 12px; font-size: 1.1em"
+      >
+        Gửi đánh giá
+      </button>
+    </form>
+    <div
+      id="ratingSubmitMsg"
+      style="margin-top: 15px; text-align: center; min-height: 20px"
+    ></div>
+  </div>
+</div>
+
+{% endblock %} {% block extra_script %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script>
+  $(document).ready(function () {
+    // Common language configuration
+    const commonLanguageConfig = {
+      emptyTable: "Không có dữ liệu",
+      info: "Hiển thị _START_ đến _END_ của _TOTAL_ mục",
+      infoEmpty: "Hiển thị 0 đến 0 của 0 mục",
+      infoFiltered: "(được lọc từ _MAX_ mục)",
+      lengthMenu: "Hiển thị _MENU_ mục",
+      search: "Tìm:",
+      zeroRecords: "Không tìm thấy dữ liệu",
+      paginate: {
+        first: "Đầu",
+        last: "Cuối",
+        next: "Sau",
+        previous: "Trước",
+      },
+    };
+
+    // Initialize #devices-table
+    if ($("#devices-table").length) {
+      $("#devices-table").DataTable({
+        language: commonLanguageConfig,
+        pageLength: 5,
+        lengthMenu: [
+          [5, 10, 25, -1],
+          [5, 10, 25, "Tất cả"],
+        ],
+        order: [[0, "asc"]],
+        columnDefs: [{ targets: -1, orderable: false }],
+      });
+    }
+
+    // Initialize #requests-table
+    if ($("#requests-table").length) {
+      $("#requests-table").DataTable({
+        language: commonLanguageConfig,
+        pageLength: 5,
+        lengthMenu: [
+          [5, 10, 25, -1],
+          [5, 10, 25, "Tất cả"],
+        ],
+        order: [[4, "desc"]], // Sort by creation date
+        columnDefs: [{ targets: -1, orderable: false }],
+      });
+    }
+
+    // Initialize #completed-tasks-table (Problematic table)
+    if ($("#completed-tasks-table").length) {
+      try {
+        // Check if the tbody is completely empty (no <tr> elements at all)
+        // This can happen if maintenance_history has items, but none are 'completed'
+        // and the "empty" clause of the for loop is not triggered.
+        if (
+          $("#completed-tasks-table tbody tr").length === 0 &&
+          $("#completed-tasks-table tbody").children().length === 0
+        ) {
+          // If tbody is truly empty, DataTables should ideally show "emptyTable" message.
+          // Initializing it and letting it handle the empty state.
+          $("#completed-tasks-table").DataTable({
+            language: commonLanguageConfig,
+            pageLength: 5,
+            lengthMenu: [
+              [5, 10, 25, -1],
+              [5, 10, 25, "Tất cả"],
+            ],
+            order: [[2, "desc"]], // Sort by completion date
+            columnDefs: [{ targets: -1, orderable: false }], // Last column (Rating) not orderable
+            // No other complex options for now
+          });
+        } else {
+          // If tbody has rows (either data or the colspan 'empty' message)
+          $("#completed-tasks-table").DataTable({
+            language: commonLanguageConfig,
+            pageLength: 5,
+            lengthMenu: [
+              [5, 10, 25, -1],
+              [5, 10, 25, "Tất cả"],
+            ],
+            order: [[2, "desc"]],
+            columnDefs: [{ targets: -1, orderable: false }],
+          });
+        }
+      } catch (e) {
+        console.error(
+          "Error initializing DataTables for #completed-tasks-table:",
+          e
+        );
+        // Fallback or error display for the user if necessary
+      }
+    }
+
+    // Lưu dữ liệu dashboard vào localStorage để chatbot có thể sử dụng
+    try {
+      // Lấy số lượng thiết bị, yêu cầu bảo trì và công việc hoàn thành
+      const deviceCount = {{ my_devices|length }};
+      const requestCount = {{ maintenance_requests|length }};
+      const pendingCount = {{ pending_requests|default:0 }};
+      const completedCount = {{ completed_requests|default:0 }};
+
+      // Lưu vào localStorage
+      localStorage.setItem('tenant_dashboard_data', JSON.stringify({
+        my_devices: deviceCount,
+        my_requests: requestCount,
+        pending_requests: pendingCount,
+        completed_requests: completedCount,
+        lastUpdated: new Date().toISOString()
+      }));
+    } catch (e) {
+      console.error("Error saving dashboard data to localStorage:", e);
+    }
+
+    // Modal logic (kept from existing code)
+    window.openModal = function (id) {
+      // Ensure openModal is globally accessible if called from HTML onclick
+      const modal = document.getElementById(id);
+      if (modal) {
+        modal.classList.add("active");
+      }
+    };
+    window.closeModal = function (id) {
+      // Ensure closeModal is globally accessible
+      const modal = document.getElementById(id);
+      if (modal) {
+        modal.classList.remove("active");
+        const form = document.getElementById(id + "Form"); // e.g. addDeviceModalForm
+        if (form) {
+          // form.reset(); // Reset form if it exists
+        }
+        const successMessage = document.getElementById(id + "Success"); // e.g. addDeviceModalSuccess
+        if (successMessage) {
+          // successMessage.style.display = "none";
+        }
+        // Specifically for rating modal message
+        if (id === "ratingModal") {
+          $("#ratingSubmitMsg").text("").removeClass("success error loading");
+        }
+      }
+    };
+
+    // Close modal with Escape key
+    $(document).on("keydown", function (event) {
+      if (event.key === "Escape") {
+        $(".modal-overlay.active").each(function () {
+          closeModal($(this).attr("id"));
+        });
+      }
+    });
+
+    // AJAX submit for add device (kept from existing code)
+    $("#addDeviceForm").on("submit", function (e) {
+      e.preventDefault();
+      var data = {
+        device_name: $("#device_name").val(),
+        device_type: $("#device_type").val(),
+        device_location: $("#device_location").val(),
+        device_note: $("#device_note").val(),
+        csrfmiddlewaretoken: "{{ csrf_token }}",
+      };
+      $.post(
+        '{% url "dashboard:tenant_add_device_request" %}',
+        data,
+        function (resp) {
+          $("#addDeviceSuccess").show();
+          setTimeout(function () {
+            closeModal("addDeviceModal");
+            $("#addDeviceSuccess").hide();
+            $("#addDeviceForm")[0].reset();
+          }, 1500);
+        }
+      ).fail(function () {
+        alert("Yêu cầu thêm thiết bị thất bại.");
+      });
+    });
+
+    // AJAX submit for contact manager (kept from existing code)
+    $("#contactForm").on("submit", function (e) {
+      e.preventDefault();
+      var data = {
+        contact_subject: $("#contact_subject").val(),
+        contact_message: $("#contact_message").val(),
+        csrfmiddlewaretoken: "{{ csrf_token }}",
+      };
+      $.post(
+        '{% url "dashboard:tenant_contact_manager" %}',
+        data,
+        function (resp) {
+          $("#contactSuccess").show();
+          setTimeout(function () {
+            closeModal("contactModal");
+            $("#contactSuccess").hide();
+            $("#contactForm")[0].reset();
+          }, 1500);
+        }
+      ).fail(function () {
+        alert("Gửi liên hệ thất bại.");
+      });
+    });
+
+    // Star rating logic (kept from existing code)
+    let currentRating = 0;
+    let currentTaskId = null;
+
+    $("#completed-tasks-table").on("click", ".to-rate .star", function () {
+      currentTaskId = $(this).closest(".star-rating-cell").data("task-id");
+      currentRating = $(this).data("value");
+      $("#ratingModalForm #ratingTaskId").val(currentTaskId);
+      $("#ratingModalForm #selectedRatingValue").text(currentRating);
+      updateModalStars(currentRating);
+      openModal("ratingModal");
+    });
+
+    $("#ratingModal .modal-stars .star").on("click", function () {
+      currentRating = $(this).data("value");
+      $("#ratingModalForm #selectedRatingValue").text(currentRating);
+      updateModalStars(currentRating);
+    });
+
+    function updateModalStars(rating) {
+      const starsInModal = $("#ratingModal .modal-stars .star");
+      starsInModal.removeClass("fas fa-star selected").addClass("far fa-star");
+      starsInModal.each(function (index) {
+        if (index < rating) {
+          $(this).removeClass("far fa-star").addClass("fas fa-star selected");
+        }
+      });
+    }
+
+    $(document).on("mouseenter", ".star-rating-container .star", function () {
+      const ratingContainer = $(this).parent();
+      if (ratingContainer.hasClass("already-rated")) return;
+      const value = $(this).data("value");
+      ratingContainer
+        .find(".star")
+        .removeClass("hovered selected fas fa-star")
+        .addClass("far fa-star");
+      ratingContainer.find(".star").each(function (index) {
+        if (index < value) {
+          $(this)
+            .addClass("hovered")
+            .removeClass("far fa-star")
+            .addClass("fas fa-star");
+        }
+      });
+    });
+
+    $(document).on("mouseleave", ".star-rating-container", function () {
+      if ($(this).hasClass("already-rated")) return;
+      const starsToUpdate = $(this).find(".star");
+      let ratingToRestore = $(this).hasClass("modal-stars") ? currentRating : 0;
+      starsToUpdate
+        .removeClass("hovered fas fa-star selected")
+        .addClass("far fa-star");
+      starsToUpdate.each(function (index) {
+        if (index < ratingToRestore) {
+          $(this).removeClass("far fa-star").addClass("fas fa-star selected");
+        }
+      });
+    });
+
+    $("#ratingModalForm").on("submit", function (e) {
+      e.preventDefault();
+      const taskId = $("#ratingModalForm #ratingTaskId").val();
+      const ratingComment = $("#ratingModalForm #rating_comment").val();
+      const ratingSubmitMsg = $("#ratingSubmitMsg");
+
+      if (currentRating === 0) {
+        ratingSubmitMsg
+          .text("Vui lòng chọn số sao đánh giá.")
+          .removeClass("success")
+          .addClass("error");
+        return;
+      }
+      ratingSubmitMsg
+        .text("Đang gửi...")
+        .removeClass("error success")
+        .addClass("loading");
+
+      $.ajax({
+        url: "{% url 'dashboard:rate_task' %}",
+        type: "POST",
+        data: {
+          task_id: taskId,
+          rating: currentRating,
+          rating_comment: ratingComment,
+          csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]", this).val(),
+        },
+        success: function (response) {
+          ratingSubmitMsg.removeClass("loading");
+          if (response.success) {
+            ratingSubmitMsg
+              .text(response.message || "Đánh giá đã được gửi thành công!")
+              .addClass("success")
+              .removeClass("error");
+            const table = $("#completed-tasks-table").DataTable();
+            const cellToUpdate = $(
+              `#completed-tasks-table .star-rating-cell[data-task-id='${taskId}']`
+            );
+            if (cellToUpdate.length > 0) {
+              let starsHtml =
+                '<div class="star-rating-container already-rated">';
+              for (let i = 1; i <= 5; i++) {
+                starsHtml += `<span class="star fas fa-star ${
+                  i <= currentRating ? "rated" : ""
+                }"></span>`;
+              }
+              starsHtml += `<span class="rating-text">(${currentRating}/5)</span></div>`;
+              table.cell(cellToUpdate).data(starsHtml).draw(false);
+            }
+            setTimeout(function () {
+              closeModal("ratingModal");
+            }, 1500);
+          } else {
+            ratingSubmitMsg
+              .text(response.message || "Có lỗi xảy ra. Vui lòng thử lại.")
+              .addClass("error")
+              .removeClass("success");
+          }
+        },
+        error: function (xhr) {
+          ratingSubmitMsg.removeClass("loading");
+          let errorMsg = "Lỗi kết nối hoặc máy chủ. Vui lòng thử lại.";
+          if (xhr.responseJSON && xhr.responseJSON.message) {
+            errorMsg = xhr.responseJSON.message;
+          } else if (xhr.statusText) {
+            errorMsg = `Lỗi: ${xhr.statusText} (${xhr.status})`;
+          }
+          ratingSubmitMsg
+            .text(errorMsg)
+            .addClass("error")
+            .removeClass("success");
+        },
+      });
+    });
+  });
+</script>
+{% endblock %}

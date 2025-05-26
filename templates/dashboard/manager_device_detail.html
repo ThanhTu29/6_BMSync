@@ -1,0 +1,157 @@
+{% extends 'dashboard/manager_base.html' %} {% block title %}Chi tiết thiết bị -
+BMSync{% endblock %} {% block extra_head %}
+<style>
+  .device-detail-card {
+    max-width: 800px;
+    margin: 32px auto 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 6px 32px #4a6cf733;
+    padding: 40px 32px 32px 32px;
+  }
+  .device-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+  .device-title {
+    color: #1e3c72;
+    font-size: 1.8em;
+    font-weight: 800;
+    margin: 0;
+  }
+  .device-actions {
+    display: flex;
+    gap: 12px;
+  }
+  .device-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+  .info-group {
+    background: #f7faff;
+    padding: 20px;
+    border-radius: 12px;
+  }
+  .info-group h3 {
+    color: #1e3c72;
+    font-size: 1.1em;
+    margin: 0 0 12px 0;
+  }
+  .info-item {
+    margin-bottom: 12px;
+  }
+  .info-item:last-child {
+    margin-bottom: 0;
+  }
+  .info-label {
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 4px;
+  }
+  .info-value {
+    color: #333;
+  }
+  .badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: 600;
+  }
+  .badge-status-active {
+    background: #28a745;
+    color: white;
+  }
+  .badge-status-inactive {
+    background: #6c757d;
+    color: white;
+  }
+  .badge-status-maintenance {
+    background: #ffc107;
+    color: black;
+  }
+  .badge-status-error {
+    background: #dc3545;
+    color: white;
+  }
+  .btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .btn-warning {
+    background: #ffc107;
+    color: #000;
+  }
+  .btn-secondary {
+    background: #6c757d;
+    color: white;
+  }
+  .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="device-detail-card">
+  <div class="device-header">
+    <h1 class="device-title">{{ device.name }}</h1>
+    <div class="device-actions">
+      <a
+        href="{% url 'dashboard:manager_device_edit' device.id %}"
+        class="btn btn-warning"
+        >Sửa</a
+      >
+      <a href="{% url 'dashboard:manager_devices' %}" class="btn btn-secondary"
+        >Quay lại</a
+      >
+    </div>
+  </div>
+
+  <div class="device-info">
+    <div class="info-group">
+      <h3>Thông tin cơ bản</h3>
+      <div class="info-item">
+        <div class="info-label">Loại thiết bị</div>
+        <div class="info-value">{{ device.get_device_type_display }}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Vị trí</div>
+        <div class="info-value">{{ device.location }}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Trạng thái</div>
+        <div class="info-value">
+          <span class="badge badge-status-{{ device.status }}">
+            {{ device.get_status_display }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-group">
+      <h3>Thông tin bổ sung</h3>
+      <div class="info-item">
+        <div class="info-label">Người sở hữu</div>
+        <div class="info-value">
+          {{ device.tenant.user.get_full_name|default:"Chưa có" }}
+        </div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Ngày tạo</div>
+        <div class="info-value">{{ device.created_at|date:'d/m/Y H:i' }}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Cập nhật lần cuối</div>
+        <div class="info-value">{{ device.last_updated|date:'d/m/Y H:i' }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

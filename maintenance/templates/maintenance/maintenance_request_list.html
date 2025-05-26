@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load maintenance_extras %}
+{% block content %}
+<h2>Danh sách yêu cầu bảo trì</h2>
+<a href="{% url 'maintenance_request_create' %}" class="btn btn-primary mb-3">Tạo yêu cầu mới</a>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Thiết bị</th>
+            <th>Người yêu cầu</th>
+            <th>Trạng thái</th>
+            <th>Ngày tạo</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for req in requests %}
+        <tr>
+            <td>{{ req.device }}</td>
+            <td>{{ req.requester }}</td>
+            <td>{{ req.get_status_display }}</td>
+            <td>{{ req.created_at|date:'d/m/Y H:i' }}</td>
+            <td>
+                <a href="{% url 'maintenance_request_detail' req.pk %}" class="btn btn-info btn-sm">Chi tiết</a>
+                {% if user.is_superuser or user == req.requester or user|has_group:'Kỹ thuật viên' %}
+                <a href="{% url 'maintenance_request_update' req.pk %}" class="btn btn-warning btn-sm">Sửa</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">Không có yêu cầu nào.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

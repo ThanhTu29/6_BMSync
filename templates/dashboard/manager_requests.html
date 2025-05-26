@@ -1,0 +1,120 @@
+{% extends 'dashboard/manager_base.html' %} 
+{% block title %}Quản lý yêu cầu bảo trì - BMSync{% endblock %} 
+{% block extra_head %}
+<link
+  rel="stylesheet"
+  href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"
+/>
+<style>
+  .badge-status-pending {
+    background: #f1c40f;
+    color: #333;
+  }
+  .badge-status-assigned {
+    background: #3498db;
+    color: #fff;
+  }
+  .badge-status-in_progress {
+    background: #e67e22;
+    color: #fff;
+  }
+  .badge-status-completed {
+    background: #2ecc71;
+    color: #fff;
+  }
+  .badge-status-cancelled {
+    background: #95a5a6;
+    color: #fff;
+  }
+  .btn-gradient {
+    background: linear-gradient(90deg, #1e3c72 60%, #2a5298 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    padding: 8px 18px;
+    min-width: 90px;
+    white-space: nowrap;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px #e3eafe;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn-gradient:hover {
+    background: linear-gradient(90deg, #274bb6 60%, #1e3c72 100%);
+    transform: translateY(-2px) scale(1.03);
+    color: #fff;
+  }
+  .btn-detail {
+    font-size: 1.05em;
+    letter-spacing: 0.5px;
+    padding: 0;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="dashboard-header" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 24px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+  <div style="display: flex; align-items: center; gap: 16px;">
+    <div style="background: #4263eb; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+      <i class="fas fa-tools" style="color: white; font-size: 20px;"></i>
+    </div>
+    <div>
+      <h2 style="color: #152781; font-weight: 700; margin: 0; font-size: 1.8rem;">Quản lý yêu cầu bảo trì</h2>
+      <p style="color: #4263eb; margin: 4px 0 0 0; font-size: 0.95rem;">Theo dõi và xử lý các yêu cầu bảo trì từ người dùng</p>
+    </div>
+  </div>
+  </div>
+  <div class="dashboard-table-container">
+  <table id="requests-table" class="display" style="width: 100%">
+    <thead>
+      <tr>
+        <th>Tiêu đề</th>
+        <th>Thiết bị</th>
+        <th>Trạng thái</th>
+        <th>Ưu tiên</th>
+        <th>Người gửi</th>
+        <th>Ngày tạo</th>
+        <th>Thao tác</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for req in requests %}
+      <tr>
+        <td>{{ req.title }}</td>
+        <td>{{ req.device.name }}</td>
+        <td>
+          <span class="badge badge-status-{{ req.status }}"
+            >{{ req.get_status_display }}</span
+          >
+        </td>
+        <td>
+          <span class="badge badge-priority-{{ req.priority }}"
+            >{{ req.get_priority_display }}</span
+          >
+        </td>
+        <td>{{ req.requester }}</td>
+        <td>{{ req.created_at|date:'d/m/Y H:i' }}</td>
+        <td>
+          <a
+            href="{% url 'dashboard:manager_request_detail' req.id %}"
+            class="btn btn-gradient btn-detail"
+            >Chi tiết</a
+          >
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %} {% block extra_script %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script>
+  $(document).ready(function () {
+    $("#requests-table").DataTable({
+      language: { url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/vi.json" },
+    });
+  });
+</script>
+{% endblock %}

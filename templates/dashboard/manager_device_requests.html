@@ -1,0 +1,139 @@
+{% extends 'dashboard/manager_base.html' %} 
+{% block title %}Phê duyệt thiết bị mới - BMSync{% endblock %} 
+{% block extra_head %}
+<style>
+  .device-request-table {
+    width: 100%;
+    margin-top: 24px;
+  }
+  .device-request-table th,
+  .device-request-table td {
+    padding: 10px 12px;
+    text-align: left;
+  }
+  .badge-status-pending {
+    background: #ffe066;
+    color: #b8860b;
+    border-radius: 12px;
+    padding: 4px 14px;
+  }
+  .badge-status-approved {
+    background: #b6fcd5;
+    color: #218838;
+    border-radius: 12px;
+    padding: 4px 14px;
+  }
+  .badge-status-rejected {
+    background: #f8d7da;
+    color: #c82333;
+    border-radius: 12px;
+    padding: 4px 14px;
+  }
+  .btn-action {
+    margin-right: 8px;
+  }
+</style>
+{% endblock %} {% block content %}
+<h2>Yêu cầu thêm thiết bị mới</h2>
+<table class="device-request-table display">
+  <thead>
+    <tr>
+      <th>Tên thiết bị</th>
+      <th>Loại</th>
+      <th>Vị trí</th>
+      <th>Ghi chú</th>
+      <th>Người gửi</th>
+      <th>Trạng thái</th>
+      <th>Ngày gửi</th>
+      <th>Thao tác</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for req in requests %}
+    <tr id="row-{{ req.id }}">
+      <td>{{ req.name }}</td>
+      <td>{{ req.type }}</td>
+      <td>{{ req.location }}</td>
+      <td>{{ req.note|default:'-' }}</td>
+      <td>{{ req.requester.user.username }}</td>
+      <td>
+        <span class="badge badge-status-{{ req.status }}"
+          >{{ req.get_status_display }}</span
+        >
+      </td>
+      <td>{{ req.created_at|date:'d/m/Y H:i' }}</td>
+      <td>
+        <button
+          class="btn btn-success btn-action approve-btn"
+          data-request-id="{{ req.id }}"
+          data-action="approve"
+        >
+          Phê duyệt
+        </button>
+        <button
+          class="btn btn-danger btn-action reject-btn"
+          data-request-id="{{ req.id }}"
+          data-action="reject"
+        >
+          Từ chối
+        </button>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="8" style="text-align: center; color: #888">
+        Không có yêu cầu nào chờ xử lý.
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<div id="approve-msg" style="margin-top: 18px"></div>
+{% endblock %} {% block extra_script %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).ready(function () {
+    $(".device-request-table").DataTable({
+      language: { url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/vi.json" },
+    });
+
+    // Xử lý sự kiện click cho cả 2 nút
+    $(".approve-btn, .reject-btn").on("click", function () {
+      const id = $(this).data("request-id");
+      const action = $(this).data("action");
+      handleApprove(id, action);
+    });
+  });
+
+  function handleApprove(id, action) {
+    if (
+      !confirm(
+        action === "approve" ? "Phê duyệt yêu cầu này?" : "Từ chối yêu cầu này?"
+      )
+    )
+      return;
+    $.post(
+      "{% url 'dashboard:manager_approve_device_request' %}",
+      {
+        request_id: id,
+        action: action,
+        csrfmiddlewaretoken: "{{ csrf_token }}",
+      },
+      function (data) {
+        if (data.success) {
+          $("#row-" + id).fadeOut();
+          $("#approve-msg").html(
+            '<div class="alert alert-success">' + data.msg + "</div>"
+          );
+        } else {
+          $("#approve-msg").html(
+            '<div class="alert alert-danger">' +
+              (data.error || "Có lỗi xảy ra!") +
+              "</div>"
+          );
+        }
+      }
+    );
+  }
+</script>
+{% endblock %}

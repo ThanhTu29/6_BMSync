@@ -1,0 +1,22 @@
+{
+  "emptyTable": "Không có dữ liệu",
+  "info": "Hiển thị _START_ đến _END_ của _TOTAL_ mục",
+  "infoEmpty": "Hiển thị 0 đến 0 của 0 mục",
+  "infoFiltered": "(được lọc từ _MAX_ mục)",
+  "infoThousands": ".",
+  "lengthMenu": "Hiển thị _MENU_ mục",
+  "loadingRecords": "Đang tải...",
+  "processing": "Đang xử lý...",
+  "search": "Tìm:",
+  "zeroRecords": "Không tìm thấy dữ liệu",
+  "paginate": {
+    "first": "Đầu",
+    "last": "Cuối",
+    "next": "Sau",
+    "previous": "Trước"
+  },
+  "aria": {
+    "sortAscending": ": kích hoạt để sắp xếp cột tăng dần",
+    "sortDescending": ": kích hoạt để sắp xếp cột giảm dần"
+  }
+}

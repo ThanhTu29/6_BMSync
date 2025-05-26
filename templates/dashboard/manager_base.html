@@ -1,0 +1,327 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Manager Dashboard - BMSync{% endblock %}</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <link rel="stylesheet" href="{% static 'style.css' %}" />
+    <!-- Add marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+      body {
+        margin: 0;
+        font-family: "Poppins", Arial, sans-serif;
+        background: #f4f7fb;
+        color: #222;
+      }
+      .manager-dashboard-wrapper {
+        display: flex;
+        min-height: 100vh;
+      }
+      .manager-sidebar {
+        width: 240px;
+        background: linear-gradient(135deg, #1e3c72 60%, #2a5298 100%);
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        padding: 32px 0 0 0;
+        box-shadow: 2px 0 12px rgba(30, 60, 114, 0.08);
+      }
+      .manager-sidebar .logo {
+        font-size: 2rem;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 32px;
+        letter-spacing: 2px;
+      }
+      .manager-sidebar nav {
+        flex: 1;
+      }
+      .manager-sidebar ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .manager-sidebar li {
+        margin-bottom: 12px;
+      }
+      .manager-sidebar a {
+        color: #fff;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        padding: 12px 32px;
+        border-left: 4px solid transparent;
+        transition: background 0.2s, border-color 0.2s;
+        font-size: 1.08em;
+      }
+      .manager-sidebar a.active,
+      .manager-sidebar a:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-left: 4px solid #fff;
+      }
+      .manager-sidebar i {
+        margin-right: 12px;
+        font-size: 1.2em;
+      }
+      .manager-main {
+        flex: 1;
+        padding: 40px 5vw 40px 5vw;
+        background: #f4f7fb;
+      }
+      .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+      }
+      .dashboard-header .greeting {
+        font-size: 2.3rem;
+        font-weight: 800;
+        color: #1e3c72;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+      .dashboard-header .greeting i {
+        font-size: 2.5rem;
+        color: #2a5298;
+      }
+      .dashboard-header .role-badge {
+        background: #fff;
+        color: #1e3c72;
+        font-weight: 700;
+        border-radius: 18px;
+        padding: 7px 22px;
+        font-size: 1.1em;
+        box-shadow: 0 2px 8px #e3eafe;
+        margin-left: 18px;
+        letter-spacing: 1px;
+      }
+      .dashboard-header .avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #e3eafe;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1e3c72;
+        margin-right: 16px;
+      }
+      .dashboard-header .actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .chat-modal-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #4263eb 0%, #3157e2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .chat-modal-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(66, 99, 235, 0.2);
+      }
+      .chat-modal-btn i {
+        font-size: 1.2rem;
+      }
+      @media (max-width: 900px) {
+        .manager-dashboard-wrapper {
+          flex-direction: column;
+        }
+        .manager-sidebar {
+          width: 100%;
+          flex-direction: row;
+          padding: 0;
+        }
+        .manager-sidebar nav {
+          flex: 1;
+        }
+        .manager-main {
+          padding: 24px 2vw;
+        }
+      }
+      .badge {
+        display: inline-block;
+        padding: 3px 12px;
+        border-radius: 12px;
+        font-size: 0.98em;
+        font-weight: 600;
+        color: #fff;
+        margin-right: 2px;
+      }
+      .badge-status-active {
+        background: #2ecc71;
+      }
+      .badge-status-inactive {
+        background: #888;
+      }
+      .badge-status-maintenance {
+        background: #f39c12;
+      }
+      .badge-status-pending {
+        background: #f39c12;
+      }
+      .badge-status-in_progress {
+        background: #3498db;
+      }
+      .badge-status-completed {
+        background: #2ecc71;
+      }
+      .badge-status-cancelled {
+        background: #e74c3c;
+      }
+      .badge-priority-low {
+        background: #5dade2;
+      }
+      .badge-priority-medium {
+        background: #f1c40f;
+        color: #222;
+      }
+      .badge-priority-high {
+        background: #e67e22;
+      }
+      .badge-priority-critical {
+        background: #e74c3c;
+      }
+    </style>
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body>
+    <!-- Include Manager Chatbot -->
+    {% include "bmsync/manager_chatbot.html" %}
+
+    <div class="manager-dashboard-wrapper">
+      <aside class="manager-sidebar">
+        <div class="logo">BMSync</div>
+        <nav>
+          <ul>
+            <li>
+              <a
+                href="{% url 'dashboard:dashboard' %}"
+                class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+                ><i class="fas fa-tachometer-alt"></i> Dashboard</a
+              >
+            </li>
+            <li>
+              <a
+                href="{% url 'dashboard:notifications' %}"
+                class="{% if request.resolver_match.url_name == 'notifications' %}active{% endif %}"
+              >
+                <i class="fas fa-bell"></i> Thông báo {% if unread_notifications_count > 0 %}
+                <span
+                  class="badge badge-status-pending"
+                  style="margin-left: 8px"
+                  >{{ unread_notifications_count }}</span
+                >
+                {% endif %}
+              </a>
+            </li>
+            <li>
+              <a
+                href="{% url 'dashboard:manager_devices' %}"
+                class="{% if request.resolver_match.url_name == 'manager_devices' %}active{% endif %}"
+                ><i class="fas fa-server"></i> Thiết bị</a
+              >
+            </li>
+            <li>
+              <a
+                href="{% url 'dashboard:manager_requests' %}"
+                class="{% if request.resolver_match.url_name == 'manager_requests' %}active{% endif %}"
+                ><i class="fas fa-tools"></i> Yêu cầu bảo trì</a
+              >
+            </li>
+            <li>
+              <a
+                href="{% url 'dashboard:manager_reports' %}"
+                class="{% if request.resolver_match.url_name == 'manager_reports' %}active{% endif %}"
+                ><i class="fas fa-file-alt"></i> Báo cáo</a
+              >
+            </li>
+            <li>
+              <a
+                href="{% url 'dashboard:manager_account' %}"
+                class="{% if request.resolver_match.url_name == 'manager_account' %}active{% endif %}"
+                ><i class="fas fa-user-cog"></i> Tài khoản</a
+              >
+            </li>
+            <li>
+              <a href="{% url 'logout' %}"
+                ><i class="fas fa-sign-out-alt"></i> Đăng xuất</a
+              >
+            </li>
+          </ul>
+        </nav>
+      </aside>
+      <main class="manager-main">
+        <div class="dashboard-header">
+          <div
+            class="greeting"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 16px;
+              background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+              padding: 16px 24px;
+              border-radius: 12px;
+              box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            "
+          >
+            <div
+              style="
+                background: #4263eb;
+                width: 42px;
+                height: 42px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              "
+            >
+              <i
+                class="fas fa-user-tie"
+                style="color: white; font-size: 18px"
+              ></i>
+            </div>
+            <div>
+              <div style="color: #152781; font-weight: 600; font-size: 0.9rem">
+                Xin chào,
+              </div>
+              <div style="color: #152781; font-weight: 700; font-size: 1.2rem">
+                {{ user.get_full_name|default:user.username }}
+              </div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="chat-modal-btn" onclick="showDashboardChat()">
+              <i class="fas fa-headset"></i>
+              Trợ lý BMSync
+            </button>
+            <span class="role-badge"
+              ><i class="fas fa-user-shield"></i> Vai trò: Manager</span
+            >
+          </div>
+        </div>
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+    {% block extra_script %}{% endblock %}
+  </body>
+</html>

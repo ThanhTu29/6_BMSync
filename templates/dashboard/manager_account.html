@@ -1,0 +1,98 @@
+{% extends 'dashboard/manager_base.html' %} 
+{% block title %}Tài khoản của tôi - BMSync{% endblock %} 
+{% block extra_head %}
+<style>
+  .account-card {
+    max-width: 480px;
+    margin: 32px auto 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 6px 32px #4a6cf733;
+    padding: 40px 32px 32px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .account-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #e3eafe;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5em;
+    color: #1e3c72;
+    margin-bottom: 18px;
+  }
+  .account-info-list {
+    width: 100%;
+    margin-bottom: 18px;
+  }
+  .account-info-list p {
+    margin: 8px 0;
+    font-size: 1.08em;
+  }
+  .account-actions {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    margin-top: 18px;
+  }
+  .btn {
+    min-width: 140px;
+    padding: 12px 0;
+    border-radius: 8px;
+    font-size: 1.08em;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    text-decoration: none;
+    box-shadow: 0 2px 8px #e3eafe;
+  }
+  .btn-gradient {
+    background: linear-gradient(90deg, #1e3c72 60%, #2a5298 100%);
+    color: #fff;
+  }
+  .btn-gradient:hover {
+    background: linear-gradient(90deg, #274bb6 60%, #1e3c72 100%);
+    transform: translateY(-2px) scale(1.03);
+  }
+  .btn-outline {
+    background: #fff;
+    color: #1e3c72;
+    border: 2px solid #1e3c72;
+  }
+  .btn-outline:hover {
+    background: #e3eafe;
+    color: #274bb6;
+    border-color: #274bb6;
+    transform: translateY(-2px) scale(1.03);
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="account-card">
+  <div class="account-avatar"><i class="fas fa-user-tie"></i></div>
+  <div class="account-info-list">
+    <p><b>Tên đăng nhập:</b> {{ user_profile.user.username }}</p>
+    <p><b>Email:</b> {{ user_profile.user.email }}</p>
+    <p><b>Họ tên:</b> {{ user_profile.user.get_full_name }}</p>
+    <p><b>Vai trò:</b> Manager</p>
+    <p>
+      <b>Trạng thái:</b> {% if user_profile.user.is_active %}Đang hoạt động{% else %}Đã khóa{% endif %}
+    </p>
+  </div>
+  <div class="account-actions">
+    <a
+      href="{% url 'dashboard:manager_change_password' %}"
+      class="btn btn-gradient"
+      >Đổi mật khẩu</a
+    >
+    <a href="{% url 'dashboard:manager_update_info' %}" class="btn btn-outline"
+      >Cập nhật thông tin</a
+    >
+  </div>
+</div>
+{% endblock %}

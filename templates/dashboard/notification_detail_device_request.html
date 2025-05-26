@@ -1,0 +1,187 @@
+{% extends "dashboard/manager_base.html" %} {% block title %}Chi tiết yêu cầu
+thêm thiết bị - BMSync{% endblock %} {% block extra_head %}
+<style>
+  .device-request-detail-card {
+    max-width: 540px;
+    margin: 40px auto 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 6px 32px #4a6cf733;
+    padding: 40px 32px 32px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .device-request-detail-card h2 {
+    color: #1e3c72;
+    font-size: 1.4em;
+    font-weight: 800;
+    margin-bottom: 18px;
+  }
+  .device-request-detail-list p {
+    margin: 8px 0;
+    font-size: 1.08em;
+  }
+  .badge-status-pending {
+    background: linear-gradient(90deg, #ffe066 60%, #f1c40f 100%);
+    color: #b8860b;
+    border-radius: 14px;
+    padding: 6px 18px;
+    font-weight: 700;
+    font-size: 1.08em;
+    margin-right: 8px;
+  }
+  .badge-status-approved {
+    background: linear-gradient(90deg, #b6fcd5 60%, #218838 100%);
+    color: #218838;
+    border-radius: 14px;
+    padding: 6px 18px;
+    font-weight: 700;
+    font-size: 1.08em;
+    margin-right: 8px;
+  }
+  .badge-status-rejected {
+    background: linear-gradient(90deg, #f8d7da 60%, #c82333 100%);
+    color: #c82333;
+    border-radius: 14px;
+    padding: 6px 18px;
+    font-weight: 700;
+    font-size: 1.08em;
+    margin-right: 8px;
+  }
+  .action-buttons {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px;
+    align-items: center;
+  }
+  .btn-gradient {
+    background: linear-gradient(90deg, #1e3c72 60%, #2a5298 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 12px 28px;
+    font-size: 1.08em;
+    box-shadow: 0 2px 8px #e3eafe;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .btn-gradient:hover {
+    background: linear-gradient(90deg, #274bb6 60%, #1e3c72 100%);
+    transform: translateY(-2px) scale(1.03);
+    color: #fff;
+  }
+  .btn-outline {
+    background: #fff;
+    color: #1e3c72;
+    border: 2px solid #1e3c72;
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 12px 28px;
+    font-size: 1.08em;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0;
+  }
+  .btn-outline:hover {
+    background: #e3eafe;
+    color: #274bb6;
+    border-color: #274bb6;
+    transform: translateY(-2px) scale(1.03);
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="device-request-detail-card">
+  <h2>Chi tiết yêu cầu thêm thiết bị</h2>
+  <div class="device-request-detail-list">
+    <p><b>Tên thiết bị:</b> {{ device_req.name }}</p>
+    <p><b>Loại:</b> {{ device_req.type }}</p>
+    <p><b>Vị trí:</b> {{ device_req.location }}</p>
+    <p><b>Ghi chú:</b> {{ device_req.note|default:'-' }}</p>
+    <p><b>Người gửi:</b> {{ device_req.requester.user.username }}</p>
+    <p>
+      <b>Trạng thái:</b>
+      <span class="badge badge-status-{{ device_req.status }}"
+        >{{ device_req.get_status_display }}</span
+      >
+    </p>
+    <p><b>Ngày gửi:</b> {{ device_req.created_at|date:'d/m/Y H:i' }}</p>
+  </div>
+  {% if device_req.status == 'pending' %}
+  <form id="approveDeviceRequestForm" method="post" style="margin-top: 18px">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="approve_device_request" />
+    <div class="action-buttons" style="margin-top: 24px">
+      <button type="submit" class="btn-gradient">
+        <i class="fas fa-check-circle" style="margin-right: 8px"></i>Phê duyệt
+      </button>
+      <button
+        type="button"
+        class="btn-gradient"
+        style="
+          background: linear-gradient(90deg, #e74c3c 60%, #c0392b 100%);
+          margin-left: 12px;
+        "
+        onclick="handleReject()"
+      >
+        <i class="fas fa-times-circle" style="margin-right: 8px"></i>Từ chối
+      </button>
+      <a
+        href="{% url 'dashboard:notifications' %}"
+        class="btn-outline"
+        style="margin-left: 12px"
+        ><i class="fas fa-arrow-left" style="margin-right: 8px"></i>Quay lại</a
+      >
+    </div>
+    <input
+      type="hidden"
+      id="rejectAction"
+      name="action"
+      value="approve_device_request"
+    />
+    <div id="approveMsg" style="margin-top: 12px"></div>
+  </form>
+  <script>
+    function handleReject() {
+      document.getElementById("rejectAction").value = "reject_device_request";
+      document.getElementById("approveDeviceRequestForm").submit();
+    }
+    document
+      .getElementById("approveDeviceRequestForm")
+      .addEventListener("submit", function (e) {
+        e.preventDefault();
+        var form = this;
+        var data = new FormData(form);
+        fetch(window.location.href, {
+          method: "POST",
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+          body: data,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById("approveMsg").innerHTML = data.msg
+              ? '<div class="alert alert-success">' + data.msg + "</div>"
+              : '<div class="alert alert-danger">' +
+                (data.error || "Có lỗi xảy ra!") +
+                "</div>";
+            if (data.success) setTimeout(() => window.location.reload(), 1200);
+          });
+      });
+  </script>
+  {% endif %} {% if device_req.status != 'pending' %}
+  <div class="action-buttons" style="margin-top: 32px">
+    <a href="{% url 'dashboard:notifications' %}" class="btn-outline"
+      ><i class="fas fa-arrow-left" style="margin-right: 8px"></i>Quay lại</a
+    >
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

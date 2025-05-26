@@ -1,0 +1,708 @@
+{% extends "base.html" %} 
+{% load static %} 
+{% block title %}Dịch vụ - Quản lý Thiết bị Tòa nhà Thông minh{% endblock %} 
+{% block content %}
+
+{% include "bmsync/chatbot.html" %} {% endblock %}
+<!-- Services Hero Section -->
+<section class="services-hero-section">
+  <div class="container">
+    <div class="services-hero-content">
+      <h1>Dịch vụ của chúng tôi</h1>
+      <p class="hero-subheading">
+        Giải pháp toàn diện cho quản lý thiết bị tòa nhà
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Main Services Section -->
+<section class="main-services-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Danh mục dịch vụ</h2>
+      <p>
+        BMSync cung cấp đa dạng các dịch vụ phù hợp với nhu cầu của doanh nghiệp
+      </p>
+    </div>
+
+    <div class="services-container">
+      <div class="service-card">
+        <div class="service-icon">
+          <i class="fas fa-cogs"></i>
+        </div>
+        <h3>Phần mềm quản lý thiết bị</h3>
+        <p>
+          Nền tảng phần mềm toàn diện cho quản lý tài sản và thiết bị, với đầy
+          đủ tính năng theo dõi, bảo trì và báo cáo.
+        </p>
+        <ul class="service-features">
+          <li>
+            <i class="fas fa-check"></i> Quản lý thông tin thiết bị chi tiết
+          </li>
+          <li><i class="fas fa-check"></i> Theo dõi vòng đời thiết bị</li>
+          <li><i class="fas fa-check"></i> Lập lịch bảo trì tự động</li>
+          <li><i class="fas fa-check"></i> Báo cáo và phân tích dữ liệu</li>
+        </ul>
+        <a href="#" class="service-button" onclick="showFeatureMsg(event)"
+          >Tìm hiểu thêm</a
+        >
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon">
+          <i class="fas fa-server"></i>
+        </div>
+        <h3>Tích hợp hệ thống</h3>
+        <p>
+          Giải pháp tích hợp BMSync với các hệ thống hiện có như BMS, ERP, CMMS
+          và các hệ thống quản lý khác.
+        </p>
+        <ul class="service-features">
+          <li><i class="fas fa-check"></i> API đầy đủ tính năng</li>
+          <li><i class="fas fa-check"></i> Đồng bộ dữ liệu hai chiều</li>
+          <li>
+            <i class="fas fa-check"></i> Tùy chỉnh theo yêu cầu khách hàng
+          </li>
+          <li><i class="fas fa-check"></i> Hỗ trợ nhiều định dạng dữ liệu</li>
+        </ul>
+        <a href="#" class="service-button" onclick="showFeatureMsg(event)"
+          >Tìm hiểu thêm</a
+        >
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Implementation Process -->
+<section class="implementation-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Quy trình triển khai</h2>
+      <p>Phương pháp tiếp cận có cấu trúc để triển khai hệ thống BMSync</p>
+    </div>
+
+    <div class="implementation-process">
+      <div class="process-steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>Đánh giá nhu cầu</h3>
+            <p>
+              Chúng tôi phân tích cơ sở hạ tầng hiện tại, quy trình làm việc và
+              xác định yêu cầu cụ thể của bạn.
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>Thiết kế giải pháp</h3>
+            <p>
+              Phát triển kế hoạch triển khai chi tiết, bao gồm cấu hình hệ thống
+              và chiến lược di chuyển dữ liệu.
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3>Triển khai & Cấu hình</h3>
+            <p>
+              Cài đặt, cấu hình hệ thống và tích hợp với cơ sở dữ liệu và hệ
+              thống hiện có.
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <h3>Đào tạo & Chuyển giao</h3>
+            <p>
+              Đào tạo nhân viên của bạn và chuyển giao hệ thống để sẵn sàng vận
+              hành.
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-number">5</div>
+          <div class="step-content">
+            <h3>Hỗ trợ & Bảo trì</h3>
+            <p>
+              Cung cấp hỗ trợ liên tục, bảo trì và cập nhật để đảm bảo hệ thống
+              hoạt động tối ưu.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Service Packages -->
+<section class="packages-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Các gói dịch vụ</h2>
+      <p>Lựa chọn gói dịch vụ phù hợp với nhu cầu và ngân sách của bạn</p>
+    </div>
+
+    <div class="packages-container">
+      <div class="package-card">
+        <div class="package-header">
+          <h3>Cơ bản</h3>
+          <div class="package-price">
+            <span class="price">2.5</span>
+            <span class="price-info">triệu đồng / tháng</span>
+          </div>
+        </div>
+        <div class="package-body">
+          <ul class="package-features">
+            <li><i class="fas fa-check"></i> Đến 100 thiết bị</li>
+            <li><i class="fas fa-check"></i> 5 người dùng</li>
+            <li><i class="fas fa-check"></i> Quản lý thiết bị cơ bản</li>
+            <li><i class="fas fa-check"></i> Lịch bảo trì tự động</li>
+            <li><i class="fas fa-check"></i> Báo cáo tiêu chuẩn</li>
+            <li class="disabled"><i class="fas fa-times"></i> Tích hợp API</li>
+            <li class="disabled"><i class="fas fa-times"></i> Hỗ trợ 24/7</li>
+          </ul>
+          <a href="#" class="package-button" onclick="showFeatureMsg(event)"
+            >Chọn gói</a
+          >
+        </div>
+      </div>
+
+      <div class="package-card popular">
+        <div class="popular-tag">Phổ biến nhất</div>
+        <div class="package-header">
+          <h3>Chuyên nghiệp</h3>
+          <div class="package-price">
+            <span class="price">5</span>
+            <span class="price-info">triệu đồng / tháng</span>
+          </div>
+        </div>
+        <div class="package-body">
+          <ul class="package-features">
+            <li><i class="fas fa-check"></i> Đến 500 thiết bị</li>
+            <li><i class="fas fa-check"></i> 20 người dùng</li>
+            <li><i class="fas fa-check"></i> Quản lý thiết bị nâng cao</li>
+            <li><i class="fas fa-check"></i> Lịch bảo trì tự động</li>
+            <li><i class="fas fa-check"></i> Báo cáo tùy chỉnh</li>
+            <li><i class="fas fa-check"></i> Tích hợp API cơ bản</li>
+            <li><i class="fas fa-check"></i> Hỗ trợ trong giờ làm việc</li>
+          </ul>
+          <a href="#" class="package-button" onclick="showFeatureMsg(event)"
+            >Chọn gói</a
+          >
+        </div>
+      </div>
+
+      <div class="package-card">
+        <div class="package-header">
+          <h3>Doanh nghiệp</h3>
+          <div class="package-price">
+            <span class="price">10+</span>
+            <span class="price-info">triệu đồng / tháng</span>
+          </div>
+        </div>
+        <div class="package-body">
+          <ul class="package-features">
+            <li><i class="fas fa-check"></i> Không giới hạn thiết bị</li>
+            <li><i class="fas fa-check"></i> Không giới hạn người dùng</li>
+            <li><i class="fas fa-check"></i> Quản lý thiết bị toàn diện</li>
+            <li>
+              <i class="fas fa-check"></i> Lịch bảo trì & dự đoán hỏng hóc
+            </li>
+            <li><i class="fas fa-check"></i> Báo cáo và phân tích nâng cao</li>
+            <li><i class="fas fa-check"></i> Tích hợp API đầy đủ</li>
+            <li><i class="fas fa-check"></i> Hỗ trợ 24/7 ưu tiên</li>
+    </ul>
+          <a href="#" class="package-button" onclick="showFeatureMsg(event)"
+            >Chọn gói</a
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-content">
+      <h2>Cần tư vấn về giải pháp phù hợp?</h2>
+      <p>
+        Đội ngũ chuyên gia của chúng tôi sẵn sàng hỗ trợ bạn tìm ra giải pháp
+        tối ưu nhất
+      </p>
+      <div class="cta-buttons">
+        <a href="{% url 'contact' %}" class="btn-primary-quizlet">
+          <i class="fas fa-headset"></i> Liên hệ tư vấn
+        </a>
+      </div>
+    </div>
+    <div class="cta-shape"></div>
+</div>
+</section>
+
+{% endblock %} {% block extra_script %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Hiển thị các phần tử khi cuộn trang
+    const showElementsOnScroll = () => {
+      const elements = document.querySelectorAll(
+        ".service-card, .step, .package-card"
+      );
+
+      elements.forEach((element) => {
+        const elementPosition = element.getBoundingClientRect().top;
+        const screenPosition = window.innerHeight / 1.3;
+
+        if (elementPosition < screenPosition) {
+          element.classList.add("visible");
+        }
+      });
+    };
+
+    // Gọi hàm khi trang tải và khi cuộn
+    window.addEventListener("scroll", showElementsOnScroll);
+    showElementsOnScroll();
+  });
+
+  // Hiển thị thông báo tính năng
+  function showFeatureMsg(event) {
+    event.preventDefault();
+
+    // Tạo thông báo nếu chưa tồn tại
+    if (!document.getElementById("feature-msg")) {
+      const msg = document.createElement("div");
+      msg.id = "feature-msg";
+      msg.innerHTML =
+        'Tính năng đang được phát triển <span onclick="this.parentNode.remove()">×</span>';
+      document.body.appendChild(msg);
+
+      // Tự động xóa sau 3 giây
+      setTimeout(() => {
+        const msgElement = document.getElementById("feature-msg");
+        if (msgElement) msgElement.remove();
+      }, 3000);
+    }
+  }
+</script>
+
+<style>
+  /* CSS cho hiệu ứng hiển thị khi cuộn */
+  .service-card,
+  .step,
+  .package-card {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Services Hero Section */
+  .services-hero-section {
+    position: relative;
+    padding: 80px 0;
+    background: linear-gradient(rgba(20, 47, 108, 0.6), rgba(20, 47, 108, 0.7)),
+      url("../static/img/background.jpg");
+    background-size: cover;
+    background-position: center center;
+    color: #fff;
+    text-align: center;
+    border-radius: 0 0 50px 50px;
+  }
+
+  .services-hero-section:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      135deg,
+      rgba(10, 39, 89, 0.7) 0%,
+      rgba(20, 47, 108, 0.4) 100%
+    );
+    z-index: 1;
+  }
+
+  .services-hero-content {
+    position: relative;
+    z-index: 5;
+  }
+
+  .services-hero-content h1 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+
+  /* Main Services Section */
+  .main-services-section {
+    padding: 80px 0;
+  }
+
+  .services-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+    margin-top: 50px;
+  }
+
+  .service-card {
+    background: white;
+    border-radius: 15px;
+    padding: 40px 30px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .service-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  }
+
+  .service-card:before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 5px;
+    background: var(--primary);
+    top: 0;
+    left: 0;
+  }
+
+  .service-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--primary-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 25px;
+  }
+
+  .service-icon i {
+    font-size: 2.2rem;
+    color: var(--primary);
+  }
+
+  .service-card h3 {
+    font-size: 1.5rem;
+    color: var(--dark);
+    margin-bottom: 15px;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .service-card > p {
+    color: var(--gray);
+    line-height: 1.7;
+    margin-bottom: 25px;
+    text-align: center;
+  }
+
+  .service-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 25px;
+  }
+
+  .service-features li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    color: var(--secondary);
+  }
+
+  .service-features li i {
+    color: var(--primary);
+    font-size: 1rem;
+  }
+
+  .service-button {
+    display: inline-block;
+    background: linear-gradient(135deg, #0a67eb 0%, #2c88ff 100%);
+    color: white;
+    text-decoration: none;
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.3s ease;
+    margin-top: auto;
+    align-self: center;
+  }
+
+  .service-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(10, 103, 235, 0.2);
+  }
+
+  /* Implementation Process */
+  .implementation-section {
+    padding: 80px 0;
+    background: linear-gradient(135deg, #f9fbfd 0%, #f0f4f9 100%);
+  }
+
+  .implementation-process {
+    margin-top: 50px;
+  }
+
+  .process-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .step {
+    display: flex;
+    gap: 30px;
+    position: relative;
+  }
+
+  .step-number {
+    width: 50px;
+    height: 50px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .step-content {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    flex-grow: 1;
+  }
+
+  .step-content h3 {
+    font-size: 1.3rem;
+    color: var(--dark);
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .step-content p {
+    color: var(--gray);
+    margin: 0;
+  }
+
+  /* Service Packages */
+  .packages-section {
+    padding: 80px 0;
+  }
+
+  .packages-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 50px;
+  }
+
+  .package-card {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .package-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  }
+
+  .package-card.popular {
+    border: 2px solid var(--primary);
+    transform: scale(1.05);
+  }
+
+  .popular-tag {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: var(--primary);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .package-header {
+    background: linear-gradient(135deg, #0a67eb 0%, #2c88ff 100%);
+    color: white;
+    padding: 30px 20px;
+    text-align: center;
+  }
+
+  .package-header h3 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    font-weight: 600;
+  }
+
+  .package-price {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .price {
+    font-size: 3rem;
+    font-weight: 700;
+  }
+
+  .price-info {
+    font-size: 1rem;
+    opacity: 0.8;
+  }
+
+  .package-body {
+    padding: 30px;
+  }
+
+  .package-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 30px;
+  }
+
+  .package-features li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    color: var(--secondary);
+  }
+
+  .package-features li i {
+    color: var(--primary);
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+  }
+
+  .package-features li.disabled {
+    opacity: 0.6;
+  }
+
+  .package-features li.disabled i {
+    color: #dc3545;
+  }
+
+  .package-button {
+    display: block;
+    background: linear-gradient(135deg, #0a67eb 0%, #2c88ff 100%);
+    color: white;
+    text-decoration: none;
+    padding: 12px 0;
+    border-radius: 50px;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  .package-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(10, 103, 235, 0.2);
+  }
+
+  @media (max-width: 992px) {
+    .services-container,
+    .packages-container {
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    .package-card.popular {
+      transform: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .services-hero-content h1 {
+      font-size: 2.5rem;
+    }
+
+    .step {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+    }
+
+    .service-card,
+    .package-card {
+      padding: 30px 20px;
+    }
+  }
+
+  /* Thông báo tính năng */
+  #feature-msg {
+    position: fixed;
+    top: 80px;
+    right: 40px;
+    z-index: 9999;
+    background: #fff;
+    border-left: 4px solid var(--primary);
+    padding: 16px 24px;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    color: var(--secondary);
+    font-size: 1rem;
+    animation: slideIn 0.5s forwards;
+  }
+
+  #feature-msg span {
+    float: right;
+    cursor: pointer;
+    font-weight: bold;
+    margin-left: 15px;
+    opacity: 0.5;
+    transition: all 0.3s ease;
+  }
+
+  #feature-msg span:hover {
+    opacity: 1;
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+</style>
+{% endblock %}

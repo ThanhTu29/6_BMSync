@@ -1,0 +1,78 @@
+{% extends 'dashboard/tenant_base.html' %}
+{% block title %}Sửa thiết bị - BMSync{% endblock %}
+{% block extra_head %}
+<style>
+.device-edit-card {
+  max-width: 520px;
+  margin: 32px auto 0 auto;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 6px 32px #4a6cf733;
+  padding: 40px 32px 32px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.device-edit-card h2 {
+  color: #4a6cf7;
+  font-size: 1.4em;
+  font-weight: 800;
+  margin-bottom: 18px;
+}
+.device-edit-form label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 6px;
+  margin-top: 10px;
+  display: block;
+}
+.device-edit-form input, .device-edit-form select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1.5px solid #e3eafe;
+  margin-bottom: 10px;
+  font-size: 1.08em;
+  background: #f7faff;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.device-edit-form input:focus, .device-edit-form select:focus {
+  border: 1.5px solid #4a6cf7;
+  box-shadow: 0 0 0 2px #e3eafe;
+  outline: none;
+}
+.device-edit-actions {
+  margin-top: 18px;
+  display: flex;
+  gap: 12px;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="device-edit-card">
+  <h2>Sửa thiết bị</h2>
+  <form method="post" class="device-edit-form">
+    {% csrf_token %}
+    <label for="name">Tên thiết bị</label>
+    <input type="text" id="name" name="name" value="{{ device.name }}" required />
+    <label for="device_type">Loại thiết bị</label>
+    <select id="device_type" name="device_type" required>
+      {% for key, val in device.DEVICE_TYPES %}
+        <option value="{{ key }}" {% if device.device_type == key %}selected{% endif %}>{{ val }}</option>
+      {% endfor %}
+    </select>
+    <label for="location">Vị trí lắp đặt</label>
+    <input type="text" id="location" name="location" value="{{ device.location }}" required />
+    <label for="status">Trạng thái</label>
+    <select id="status" name="status" required>
+      {% for key, val in device.STATUS_CHOICES %}
+        <option value="{{ key }}" {% if device.status == key %}selected{% endif %}>{{ val }}</option>
+      {% endfor %}
+    </select>
+    <div class="device-edit-actions">
+      <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+      <a href="{% url 'dashboard:tenant_device_detail' device.id %}" class="btn btn-secondary">Quay lại</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

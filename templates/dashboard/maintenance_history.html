@@ -1,0 +1,108 @@
+{% extends "dashboard/maintenance_base.html" %}
+{% block title %}Lịch sử công việc - BMSync{% endblock %} 
+{% block extra_head %}
+<link
+  rel="stylesheet"
+  href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"
+/>
+<style>
+  .dashboard-table-container {
+    margin-bottom: 32px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px #e3eafe;
+    padding: 18px;
+  }
+  .btn-mini {
+    font-size: 0.98em;
+    padding: 5px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    border: none;
+    background: linear-gradient(90deg, #1e3c72 60%, #2a5298 100%);
+    color: #fff;
+    transition: all 0.18s;
+    box-shadow: 0 2px 8px #e3eafe;
+    display: inline-block;
+    margin: 0 2px;
+    text-decoration: none;
+  }
+  .btn-mini:hover {
+    background: linear-gradient(90deg, #274bb6 60%, #1e3c72 100%);
+    color: #fff;
+    transform: translateY(-2px) scale(1.03);
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="dashboard-table-container">
+  <h2><i class="fas fa-history"></i> Lịch sử công việc</h2>
+  <div style="margin-bottom: 16px">
+    <label for="status-filter">Lọc theo trạng thái: </label>
+    <select id="status-filter">
+      <option value="all">Tất cả</option>
+      <option value="completed">Đã hoàn thành</option>
+      <option value="in_progress">Đang tiến hành</option>
+      <option value="pending">Chưa xác nhận</option>
+    </select>
+  </div>
+  <table id="history-table" class="display" style="width: 100%">
+    <thead>
+      <tr>
+        <th>Tiêu đề</th>
+        <th>Thiết bị</th>
+        <th>Trạng thái</th>
+        <th>Ngày cập nhật</th>
+        <th>Ghi chú</th>
+        <th>Thao tác</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for task in history_tasks %} {% if task.status == 'completed' %}
+      <tr data-status="{{ task.status }}">
+        <td>{{ task.title }}</td>
+        <td>{{ task.maintenance_request.device.name }}</td>
+        <td>
+          <span class="badge badge-status-{{ task.status }}"
+            >{{ task.get_status_display }}</span
+          >
+        </td>
+        <td>{{ task.updated_at|date:'d/m/Y H:i' }}</td>
+        <td>{{ task.maintenance_request.note|default:'-' }}</td>
+        <td>
+          <a
+            href="{% url 'dashboard:maintenance_task_detail' task.id %}"
+            class="btn-mini"
+            >Chi tiết</a
+          >
+        </td>
+      </tr>
+      {% endif %} {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %} {% block extra_script %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script>
+  $(document).ready(function () {
+    var table = $("#history-table").DataTable({
+      language: { url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/vi.json" },
+    });
+    $("#status-filter").on("change", function () {
+      var val = $(this).val();
+      if (val === "all") {
+        table.rows().show();
+      } else {
+        table.rows().every(function () {
+          var status = $(this.node()).data("status");
+          if (status === val) {
+            $(this.node()).show();
+          } else {
+            $(this.node()).hide();
+          }
+        });
+      }
+    });
+  });
+</script>
+{% endblock %}
